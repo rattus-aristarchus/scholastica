@@ -1,0 +1,39 @@
+<View>:
+    orientation: 'vertical'
+    
+    ScrollView:
+        id: scroll
+        do_scroll_x: False
+        do_scroll_y: True
+        bar_width: 10
+        scroll_timeout: 1000
+        effect_cls: 'ScrollEffect'
+        
+        TagTree:
+            id: tree
+            size_hint_y: None
+            hide_root: True
+            
+<EntNode>:
+    cols: 2
+    rows: 1
+    height: self.minimum_height
+    orientation: 'lr-tb'
+            
+    Label:
+        id: label
+        font_size: 15
+        size_hint_y: None
+        size_hint_x: None
+        size: self.texture_size
+        padding: (2, 2)
+
+<TagNode>:    
+    TextInput:
+        id: input
+        multiline: False
+        on_text_validate: root.edit_done()
+        font_size: 15
+        size_hint_y: None
+        height: 21
+        padding: [0, 0, 0, 0]
