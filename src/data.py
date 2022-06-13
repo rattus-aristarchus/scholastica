@@ -17,13 +17,20 @@ class Tag:
     Which makes me think. Ideally, data should only be stored once, in one 
     place. Maybe the "tags" variables from Entry and Source should be deleted?
     """
-    def __init__(self, text):
+    def __init__(self, text=""):
         self.text = text
         self.parents = []
         self.children = []
         #The sources and entries which have the tag
         self.content = []
-        
+    
+    def clear_refs(self):
+        for content in self.content:
+            content.tags.remove(self)
+        for tag in self.parents:
+            tag.children.remove(self)
+        for tag in self.children:
+            tag.parents.remove(self)
         
     #I am defining the eq and hash methods so that the "in" keyword will be 
     #able to tell if the tag is present in a list of tags    
@@ -33,6 +40,7 @@ class Tag:
     def __hash__(self):
         return hash(self.text)
         
+    
 class Entry:
     def __init__(self, text):
         self.text = text
@@ -50,7 +58,9 @@ class Source:
     def __init__(self, text):
         self.text = text
         self.tags = []  
-        
+    
+        #TODO: for some reason i don't like this method. make it a standalone 
+        #function maybe?
     def clear_refs(self):
         for tag in self.tags:
             if self in tag.content:
@@ -83,15 +93,27 @@ def add_tag_to_source(source, tag):
     if not source in tag.content:
         tag.content.append(source)
 
+def add_tag_to_entry(entry, tag):
+    if not tag in entry.tags:
+        entry.tags.append(tag)
+    if not entry in tag.content:
+        tag.content.append(entry)
+
+def remove_tag_from_content(content, tag):
+    if tag in content.tags:
+        content.tags.remove(tag)
+    if content in tag.content:
+        tag.content.remove(content)
+
 def add_child_tag(tag, child):
     if not child in tag.children:
         tag.children.append(child)
     if not tag in child.parents:
         child.parents.append(tag)
         
-def add_tag_to_entry(entry, tag):
-    if not tag in entry.tags:
-        entry.tags.append(tag)
-    if not entry in tag.content:
-        tag.content.append(entry)
+def remove_child_tag(tag, child):
+    if tag in child.parents:
+        child.parents.remove(tag)
+    if child in tag.children:
+        tag.children.remove(child)
     

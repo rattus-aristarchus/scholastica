@@ -19,30 +19,21 @@ from data import Source
 from data import Entry
 
 
+"""
+The visual representation of a TagNest. Synchronization with the tagnest should
+happen elsewhere, this just provides the basic methods for manipulating the 
+tree.
+"""
 class TagTree(TreeView):
     
     def __init__(self, **kwargs):
         super().__init__(root_options=dict(text='Гнездо'), **kwargs)
-        self.bind(minimum_height = self.setter("height"))
+        self.bind(minimum_height = self.setter("height"))        
+        self.controller = None
         #the copied tagnode; this is needed for the copy-paste functionality
-        self.copied = None
+        self._copied = None
+        self._cut = None
         
-    """
-    This should be called when a textinput is finished editing to return 
-    control to keyboard commands.
-    """
-    def kbd_callback(self, return_kbd):
-        self.return_kbd = return_kbd
-        
-    def file_callback(self, save_file):
-        self.save_file = save_file
-
-    def edit_callback(self, edit_tag):
-        self.edit_tag = edit_tag
-    
-    def scroll_callback(self, scroll_to):
-        self.scroll_to = scroll_to
-    
     
     def show(self, tag_nest):
         for root_tag in tag_nest.roots:
@@ -120,10 +111,23 @@ class TagTree(TreeView):
             self.step_down()
 
     def enter(self):
-        if self.selected_node.editing:
-            self.selected_node.save_text()
-            self.selected_node.label_mode()
-            self.selected_node.load_text()
+        #The enter key can finish the editing of an existing node if it's in
+        #progress...
+        if isinstance(self.selected_node, TagNode): 
+            if self.selected_node.editing:
+                self.selected_node.save_text()
+                self.selected_node.label_mode()
+                self.selected_node.load_text()
+            else:
+                #Or it can create a new tag
+                new_tag = data.Tag()
+                data.add_child_tag(self.selected_node.entity, new_tag)
+                
+                new_node = TagNode(new_tag, self.controller)
+                self.add_node(new_node, self.selected_node)
+                self.selected_node.is_open = True
+                self.select_node(new_node)
+                self.edit(False)
                         
 
     def edit(self, from_end):
@@ -133,23 +137,65 @@ class TagTree(TreeView):
             ):
             self.selected_node.input_mode()
             self.selected_node.edit_text()
+            if from_end:
+                self.selected_node.cursor_to_end()
         
     
     def copy(self):
         if isinstance(self.selected_node, TagNode):
-            self.copied = self.selected_node
-            
+            self._copied = self.selected_node
+            self._cut = None
     
-    
-    def paste(self):
+    def cut(self):        
         if isinstance(self.selected_node, TagNode):
+            self._copied = None
+            self._cut = self.selected_node
+    
+    #TODO this function might not belong in this class; might be a good idea 
+    #to move data manipulation to the controller and call it directly from the
+    #kbd listener
+    def paste(self):
+        if not isinstance(self.selected_node, TagNode):
+            return
+        
+        if not self._copied == None:
+            #First, change the data structure
             data.add_child_tag(tag=self.selected_node.entity, 
-                               child=self.copied.entity)
-            self.save_file()
+                               child=self._copied.entity)
+            self.controller.save_file()
+        
+            #Then, the representation
+            self.copy_node(self._copied, self.selected_node)
+            self._copied = None    
+        elif not self._cut == None:
+            old_parent = self._cut.parent_node
+            new_parent = self.selected_node
             
+            #First, change the data structure
+            data.add_child_tag(tag=new_parent.entity, 
+                               child=self._cut.entity)
+            data.remove_child_tag(tag=old_parent.entity, 
+                                  child=self._cut.entity)
+            self.controller.save_file()
+        
+            #Then, the representation
+            self.move_node(self._cut, self.selected_node)
+            self._cut = None
+    
+    
+    def move_node(self, node, destination):
+        self.remove_node(node)
+        self.add_node(node, destination)
+        
+    def copy_node(self, node, destination):
+        new_node = node.copy()
+        self.add_node(new_node, destination)
+        for child in node.nodes:
+            self.copy_node(child, new_node)
+        
     def _select_and_scroll(self, node):
         self.select_node(node)
-        self.scroll_to(node)
+        self.controller.scroll_to(node)
 
 
     def _show_deep(self, tag, parent_node, parents):
@@ -163,7 +209,7 @@ class TagTree(TreeView):
             return
         
         #Display the tag itself
-        tag_node = TagNode(tag, self.return_kbd, self.save_file, self.edit_tag)
+        tag_node = TagNode(tag, self.controller)
         if parent_node == None:
             self.add_node(tag_node)
         else:
@@ -222,6 +268,8 @@ class EntNode(GridLayout, TreeViewNode):
     def load_text(self):
         self.ids['label'].text = self.entity.text
 
+    def copy(self):
+        return EntNode(self.entity)
 
 class SourceNode(EntNode):
     pass
@@ -233,32 +281,32 @@ class EntryNode(EntNode):
 
 class TagNode(EntNode):
 
-    def __init__(self, tag, return_kbd, save_file, edit_tag, **kwargs):
+    def __init__(self, tag, controller, **kwargs):
         super().__init__(tag, **kwargs)
-        #The callback for returning control to the main keyboard
-        self.return_kbd = return_kbd
-        self.save_file = save_file
-        self.edit_tag = edit_tag
+        self.controller = controller
         self.input = self.ids['input']
         self.label = self.ids['label']
         self.remove_widget(self.input)
         self.editing = False
         
+    def copy(self):
+        return TagNode(self.entity, self.controller)
+        
+    """
+    The following two methods change the appearance of the node
+    """
     def edit_done(self):
         self.save_text()
         self.label_mode()
         self.load_text()
         
-    """
-    The following two methods change the appearance of the node
-    """
     def label_mode(self):
         if self.editing:
             self.remove_widget(self.input)
             self.input.focus = False
             self.add_widget(self.label)
             self.editing = False
-            self.return_kbd()
+            self.controller.return_kbd()
     
     def input_mode(self):
         if not self.editing:
@@ -267,14 +315,18 @@ class TagNode(EntNode):
             self.input.focus = True
             self.editing = True
     
+    def cursor_to_end(self):
+        self.input.cursor = (len(self.input.text), 0)
+        
     """
     These change the data based on user input
     """
     def save_text(self):
-        old_name = self.entity.text
-        self.entity.text = self.ids['input'].text
-        self.save_file()
-        self.edit_tag(old_name, self.entity.text)        
-        
+        if self.ids['input'].text == "":
+            self.controller.delete_tag_and_node(self)
+        else:
+            self.controller.edit_tag(self.entity, self.ids['input'].text)        
+                
     def edit_text(self):
         self.ids['input'].text = self.entity.text
+        
