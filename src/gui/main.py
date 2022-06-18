@@ -57,6 +57,7 @@ class Main(App):
             source_file = sourcefile.read(path, self.tag_file.tag_nest)
             if len(source_file.tags) > 0:
                 self.tag_file.source_files.append(source_file)
+            #Write changes
             tagfile.write_tag_file(self.tag_file)
         else:
             #If it isn't, we read the file and see if it has any tags at all. 
@@ -64,6 +65,7 @@ class Main(App):
             source_file = sourcefile.read(path, self.tag_file.tag_nest)
             if len(source_file.tags) > 0:
                 self.tag_file.source_files.append(source_file)
+            #Write changes
             tagfile.write_tag_file(self.tag_file)
         return ""
     
