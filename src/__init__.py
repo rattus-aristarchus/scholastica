@@ -14,4 +14,6 @@ import gui.main as gui
 
 address = "/media/kryis/TOSHIBA EXT/записи/организатор записей/тестовый файл.txt"
 file = tagfile.read_tag_file(address)
-gui.Main(file).run()
+app = gui.Main(file)
+app.listen()
+app.run()

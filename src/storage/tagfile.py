@@ -38,7 +38,7 @@ def read_tag_file(address):
         #The tagfile contains first a tree of tags, and then a list of source
         #files which use the tags
         tags = []
-        source_files = []
+        source_paths = []
         after_break = False
         for line in file:
             if line.isspace():
@@ -46,7 +46,7 @@ def read_tag_file(address):
             elif not after_break:
                 tags.append(line)
             else:
-                source_files.append(line)
+                source_paths.append(line)
         
         #First, build the tag structure
         for line in tags:
@@ -75,12 +75,11 @@ def read_tag_file(address):
             tag_stack[indent] = tag
         
         #Now, with a full structure of tags, all the sourcefiles can be read
-        for line in source_files:
+        for line in source_paths:
             if len(line) == 0 or line.isspace():
                 continue
-            file = sourcefile.SourceFile(line[:-1])
-            result.source_files.append(file)
-            sourcefile.read(file, result.tag_nest)
+            file = sourcefile.read(line[:-1], result.tag_nest)
+            result.source_files.append(file)            
             
     return result
 
@@ -109,7 +108,7 @@ def write_tag_file(tag_file):
     
     #Write the result
     storage.write_safe(tag_file.address, output)
-    
+
 
 """
 Determine the number of whitespaces at the beginning of the line

@@ -19,11 +19,14 @@ class SourceFile:
         self.address = address
         self.sources = []
         self.entries = []
+        #Tags that are encountered in the sourcefile
+        self.tags = []
         
 
 def synch(source_file, tag_nest):
     clean(source_file)
     read(source_file, tag_nest)
+
 
 def clean(source_file):
     for source in source_file.sources:
@@ -32,47 +35,63 @@ def clean(source_file):
     for entry in source_file.entries:
         entry.clear_refs()
     source_file.entries.clear()
+
+#Read the file at the address and create a sourcefile object, while also 
+#connecting entries and sources to specified tags if the tags are present in 
+#the tag nest
+def read(address, tag_nest):
+    result = SourceFile(address)
+    
+    with open(address, "r") as file:
+        lines = file.readlines()
         
-    
-def read(source_file, tag_nest):
-    #result = None
-    
-    with open(source_file.address, "r") as file:
-        #By convention, the first lines in a file can be sources. Check, and 
-        #if they are, read them.
+        #The lines before the first empty line in a file can be sources. Split
+        #the file in two halves, before the first empty line and after; if 
+        #the first lines are sources, read them separately; if not, add them
+        #to the rest to be read as entries
+        
         has_sources = False
         first_chunk = []
+        entries = []
+        after_break = False
         
-        for line in file:
+        for line in lines:
             if line.isspace():
-                break
+                after_break = True
+            elif after_break:
+                entries.append(line)
             else:
                 first_chunk.append(line)
-            if parse.is_source(line):
-                has_sources = True
+                if parse.is_source(line):
+                    has_sources = True
         
         if has_sources:
-            source_file.sources = parse.read_sources(first_chunk, tag_nest.tags)
+            result.sources = parse.read_sources(first_chunk, tag_nest.tags)
+            for source in result.sources:
+                result.tags += source.tags
+        else:
+            entries = first_chunk + [parse.EMPTY_LINE] + entries
 
+        #Since reading a chunk is triggered by an empty line, the last line 
+        #always needs to be empty
+        entries.append(parse.EMPTY_LINE)
+
+        #Read the lines as entries
         chunk = []
-        chunks = 0
-        for line in file:
+        for line in entries:
             if line.isspace():
-                chunks += 1
-                #If the first chunk is a bunch of sources they shouldn't be
-                #read as an entry
-                if chunks == 1 and has_sources:
-                    continue
-                else:
-                    entry = parse.read_entry(chunk, 
-                                        tag_nest.tags, 
-                                        source_file.sources)
-                    if entry != None:
-                     #   print("ENTRY CREATED: " + entry.text)
-                        source_file.entries.append(entry)
+                entry = parse.read_entry(chunk, 
+                                         tag_nest.tags, 
+                                         result.sources)
+                if entry != None:
+                 #   print("ENTRY CREATED: " + entry.text)
+                    result.entries.append(entry)
+                    result.tags += entry.tags
                 chunk = []
             else:
                 chunk.append(line)
+                
+        return result
         
 
 def edit_tag(old_name, new_name, source_file):

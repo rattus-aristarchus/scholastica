@@ -7,7 +7,7 @@ Created on Fri May 27 18:34:31 2022
 """
 
 import sys
-sys.path.insert(0, "/media/kryis/TOSHIBA EXT/code/Python/gotik/src")
+sys.path.insert(0, "/media/kryis/TOSHIBA EXT/code/Python/scholastica/src")
 
 import src.storage.tagfile as tgf
 import src.storage.sourcefile as srf
