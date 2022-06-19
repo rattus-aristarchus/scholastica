@@ -10,6 +10,7 @@ import kivy
 kivy.require('2.1.0') # replace with your current kivy version !
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
+from kivy.clock import mainthread
 
 from gui.tag_tree import TagNode
 from gui.keyboard_listener import KeyboardListener
@@ -38,37 +39,46 @@ class Main(App):
         tree.show(self.tag_file.tag_nest)
         return self.view        
 
-
     #Activated when the plugin has registered that a file has been saved
     def file_saved(self, path):
-        #First, we check if the file is one of those already tracked by the 
-        #application. If it is, all its content is reloaded.
-        existing = None
-        for check in self.tag_file.source_files:
-            print("checking " + check.address)
-            if check.address == path:
-                existing = check
-                break
-                
-        if not existing == None:
-            #If it is already tracked:
-            sourcefile.clean()
-            self.tag_file.source_files.remove(existing)
-            source_file = sourcefile.read(path, self.tag_file.tag_nest)
-            if len(source_file.tags) > 0:
-                self.tag_file.source_files.append(source_file)
-            #Write changes
-            tagfile.write_tag_file(self.tag_file)
-        else:
-            #If it isn't, we read the file and see if it has any tags at all. 
-            #If it doesn't, there is no point in adding it
-            source_file = sourcefile.read(path, self.tag_file.tag_nest)
-            if len(source_file.tags) > 0:
-                self.tag_file.source_files.append(source_file)
-            #Write changes
-            tagfile.write_tag_file(self.tag_file)
-        return ""
-    
+        try:
+            #First, we check if the file is one of those already tracked by the 
+            #application. If it is, all its content is reloaded.
+            existing_file = None
+            for check in self.tag_file.source_files:
+                print("checking " + check.address)
+                if check.address == path:
+                    existing_file = check
+                    break
+                    
+            if not existing_file == None:
+                #If it is already tracked:   
+                self.remove_file(existing_file)
+                new_file = sourcefile.read(path, self.tag_file.tag_nest)
+                if len(new_file.tags) > 0:
+                    self.add_file(new_file)
+            else:
+                #If it isn't, we read the file and see if it has any tags at all. 
+                #If it doesn't, there is no point in adding it
+                new_file = sourcefile.read(path, self.tag_file.tag_nest)
+                if len(new_file.tags) > 0:
+                    self.add_file(new_file)
+            return ""
+        except Exception as err:
+            print(f"Unexpected {err=}, {type(err)=}")
+
+    @mainthread
+    def remove_file(self, file):    
+        self.view.ids['tree'].remove(file)
+        sourcefile.clean(file)
+        self.tag_file.source_files.remove(file)
+        tagfile.write_tag_file(self.tag_file)
+        
+    @mainthread
+    def add_file(self, file):
+        self.view.ids['tree'].add(file)
+        self.tag_file.source_files.append(file)
+        tagfile.write_tag_file(self.tag_file)
 
 class View(BoxLayout):
     pass        

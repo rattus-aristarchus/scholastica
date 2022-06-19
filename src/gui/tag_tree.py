@@ -42,6 +42,34 @@ class TagTree(TreeView):
         #    self.add_node(tag_node)
             self._show_deep(root_tag, None, [])
 
+    def remove(self, source_file):
+        entities = source_file.sources + source_file.entries
+        for entity in entities:
+            for node in self.iterate_all_nodes():
+                if (
+                        isinstance(node, EntNode) 
+                        and node.entity.text == entity.text
+                    ):
+                    self.remove_node(node)
+
+    def add(self, source_file):
+        for source in source_file.sources:
+            for tag in source.tags:
+                parent = self._find_node(tag)
+                if not parent == None:
+                    source_node = SourceNode(source)
+                    self.add_node(source_node, parent)
+                else:
+                    print("source has a tag that is not present on the tag tree")
+        
+        for entry in source_file.entries:
+            for tag in entry.tags:
+                parent = self._find_node(tag)
+                if not parent == None:
+                    entry_node = EntryNode(entry)
+                    self.add_node(entry_node, parent)
+                else:
+                    print("entry  has a tag that is not present on the tag tree")
 
     def step_down(self):
         if self.selected_node == None:
@@ -215,6 +243,13 @@ class TagTree(TreeView):
         else:
             self.add_node(tag_node, parent_node)
             
+        #Repeat the function for all of its children
+        if len(tag.children) > 0:
+            parents.append(tag)
+            for child in tag.children:
+                self._show_deep(child, tag_node, parents)
+            parents.remove(tag)
+            
         #Display all sources with the tag
         for content in tag.content:
             if isinstance(content, Source):
@@ -227,12 +262,6 @@ class TagTree(TreeView):
                 entry_node = EntryNode(content)
                 self.add_node(entry_node, tag_node)
         
-        #Repeat the function for all of its children
-        if len(tag.children) > 0:
-            parents.append(tag)
-            for child in tag.children:
-                self._show_deep(child, tag_node, parents)
-            parents.remove(tag)
         
     #TODO this should return the value, not do it herself
     def _traverse_down(self, cur_node):
@@ -258,10 +287,19 @@ class TagTree(TreeView):
 #    def on_touch_down(self, touch):
 #        print("i've got an event!")
 
+    def _find_node(self, tag):
+ #       print(str(list(self.iterate_all_nodes())))
+        for node in list(self.iterate_all_nodes()):
+            if isinstance(node, TagNode) and node.entity.text == tag.text:
+                return node
+        return None
+
 class EntNode(GridLayout, TreeViewNode):
 
     def __init__(self, entity, **kwargs):
         super().__init__(**kwargs)
+        if entity == None:
+            print("creating node with None entity")
         self.entity = entity
         self.load_text()
             

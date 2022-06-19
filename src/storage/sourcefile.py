@@ -42,9 +42,7 @@ def clean(source_file):
 def read(address, tag_nest):
     result = SourceFile(address)
     
-    with open(address, "r") as file:
-        lines = file.readlines()
-        
+    with open(address, "r") as file:        
         #The lines before the first empty line in a file can be sources. Split
         #the file in two halves, before the first empty line and after; if 
         #the first lines are sources, read them separately; if not, add them
@@ -55,26 +53,28 @@ def read(address, tag_nest):
         entries = []
         after_break = False
         
-        for line in lines:
+        for line in file:
             if line.isspace():
                 after_break = True
+                entries.append(line)
             elif after_break:
                 entries.append(line)
             else:
                 first_chunk.append(line)
                 if parse.is_source(line):
                     has_sources = True
+        #Since reading a chunk is triggered by an empty line, the last line 
+        #always needs to be empty
+        entries.append(parse.EMPTY_LINE)
         
         if has_sources:
             result.sources = parse.read_sources(first_chunk, tag_nest.tags)
             for source in result.sources:
+                print("SOURCE CREATED: " + source.text)
                 result.tags += source.tags
         else:
             entries = first_chunk + [parse.EMPTY_LINE] + entries
 
-        #Since reading a chunk is triggered by an empty line, the last line 
-        #always needs to be empty
-        entries.append(parse.EMPTY_LINE)
 
         #Read the lines as entries
         chunk = []
@@ -84,13 +84,14 @@ def read(address, tag_nest):
                                          tag_nest.tags, 
                                          result.sources)
                 if entry != None:
-                 #   print("ENTRY CREATED: " + entry.text)
+                    print("ENTRY CREATED: " + entry.text)
                     result.entries.append(entry)
+                    for tag in entry.tags:
+                        print("HAS TAG " + tag.text)
                     result.tags += entry.tags
                 chunk = []
             else:
-                chunk.append(line)
-                
+                chunk.append(line)                
         return result
         
 
