@@ -17,6 +17,7 @@ from kivy.uix.gridlayout import GridLayout
 import data
 from data import Source
 from data import Entry
+from util import CONF
 
 
 """
@@ -31,11 +32,12 @@ class TagTree(TreeView):
         self.bind(minimum_height = self.setter("height"))        
         self.controller = None
         #the copied tagnode; this is needed for the copy-paste functionality
-        self._copied = None
-        self._cut = None
+        self._clipboard = None
+        self._cut = False
         
     
     def show(self, tag_nest):
+        self.tag_nest = tag_nest
         for root_tag in tag_nest.roots:
         #    tag_node = TagNode()
         #    tag_node.add_widget(Label(text="sup"))
@@ -141,21 +143,33 @@ class TagTree(TreeView):
     def enter(self):
         #The enter key can finish the editing of an existing node if it's in
         #progress...
-        if isinstance(self.selected_node, TagNode): 
-            if self.selected_node.editing:
-                self.selected_node.save_text()
-                self.selected_node.label_mode()
-                self.selected_node.load_text()
+        if (
+                isinstance(self.selected_node, TagNode)
+                and self.selected_node.editing
+            ):
+            self.selected_node.save_text()
+            self.selected_node.label_mode()
+            self.selected_node.load_text()
+        else:
+            #Or it can create a new tag
+            new_tag = data.Tag()
+            
+            #If no node is selected, the new node becomes a root
+            if self.selected_node == None:
+                parent_node = self.root
+                parent = None
+                self.tag_nest.roots.append(new_tag)
             else:
-                #Or it can create a new tag
-                new_tag = data.Tag()
-                data.add_child_tag(self.selected_node.entity, new_tag)
-                
-                new_node = TagNode(new_tag, self.controller)
-                self.add_node(new_node, self.selected_node)
+                parent_node = self.selected_node
+                parent = self.selected_node.entity
+                data.add_child_tag(parent, new_tag)
+                            
+            new_node = TagNode(new_tag, self.controller)
+            self.add_node(new_node, parent)
+            if not self.selected_node == None:
                 self.selected_node.is_open = True
-                self.select_node(new_node)
-                self.edit(False)
+            self.select_node(new_node)
+            self.edit(False)
                         
 
     def edit(self, from_end):
@@ -168,58 +182,126 @@ class TagTree(TreeView):
             if from_end:
                 self.selected_node.cursor_to_end()
         
+    #TODO: copy and cut should change the color of the relevant node
     
     def copy(self):
         if isinstance(self.selected_node, TagNode):
-            self._copied = self.selected_node
-            self._cut = None
+            if not self._clipboard == None:
+                self._from_clipboard(self._clipboard)
+                
+            self._to_clipboard(self.selected_node)
+            self._cut = False
     
     def cut(self):        
         if isinstance(self.selected_node, TagNode):
-            self._copied = None
-            self._cut = self.selected_node
+           if not self._clipboard == None:
+               self._from_clipboard(self._clipboard)
+               
+           self._to_clipboard(self.selected_node)
+           self._cut = True
+    
+    def _to_clipboard(self, node):
+        self._clipboard = node
+        
+        node.even_color = CONF["colors"]["clipboard_background"]
+        node.odd_color = CONF["colors"]["clipboard_background"]
+    
+    def _from_clipboard(self, node):
+        self._clipboard = None
+        
+        if isinstance(node, TagNode):
+            node.even_color = CONF["colors"]["tag_background"]
+            node.odd_color = CONF["colors"]["tag_background"]
+        
     
     #TODO this function might not belong in this class; might be a good idea 
     #to move data manipulation to the controller and call it directly from the
     #kbd listener
+    #TODO: popups with messages to the user
     def paste(self):
-        if not isinstance(self.selected_node, TagNode):
+        if (
+                not self.selected_node == None 
+                and not isinstance(self.selected_node, TagNode)
+            ):
+            return
+        if self._clipboard == None:
             return
         
-        if not self._copied == None:
-            #First, change the data structure
-            data.add_child_tag(tag=self.selected_node.entity, 
-                               child=self._copied.entity)
-            self.controller.save_file()
-        
-            #Then, the representation
-            self.copy_node(self._copied, self.selected_node)
-            self._copied = None    
-        elif not self._cut == None:
-            old_parent = self._cut.parent_node
-            new_parent = self.selected_node
+        #If the node is copied and no tag is selected, nothing happens; if the
+        #node is cut and no tag is selected, the node becomes a new root
+        if self._cut:
+            cut_tag = self._clipboard.entity
             
-            #First, change the data structure
-            data.add_child_tag(tag=new_parent.entity, 
-                               child=self._cut.entity)
-            data.remove_child_tag(tag=old_parent.entity, 
-                                  child=self._cut.entity)
+            #First, changes to the data structure
+            #Remove the tag from its parent node
+            if self._clipboard.parent_node == self.root:
+                if cut_tag in self.tag_nest.roots:
+                    self.tag_nest.roots.remove(cut_tag)
+                else:
+                    print(f"PASTE TAG: the tree node of tag {cut_tag.text} " + \
+                          "is a root but the tag itself isn't")
+            else:
+                data.remove_child_tag(tag=self._clipboard.parent_node.entity, 
+                                      child=cut_tag)
+            #Add the tag to the new node
+            if self.selected_node == None:
+                self.tag_nest.roots.append(cut_tag)
+            else:
+                data.add_child_tag(tag=self.selected_node.entity, 
+                                   child=cut_tag)
+                            
+            self.controller.save_file()
+            
+            #Then, changes to the representation
+            self.move_node(self._clipboard, self.selected_node)
+            if not self.selected_node == None:
+                self.selected_node.is_open = True
+            self.select_node(self._clipboard)
+            self._from_clipboard(self._clipboard)
+        elif not self._clipboard and not self.selected_node == None:
+            #First, change the data structure            
+            tag = self.selected_node.entity
+            child=self._clipboard.entity
+            data.add_child_tag(tag, child)
+            if child in self.tag_nest.roots:
+                self.tag_nest.roots.remove(child)
             self.controller.save_file()
         
             #Then, the representation
-            self.move_node(self._cut, self.selected_node)
-            self._cut = None
-    
+            self.copy_node(self._clipboard, self.selected_node)
+            if not self.selected_node == None:
+                self.selected_node.is_open = True
+            self.select_node(self._clipboard)
+            self._from_clipboard(self._clipboard)
     
     def move_node(self, node, destination):
         self.remove_node(node)
-        self.add_node(node, destination)
+        self._add_tag_node(node, destination)
         
     def copy_node(self, node, destination):
         new_node = node.copy()
         self.add_node(new_node, destination)
         for child in node.nodes:
             self.copy_node(child, new_node)
+    
+    """
+    Inserts a tag node before all content nodes at the destination
+    """
+    def _add_tag_node(self, tag_node, destination):
+        after_tag_node = []
+        if destination == None:
+            destination = self.root
+        for node in destination.nodes:
+            if not isinstance(node, TagNode):
+                after_tag_node.append(node)
+                
+        for node in after_tag_node:
+            self.remove_node(node)
+            
+        self.add_node(tag_node, destination)
+        
+        for node in after_tag_node:
+            self.add_node(node, destination)
         
     def _select_and_scroll(self, node):
         self.select_node(node)

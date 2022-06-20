@@ -13,6 +13,7 @@ import data
 import gui.main as gui
 
 address = "/media/kryis/TOSHIBA EXT/записи/организатор записей/тестовый файл.txt"
+address_1 = "/media/kryis/TOSHIBA EXT/записи/погреб/описание мира/планета и ее биосфера/планетология.sca"
 file = tagfile.read_tag_file(address)
 app = gui.Main(file)
 app.listen()
