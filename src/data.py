@@ -87,31 +87,35 @@ class TagNest:
         return None    
 
 
-def add_tag_to_source(source, tag):
+def add_tag_to_source(tag, source):
     if not tag in source.tags:
         source.tags.append(tag)
     if not source in tag.content:
         tag.content.append(source)
 
-def add_tag_to_entry(entry, tag):
+def add_tag_to_entry(tag, entry):
     if not tag in entry.tags:
         entry.tags.append(tag)
     if not entry in tag.content:
         tag.content.append(entry)
 
-def remove_tag_from_content(content, tag):
+#TODO: this is not used anywhere, that can't be right
+def remove_tag_from_content(tag, content):
     if tag in content.tags:
         content.tags.remove(tag)
     if content in tag.content:
         tag.content.remove(content)
 
-def add_child_tag(tag, child):
+def add_child_tag(child, tag, index=-1):
     if not child in tag.children:
-        tag.children.append(child)
+        if index == -1:
+            tag.children.append(child)
+        else:
+            tag.children.insert(index, child)
     if not tag in child.parents:
         child.parents.append(tag)
         
-def remove_child_tag(tag, child):
+def remove_child_tag(child, tag):
     if tag in child.parents:
         child.parents.remove(tag)
     if child in tag.children:

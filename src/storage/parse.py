@@ -59,7 +59,7 @@ def read_entry(chunk, all_tags, sources):
         result.source = source[0]
         result.page = source[1]
     for tag in tags:
-        data.add_tag_to_entry(result, tag)
+        data.add_tag_to_entry(tag, result)
 
     return result
 
@@ -117,7 +117,7 @@ def read_sources(chunk, all_tags):
         if is_enclosed(line):
             tags = get_tags(line, all_tags)
             for tag in tags:
-                data.add_tag_to_source(result[-1], tag)
+                data.add_tag_to_source(tag, result[-1])
         else:
             source = data.Source(clean_line(line))
             result.append(source)

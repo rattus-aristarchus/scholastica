@@ -69,7 +69,7 @@ def read_tag_file(address):
                 tag = data.Tag(string)
                 result.tag_nest.tags.append(tag)                    
             if not parent is None:
-                data.add_child_tag(parent, tag)
+                data.add_child_tag(tag, parent)
             if indent == 0:
                 result.tag_nest.roots.append(tag)
             tag_stack[indent] = tag

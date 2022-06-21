@@ -104,7 +104,10 @@ class NodeController:
             for source_file in self.tag_file.source_files:
                 sourcefile.edit_tag(old_name, new_name, source_file)
     
+    #TODO: deleting a node should remove the link between tag and parent, and
+    #only delete the tag if it was the last parent
     def delete_tag_and_node(self, tag_node):
+        tag_nest = self.tag_file.tag_nest
         #If a  child tag has multiple parents, it will still be present on the
         #tree. If it has only one, then after deletion of the parent the child
         #is made a new root  
@@ -118,9 +121,11 @@ class NodeController:
         
         #Tags from those nodes should be added as new roots
         for new_root in new_roots:
-            self.tag_file.tag_nest.roots.append(new_root.entity)
+            tag_nest.roots.append(new_root.entity)
         #Remove all references to the deleted tag
         tag_node.entity.clear_refs()
+        if tag_node in tag_nest.roots:
+            tag_nest.roots.remove(tag_node)
         self.save_file()
         
         #Then, change the representation

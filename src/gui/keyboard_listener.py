@@ -65,6 +65,11 @@ class KeyboardListener(Widget):
             tree.edit(False)
         elif key == 'backspace':
             tree.edit(True)
+        elif key == 'tab':
+            if ctrl:
+                tree.ctrl_tab()
+            else:
+                tree.tab()
         elif key == 'c' and ctrl:
             tree.copy()
         elif key == 'x' and ctrl:
