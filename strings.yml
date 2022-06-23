@@ -1,0 +1,7 @@
+popup:
+    0: 
+        ru: "Метку можно добавить только к другой метке; чтобы добавить метку к записи или источнику, отредактируйте .txt файл записи или источника."
+        en: "A tag can only be added to another tag; to add a tag to a source or entry, edit their .txt file"
+    1:
+        ru: "ОК"
+        en: "OK"

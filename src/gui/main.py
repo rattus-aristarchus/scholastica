@@ -9,6 +9,7 @@ Created on Sat Jun  4 19:36:01 2022
 import kivy
 kivy.require('2.1.0') # replace with your current kivy version !
 from kivy.app import App
+from kivy.uix.popup import Popup
 from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import mainthread
 
@@ -17,6 +18,7 @@ from gui.keyboard_listener import KeyboardListener
 import storage.tagfile as tagfile
 import storage.sourcefile as sourcefile
 import rpc
+import data
 
 class Main(App):
 
@@ -81,8 +83,15 @@ class Main(App):
         tagfile.write_tag_file(self.tag_file)
 
 class View(BoxLayout):
-    pass        
+    pass   
 
+class BasePopup(Popup):
+    
+    def enter(self):
+        self.dismiss()
+    
+    def escape(self):
+        self.dismiss()
 
 class NodeController:
     
@@ -104,15 +113,29 @@ class NodeController:
             for source_file in self.tag_file.source_files:
                 sourcefile.edit_tag(old_name, new_name, source_file)
     
-    #TODO: deleting a node should remove the link between tag and parent, and
-    #only delete the tag if it was the last parent
-    def delete_tag_and_node(self, tag_node):
+    """
+    Removes the node from its current place in the tree. If that was the last
+    place this tag was present in the tree, it is deleted as well.
+    """
+    def delete_node(self, tag_node):
+        if len(tag_node.entity.parents) > 1:
+            tree = self.view.ids['tree']
+            if tag_node.parent_node == tree.root:
+                print("DELETE NODE: tag of root tree node has multiple parents")
+            data.remove_child_tag(tag_node.entity, tag_node.parent_node.entity)
+            self.save_file()
+            
+            tree.remove_node(tag_node)
+        else:
+            self._delete_tag_and_node(tag_node)
+        
+    def _delete_tag_and_node(self, tag_node):
         tag_nest = self.tag_file.tag_nest
         #If a  child tag has multiple parents, it will still be present on the
         #tree. If it has only one, then after deletion of the parent the child
         #is made a new root  
         
-        #First, apply the differences to the data structure
+        #First, apply the changes to the data structure
         #Find the nodes whose tags have only one parent
         new_roots = []
         for child in tag_node.nodes:
@@ -132,15 +155,25 @@ class NodeController:
         tree = self.view.ids['tree']
         for new_root in new_roots:
             tree.move_node(new_root, tree.root)
+        
+        tree.step_down()
+        tree.remove_node(tag_node)
+        """
         #Since the node can be present in multiple places in the tree if the
         #tag has multiple parents, we have to traverse the whole tree
         for node in tree.iterate_all_nodes():
             if isinstance(node, TagNode) and node.entity == tag_node.entity:
                 tree.remove_node(node)
-    
+                """
+
     def scroll_to(self, widget):
         if self.view.ids['tree'].size[1] > self.view.ids['scroll'].size[1]:
             self.view.ids['scroll'].scroll_to(widget)
             
     def return_kbd(self):
-        self.kbd_listener.bind_keyboard()      
+        self.kbd_listener.bind_keyboard()
+        
+    def popup(self, message):
+        popup = BasePopup()
+        popup.ids["label"].text = message
+        popup.open()

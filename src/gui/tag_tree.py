@@ -18,7 +18,9 @@ import data
 from data import Source
 from data import Entry
 from util import CONF
+from util import STRINGS
 
+LANG = CONF["misc"]["language"]
 
 """
 The visual representation of a TagNest. Synchronization with the tagnest should
@@ -183,12 +185,15 @@ class TagTree(TreeView):
                 parent = None
                 self.tag_nest.roots.append(new_tag)
                 self.add_node(new_node)
-            else:
+            elif isinstance(self.selected_node, TagNode):
+                #If the node is a tagnode, the new node is appended after it
                 parent_node = self.selected_node.parent_node
                 parent = parent_node.entity
                 index = parent.children.index(self.selected_node.entity)
                 data.add_child_tag(new_tag, parent, index+1)
                 self._insert_node(new_node, parent_node, index+1)
+            else:
+                self._add_tag_node(new_node, self.selected_node.parent_node)
             
             self.select_node(new_node)
             self.edit(False)
@@ -245,8 +250,8 @@ class TagTree(TreeView):
     #TODO this function might not belong in this class; might be a good idea 
     #to move data manipulation to the controller and call it directly from the
     #kbd listener
-    #TODO: popups with messages to the user
     #TODO: the ability to change tag order
+    #TODO: what happens if you paste a node onto itself
     """
     Insert node from clipboard as a child to the currently selected node
     """
@@ -255,6 +260,7 @@ class TagTree(TreeView):
                 not self.selected_node == None 
                 and not isinstance(self.selected_node, TagNode)
             ):
+            self.controller.popup(STRINGS["popup"][0][LANG])
             return
         if self._clipboard == None:
             return
@@ -577,7 +583,7 @@ class TagNode(EntNode):
     def save_text(self):
         text = self.ids['input'].text
         if text == "" or text.isspace():
-            self.controller.delete_tag_and_node(self)
+            self.controller.delete_node(self)
         else:
             self.controller.edit_tag(self.entity, self.ids['input'].text)        
                 

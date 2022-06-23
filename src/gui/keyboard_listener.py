@@ -8,6 +8,9 @@ Created on Mon Jun 13 15:39:42 2022
 
 from kivy.uix.widget import Widget
 from kivy.core.window import Window
+from kivy.app import App
+
+import gui.main as main
 
 class KeyboardListener(Widget):
     
@@ -41,8 +44,10 @@ class KeyboardListener(Widget):
         
         # Keycode is composed of an integer + a string
         # If we hit escape, release the keyboard
-        if key == 'escape':
-            keyboard.release()
+        if key == 'escape':            
+            root = App.get_running_app().root_window.children[0]
+            if isinstance(root, main.BasePopup):
+                root.escape()
         elif key == 'up':
             if ctrl:
                 tree.step_up_over()
@@ -60,7 +65,11 @@ class KeyboardListener(Widget):
         elif key == 'right':
             tree.step_in()
         elif key == 'enter':
-            tree.enter()
+            root = App.get_running_app().root_window.children[0]
+            if isinstance(root, main.BasePopup):
+                root.enter()
+            else:
+                tree.enter()
         elif key == 'delete':
             tree.edit(False)
         elif key == 'backspace':
@@ -72,9 +81,15 @@ class KeyboardListener(Widget):
                 tree.tab()
         elif key == 'c' and ctrl:
             tree.copy()
+        elif key == 'с' and ctrl:
+            tree.copy()
         elif key == 'x' and ctrl:
             tree.cut()
+        elif key == 'ч' and ctrl:
+            tree.cut()
         elif key == 'v' and ctrl:
+            tree.paste()
+        elif key == 'м' and ctrl:
             tree.paste()
             
         # Return True to accept the key. Otherwise, it will be used by

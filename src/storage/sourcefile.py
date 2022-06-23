@@ -70,7 +70,7 @@ def read(address, tag_nest):
         if has_sources:
             result.sources = parse.read_sources(first_chunk, tag_nest.tags)
             for source in result.sources:
-                print("SOURCE CREATED: " + source.text)
+               # print("SOURCE CREATED: " + source.text)
                 result.tags += source.tags
         else:
             entries = first_chunk + [parse.EMPTY_LINE] + entries
@@ -84,10 +84,10 @@ def read(address, tag_nest):
                                          tag_nest.tags, 
                                          result.sources)
                 if entry != None:
-                    print("ENTRY CREATED: " + entry.text)
+                #    print("ENTRY CREATED: " + entry.text)
                     result.entries.append(entry)
-                    for tag in entry.tags:
-                        print("HAS TAG " + tag.text)
+                 #   for tag in entry.tags:
+                 #       print("HAS TAG " + tag.text)
                     result.tags += entry.tags
                 chunk = []
             else:
