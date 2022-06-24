@@ -22,6 +22,8 @@ from util import STRINGS
 
 LANG = CONF["misc"]["language"]
 
+#TODO: it should be possible to clear the clipboard
+
 """
 The visual representation of a TagNest. Synchronization with the tagnest should
 happen elsewhere, this just provides the basic methods for manipulating the 
