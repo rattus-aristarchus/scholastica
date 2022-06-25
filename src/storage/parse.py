@@ -135,6 +135,8 @@ def is_enclosed(line):
         return True
     return False
 
+#TODO: номер страницы может быть римскими цифрами
+
 def is_page(string):
     #The string is a page if other than digits it conatins only the following
     #strings

@@ -179,6 +179,7 @@ class TagTree(TreeView):
         else:
             #Or it can create a new tag
             new_tag = data.Tag()            
+            self.tag_nest.tags.append(new_tag)
             new_node = TagNode(new_tag, self.controller)
             
             #If no node is selected, the new node becomes a root
