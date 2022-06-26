@@ -19,6 +19,12 @@ import storage.tagfile as tagfile
 import storage.sourcefile as sourcefile
 import rpc
 import data
+import util
+
+STRINGS = util.STRINGS
+CONF = util.CONF
+LANG = CONF["misc"]["language"]
+
 
 class Main(App):
 
@@ -106,11 +112,21 @@ class View(BoxLayout):
 
 class BasePopup(Popup):
     
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.callback = None
+    
     def enter(self):
-        self.dismiss()
+        self.ok()        
     
     def escape(self):
         self.dismiss()
+        
+    def ok(self):
+        if not self.callback == None:
+            self.callback()
+        self.dismiss()
+        
 
 class NodeController:
     
@@ -126,11 +142,10 @@ class NodeController:
         old_name = tag.text
         tag.text = new_name
         self.save_file()
-        #TODO: this is probably not a good idea - the text files can be open
-        #in a text editor while we're writing into them
         if not old_name == "":
-            for source_file in self.tag_file.source_files:
-                sourcefile.edit_tag(old_name, new_name, source_file)
+            self.popup(message=STRINGS["popup"][2][LANG],
+                       callback=lambda: self._edit_tag_in_files(old_name, 
+                                                                new_name))
     
     """
     Removes the node from its current place in the tree. If that was the last
@@ -192,7 +207,18 @@ class NodeController:
     def return_kbd(self):
         self.kbd_listener.bind_keyboard()
         
-    def popup(self, message):
+    def popup(self, message, callback=None):
+        if CONF["misc"]["log_filter"] < 1:
+            print(f"MAIN: popup created with message {message}")
+        
         popup = BasePopup()
         popup.ids["label"].text = message
+        popup.callback = callback
         popup.open()
+        
+    def _edit_tag_in_files(self, old_name, new_name):
+        if CONF["misc"]["log_filter"] < 1:
+            print(f"MAIN: _edit_tag_in_files, changing {old_name} to {new_name}")
+        
+        for source_file in self.tag_file.source_files:
+            sourcefile.edit_tag(old_name, new_name, source_file)

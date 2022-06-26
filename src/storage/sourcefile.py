@@ -12,7 +12,7 @@ import collections
 import data
 import storage.storage as storage
 import storage.parse as parse
-
+from util import CONF
 
 class SourceFile:
     def __init__(self, address):
@@ -102,7 +102,8 @@ def edit_tag(old_name, new_name, source_file):
         new_file = ""
         for line in file:
             if parse.is_enclosed(line) and old_name in line:
-                print(f"replacing {old_name} in line {line} with {new_name}")
+                if CONF["misc"]["log_filter"] < 1:
+                    print(f"replacing {old_name} in line {line} with {new_name}")                
                 line = line.replace(old_name, new_name)
             new_file += line
         storage.write_safe(source_file.address, new_file)
