@@ -24,7 +24,7 @@ import util
 STRINGS = util.STRINGS
 CONF = util.CONF
 LANG = CONF["misc"]["language"]
-
+LOG = CONF["misc"]["log_filter"]
 
 class Main(App):
 
@@ -152,6 +152,9 @@ class NodeController:
     place this tag was present in the tree, it is deleted as well.
     """
     def delete_node(self, tag_node):
+        if  LOG < 1:
+            print(f"CONTROLLER: deleting node {tag_node.entity.text}")
+        
         if len(tag_node.entity.parents) > 1:
             tree = self.view.ids['tree']
             if tag_node.parent_node == tree.root:
@@ -181,8 +184,8 @@ class NodeController:
             tag_nest.roots.append(new_root.entity)
         #Remove all references to the deleted tag
         tag_node.entity.clear_refs()
-        if tag_node in tag_nest.roots:
-            tag_nest.roots.remove(tag_node)
+        if tag_node.entity in tag_nest.roots:
+            tag_nest.roots.remove(tag_node.entity)
         self.save_file()
         
         #Then, change the representation
@@ -208,8 +211,8 @@ class NodeController:
         self.kbd_listener.bind_keyboard()
         
     def popup(self, message, callback=None):
-        if CONF["misc"]["log_filter"] < 1:
-            print(f"MAIN: popup created with message {message}")
+        if LOG < 1:
+            print(f"CONTROLLER: popup created with message {message}")
         
         popup = BasePopup()
         popup.ids["label"].text = message
@@ -217,8 +220,8 @@ class NodeController:
         popup.open()
         
     def _edit_tag_in_files(self, old_name, new_name):
-        if CONF["misc"]["log_filter"] < 1:
-            print(f"MAIN: _edit_tag_in_files, changing {old_name} to {new_name}")
+        if LOG < 1:
+            print(f"CONTROLLER: _edit_tag_in_files, changing {old_name} to {new_name}")
         
         for source_file in self.tag_file.source_files:
             sourcefile.edit_tag(old_name, new_name, source_file)

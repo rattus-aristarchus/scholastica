@@ -78,7 +78,9 @@ class TagTree(TreeView):
                     print("entry  has a tag that is not present on the tag tree")
 
     #TODO: it might be a good idea to step over nodes that aren't tag nodes -
-    #if we really don't want the user to interact with them
+    #if we really don't want the user to interact with them.
+    #Either that, or implement opening the relevant .txt file when trying to 
+    #edit entries and sources
     """
     Select next node
     """
@@ -213,6 +215,9 @@ class TagTree(TreeView):
             self.selected_node.edit_text()
             if from_end:
                 self.selected_node.cursor_to_end()
+            else:
+                self.selected_node.cursor_to_start()
+            self.selected_node.select_text()
        
     """
     Copy the currently selected node to clipboard
@@ -578,7 +583,16 @@ class TagNode(EntNode):
             self.editing = True
     
     def cursor_to_end(self):
-        self.input.cursor = (len(self.input.text), 0)
+        if self.editing:
+            self.input.cursor = (len(self.input.text), 0)
+        
+    def cursor_to_start(self):
+        if self.editing:
+            self.input.cursor = (0, 0)
+        
+    def select_text(self):
+        if self.editing:
+            self.input.select_all()
         
     """
     These change the data based on user input
