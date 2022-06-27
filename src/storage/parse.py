@@ -8,7 +8,7 @@ Created on Sat Jun 11 15:35:01 2022
 Contains basic operations for parsing text
 """
 
-import data
+import data.base_types as data
 
 EMPTY_LINE = "\n"
 OPEN = "("
@@ -24,7 +24,7 @@ def clean_line(line):
 Reads the chunk as an entry. If the chunk doesn't contain an entry, returns
 None.
 """
-def read_entry(chunk, all_tags, sources):
+def read_entry(chunk, tag_nest, sources):
     if len(chunk) == 0:
         return
     
@@ -42,7 +42,7 @@ def read_entry(chunk, all_tags, sources):
     
     #Then we try to get the tags and source from them.
     for line in enclosed_lines:
-        try_tags = get_tags(line, all_tags)
+        try_tags = get_tags(line, tag_nest)
         if len(try_tags) == 0:
             source = get_source(line, sources)
         else:
@@ -59,20 +59,20 @@ def read_entry(chunk, all_tags, sources):
         result.source = source[0]
         result.page = source[1]
     for tag in tags:
-        data.add_tag_to_entry(tag, result)
+        tag_nest.add_tag_to_entry(tag, result)
 
     return result
 
 """
 Returns all the tags from the tag nest that are contained in a line
 """
-def get_tags(line, all_tags):
+def get_tags(line, tag_nest):
     line = clean_line(line)[1:-1]
     names = line.split(SPLIT)
     for i in range(len(names)):
         names[i] = names[i].strip()
     tags = []
-    for tag in all_tags:
+    for tag in tag_nest.tags:
         if tag.text in names:
             tags.append(tag)
     return tags
@@ -111,13 +111,13 @@ def get_source(line, sources):
 """
 Returns all the sources contained in a chunk, with their tags.
 """
-def read_sources(chunk, all_tags):
+def read_sources(chunk, tag_nest):
     result = []
     for line in chunk:
         if is_enclosed(line):
-            tags = get_tags(line, all_tags)
+            tags = get_tags(line, tag_nest)
             for tag in tags:
-                data.add_tag_to_source(tag, result[-1])
+                tag_nest.add_tag_to_source(tag, result[-1])
         else:
             source = data.Source(clean_line(line))
             result.append(source)

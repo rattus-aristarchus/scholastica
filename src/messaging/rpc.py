@@ -6,8 +6,11 @@ Created on Fri Jun 17 15:51:26 2022
 @author: kryis
 """
 
+import logging
 from xmlrpc.server import SimpleXMLRPCServer
 import threading
+
+logger = logging.getLogger(__name__)
 
 class Messenger(threading.Thread):
     
@@ -20,7 +23,7 @@ class Messenger(threading.Thread):
         
     def run(self):
         try:
-            print("listening...")
+            logger.info("Messenger is listening...")
             self.server.serve_forever()
         except KeyboardInterrupt:
-            print("exiting...")
+            logger.info("Messenger is exiting")

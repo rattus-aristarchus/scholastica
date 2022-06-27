@@ -9,3 +9,8 @@ popup:
     2:
         ru: "Программа изменит название метки во всех файлах, где она встречается; сохраните все открытые файлы для избежания конфликтов."
         en: "The app will now change the name of the tag in all relevant text files; please save all opened files to avoid conflicts."
+        
+data:
+    0: 
+        ru: "текст отсутствует"
+        en: "text is missing"

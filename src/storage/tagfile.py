@@ -6,19 +6,25 @@ Created on Sat May 28 22:51:01 2022
 @author: kryis
 """
 
-import os
 import collections
+import logging
 
-import data
+from util import STRINGS
+from util import CONF
+
+from data.base_types import Tag
+from data.tag_nest import TagNest
 import storage.storage as storage
 import storage.sourcefile as sourcefile
 
+logger = logging.getLogger(__name__)
 EMPTY_LINE = "\n"
+LANG = CONF["misc"]["language"]
 
 class TagFile:
     def __init__(self, address):
         self.address = address
-        self.tag_nest = data.TagNest()
+        self.tag_nest = TagNest()
         self.source_files = []
         
 
@@ -29,58 +35,64 @@ hanging off of them.
 def read_tag_file(address):
     result = TagFile(address)
     
-    with open(address, "r") as file:
-
-        indent = 0
-        tag_stack = collections.OrderedDict()
-        parent = None
-
-        #The tagfile contains first a tree of tags, and then a list of source
-        #files which use the tags
-        tags = []
-        source_paths = []
-        after_break = False
-        for line in file:
-            if line.isspace():
-                after_break = True
-            elif not after_break:
-                tags.append(line)
-            else:
-                source_paths.append(line)
-        
-        #First, build the tag structure
-        for line in tags:
-            #Based on the indent, figure out which tag the next line belongs to
-            indent = _get_indent(line)
-            _cut_stack(indent, tag_stack)            
-            if len(tag_stack) > 0:
-                parent = list(tag_stack.values())[-1]
-            else:
-                parent = None
-
-            #Now, the string herself
-            #The last symbol of the string is always a newline symbol
-            string = line[indent:-1]
-                        
-            #The string can either be a tag that already exists, or a new 
-            #one.
-            tag = result.tag_nest.get(string)
-            if tag == None:
-                tag = data.Tag(string)
-                result.tag_nest.tags.append(tag)                    
-            if not parent is None:
-                data.add_child_tag(tag, parent)
-            if indent == 0:
-                result.tag_nest.roots.append(tag)
-            tag_stack[indent] = tag
-        
-        #Now, with a full structure of tags, all the sourcefiles can be read
-        for line in source_paths:
-            if len(line) == 0 or line.isspace():
-                continue
-            file = sourcefile.read(line[:-1], result.tag_nest)
-            result.source_files.append(file)            
+    try:
+        with open(address, "r") as file:
+    
+            indent = 0
+            tag_stack = collections.OrderedDict()
+            parent = None
+    
+            #The tagfile contains first a tree of tags, and then a list of source
+            #files which use the tags
+            tags = []
+            source_paths = []
+            after_break = False
+            for line in file:
+                if line == CONF["text"]["separator"] + "\n":
+                    after_break = True
+                elif not after_break:
+                    tags.append(line)
+                else:
+                    source_paths.append(line)
             
+            #First, build the tag structure
+            for line in tags:
+                #Based on the indent, figure out which tag the next line belongs to
+                indent = _get_indent(line)
+                _cut_stack(indent, tag_stack)            
+                if len(tag_stack) > 0:
+                    parent = list(tag_stack.values())[-1]
+                else:
+                    parent = None
+    
+                #Now, the string herself
+                #The last symbol of the string is always a newline symbol
+                string = line[indent:-1]
+                #If somehow the line is empty, it is ignored
+                if len(string) == 0 or string.isspace():
+                    continue
+                            
+                #The string can either be a tag that already exists, or a new 
+                #one.
+                tag = result.tag_nest.get(string)
+                if tag == None:
+                    tag = Tag(string)
+                    result.tag_nest.tags.append(tag)                    
+                if not parent is None:
+                    result.tag_nest.add_child_tag(tag, parent)
+                if indent == 0:
+                    result.tag_nest.roots.append(tag)
+                tag_stack[indent] = tag
+            
+            #Now, with a full structure of tags, all the sourcefiles can be read
+            for line in source_paths:
+                if len(line) == 0 or line.isspace():
+                    continue
+                file = sourcefile.read(line[:-1], result.tag_nest)
+                result.source_files.append(file)            
+    except FileNotFoundError as e:
+        logger.error(e.strerror + ": " + e.filename)
+                    
     return result
 
 """
@@ -103,6 +115,7 @@ def write_tag_file(tag_file):
 
     #Add the sources
     output += EMPTY_LINE
+    output += CONF["text"]["separator"] + "\n"
     for source_file in tag_file.source_files:
         output += source_file.address + "\n"
     
@@ -158,6 +171,9 @@ def _tag_to_string(tag, indent):
     result = ""
     for i in range(indent):
         result += " "
+  #  if not tag.text == "":
     result += tag.text
+  #  else:
+ #       result += STRINGS["data"][0][LANG]
     result += "\n"
     return result

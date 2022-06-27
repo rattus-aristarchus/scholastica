@@ -6,12 +6,12 @@ Created on Mon May 23 19:08:19 2022
 @author: kryis
 """
 
-
+import logging
+from util import CONF
 import storage.tagfile as tagfile
-import storage.sourcefile as sourcefile
-import data
 import gui.main as gui
 
+logging.basicConfig(level=logging.INFO)
 address = "/media/kryis/TOSHIBA EXT/записи/организатор записей/тестовый файл.txt"
 address_1 = "/media/kryis/TOSHIBA EXT/записи/погреб/описание мира/планета и ее биосфера/планетология.sca"
 file = tagfile.read_tag_file(address)

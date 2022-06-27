@@ -9,9 +9,7 @@ Operations for handling files
 """
 
 import os
-import collections
 
-import data
 
 TMP = ".tmp"
 BAK = ".bak"

@@ -5,19 +5,25 @@ Created on Mon Jun 13 15:39:42 2022
 
 @author: kryis
 """
-
+import logging
 from kivy.uix.widget import Widget
 from kivy.core.window import Window
 from kivy.app import App
 
 import gui.main as main
+from gui.widgets import BasePopup
 
+logger = logging.getLogger(__name__)
+
+#TODO: all the function names have changed
+#TODO: some key combination should delete nodes recursively
 class KeyboardListener(Widget):
     
-    def __init__(self, tree, **kwargs):
+    def __init__(self, tree, controller, **kwargs):
         super().__init__(**kwargs)
         self.bind_keyboard()
         self.tree = tree
+        self.controller = controller
         
     def bind_keyboard(self):
         self._keyboard = Window.request_keyboard(
@@ -26,7 +32,6 @@ class KeyboardListener(Widget):
   
     
     def _keyboard_closed(self):
-      #  print('My keyboard has been closed!')
         self._keyboard.unbind(on_key_down=self._on_keyboard_down)
         self._keyboard = None
     
@@ -34,11 +39,10 @@ class KeyboardListener(Widget):
     This is called when a key is pressed.
     """
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
-   #     print('The key', keycode, 'have been pressed')
-   #     print(' - text is %r' % text)
-   #     print(' - modifiers are %r' % modifiers)
+        logger.debug('The key', keycode, 'have been pressed')
+        logger.debug(' - text is %r' % text)
+        logger.debug(' - modifiers are %r' % modifiers)
         
-        tree = self.tree
         key = keycode[1]
         ctrl = len(modifiers) > 0 and modifiers[0] == 'ctrl'
         
@@ -46,51 +50,51 @@ class KeyboardListener(Widget):
         # If we hit escape, release the keyboard
         if key == 'escape':            
             root = App.get_running_app().root_window.children[0]
-            if isinstance(root, main.BasePopup):
+            if isinstance(root, BasePopup):
                 root.escape()
         elif key == 'up':
             if ctrl:
-                tree.step_up_over()
+                self.tree.step_up_over()
             else:
-                tree.step_up()                
+                self.tree.step_up()                
         elif key == 'down':
             if ctrl:
-                tree.step_down_over()
+                self.tree.step_down_over()
             else:
-                tree.step_down()
+                self.tree.step_down()
         elif key == 'down':
-            tree.step_down()
+            self.tree.step_down()
         elif key == 'left':
-            tree.step_out()
+            self.tree.step_out()
         elif key == 'right':
-            tree.step_in()
+            self.tree.step_in()
         elif key == 'enter':
             root = App.get_running_app().root_window.children[0]
-            if isinstance(root, main.BasePopup):
+            if isinstance(root, BasePopup):
                 root.enter()
             else:
-                tree.enter()
+                self.controller.create_tag_at_selection()
         elif key == 'delete':
-            tree.edit(False)
+            self.tree.edit(False)
         elif key == 'backspace':
-            tree.edit(True)
+            self.tree.edit(True)
         elif key == 'tab':
             if ctrl:
-                tree.ctrl_tab()
+                self.controller.raise_selected_node()
             else:
-                tree.tab()
+                self.controller.lower_selected_node()
         elif key == 'c' and ctrl:
-            tree.copy()
+            self.controller.copy()
         elif key == 'с' and ctrl:
-            tree.copy()
+            self.controller.copy()
         elif key == 'x' and ctrl:
-            tree.cut()
+            self.controller.cut()
         elif key == 'ч' and ctrl:
-            tree.cut()
+            self.controller.cut()
         elif key == 'v' and ctrl:
-            tree.paste()
+            self.controller.paste()
         elif key == 'м' and ctrl:
-            tree.paste()
+            self.controller.paste()
             
         # Return True to accept the key. Otherwise, it will be used by
         # the system.
