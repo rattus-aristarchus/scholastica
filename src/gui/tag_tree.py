@@ -371,8 +371,16 @@ class SourceNode(EntNode):
 
     
 class EntryNode(EntNode):
-    pass    
-
+    
+    def __init__(self, entry, **kwargs):
+        super().__init__(entry, **kwargs)
+        if not entry.source == None:
+            reference = entry.source.text
+            if len(entry.page) > 0 :
+                reference += ", " + entry.page
+            self.ids['reference'].text = reference
+        else:
+            self.remove_widget(self.ids['reference'])
 
 class TagNode(EntNode):
 

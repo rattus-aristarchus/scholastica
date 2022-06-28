@@ -7,7 +7,6 @@ Created on Mon May 23 19:08:19 2022
 """
 
 import logging
-from util import CONF
 import storage.tagfile as tagfile
 import gui.main as gui
 
@@ -16,5 +15,4 @@ address = "/media/kryis/TOSHIBA EXT/записи/организатор запи
 address_1 = "/media/kryis/TOSHIBA EXT/записи/погреб/описание мира/планета и ее биосфера/планетология.sca"
 file = tagfile.read_tag_file(address)
 app = gui.Main(file)
-app.listen()
 app.run()

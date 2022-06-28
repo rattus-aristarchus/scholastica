@@ -26,8 +26,7 @@
             hide_root: True
             
 <EntNode>:
-    cols: 2
-    rows: 1
+    cols: 1
     height: self.minimum_height
     orientation: 'lr-tb'
     color_selected: CONF["colors"]["selected_node"]    
@@ -41,7 +40,18 @@
         size: self.texture_size
         padding: (2, 2)
 
+<EntryNode>
+    rows: 2
+    
+    Label:
+        id: reference
+        font_size: 15
+        size_hint: None, None
+        size: self.texture_size
+        padding: (2, 2)
+
 <TagNode>:    
+    cols: 2
     even_color: CONF["colors"]["tag_background"]
     odd_color: CONF["colors"]["tag_background"]    
     

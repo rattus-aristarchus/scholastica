@@ -16,7 +16,9 @@ class TagNest:
         self.tags = []
         self.roots = []
     
-
+    """
+    Finds a tag with the specified name.
+    """
     def get(self, name):
         for tag in self.tags:
             if tag.text == name:
@@ -35,7 +37,6 @@ class TagNest:
         if not entry in tag.content:
             tag.content.append(entry)
     
-    #TODO: this is not used anywhere, that can't be right
     def remove_tag_from_content(self, tag, content):
         if tag in content.tags:
             content.tags.remove(tag)
@@ -100,8 +101,22 @@ class TagNest:
         self.roots += new_roots
         
         #Remove all references to the deleted tag
-        tag.clear_refs()
-        if tag in self.roots:
-            self.roots.remove(tag)
+        self.clear_refs(tag)
 
         return new_roots
+    
+    def clear_refs(self, entity):
+        if isinstance(entity, Entry) or isinstance(entity, Source):
+            for tag in entity.tags:
+                if entity in tag.content:
+                    tag.content.remove(entity)
+                    
+        elif isinstance(entity, Tag):            
+            for content in entity.content:
+                content.tags.remove(entity)
+            for tag in entity.parents:
+                tag.children.remove(entity)
+            for tag in entity.children:
+                tag.parents.remove(entity)
+            if entity in self.roots:
+                self.roots.remove(entity)

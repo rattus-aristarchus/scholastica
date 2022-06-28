@@ -29,12 +29,12 @@ def synch(source_file, tag_nest):
     read(source_file, tag_nest)
 
 
-def clean(source_file):
+def clean(source_file, tag_nest):
     for source in source_file.sources:
-        source.clear_refs()
+        tag_nest.clear_refs(source)
     source_file.sources.clear()
     for entry in source_file.entries:
-        entry.clear_refs()
+        tag_nest.clear_refs(entry)
     source_file.entries.clear()
 
 #Read the file at the address and create a sourcefile object, while also 

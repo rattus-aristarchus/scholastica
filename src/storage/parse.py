@@ -87,8 +87,8 @@ def get_source(line, sources):
         words[i] = words[i].strip()
         
     #Check if the last word is a page number
-    page = 0
-    if words[-1].isdigit():
+    page = ""
+    if is_page(words[-1]):
         page = words.pop()
     
     #If the reference in parentheses is to some source that already exists in
@@ -105,7 +105,7 @@ def get_source(line, sources):
     
     #If we've not been able to find the source among existing ones, we create
     #a new one
-    source = data.Source("".join(words))
+    source = data.Source(SPLIT.join(words))
     return (source, page)
 
 """
@@ -135,20 +135,19 @@ def is_enclosed(line):
         return True
     return False
 
-#TODO: номер страницы может быть римскими цифрами
-
 def is_page(string):
     #The string is a page if other than digits it conatins only the following
     #strings
-    acceptable = [" ", "-", "pp.", "pp", "p.", "p", "стр.", "стр", "с.", "с"]
+    acceptable = [" ", "-", "pp.", "pp", "p.", "p", "стр.", "стр", "с.", "с", 
+                  "i", "v", "x", "c"]
     #We take out the digits and look at the strings that remain
     words = []
     word = ""
     for c in string:
-        if c.isdigit():
+        if c.isdigit() and len(word) > 0:
             words.append(word)
             word = ""
-        else:
+        elif not c.isdigit():
             word += c
     if len(word) > 0:
         words.append(word)
