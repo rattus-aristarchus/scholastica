@@ -349,7 +349,18 @@ class TagTree(TreeView):
         self.add_node(node, parent)
         for next_node in after_node:
             self.add_node(next_node, parent)
-         
+    
+    #TODO: this does not remove all instances for some reason
+    def remove_all_instances(self, node):
+        if node == self.root:
+            return
+        logger.info(f"removing instances of node " + node.entity.text)
+        
+        for check in self.iterate_all_nodes():
+            logger.debug(f"checking node {check.entity.text}")
+            if isinstance(check, type(node)) and check.entity == node.entity:
+                logger.debug(f"check passed. removing node.")
+                self.remove_node(check)
 
 class EntNode(GridLayout, TreeViewNode):
 
@@ -375,9 +386,10 @@ class EntryNode(EntNode):
     def __init__(self, entry, **kwargs):
         super().__init__(entry, **kwargs)
         if not entry.source == None:
-            reference = entry.source.text
+            reference = "(" + entry.source.text
             if len(entry.page) > 0 :
                 reference += ", " + entry.page
+            reference += ")"
             self.ids['reference'].text = reference
         else:
             self.remove_widget(self.ids['reference'])

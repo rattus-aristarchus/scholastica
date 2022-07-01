@@ -131,9 +131,20 @@ Checks whether the line has opening and closing parentheses.
 """
 def is_enclosed(line):
     to_check = clean_line(line)
-    if len(to_check) > 0 and to_check[0] == OPEN and to_check[-1] == CLOSE:
-        return True
-    return False
+    if len(to_check) == 0:
+        return False
+    elif to_check[0] == OPEN:
+        if to_check[-1] == CLOSE:
+            return True
+        if to_check[-1] == "." and to_check[-2] == CLOSE:
+            return True
+    elif to_check[0] == "[":
+        if to_check[-1] == "]":
+            return True
+        if to_check[-1] == "." and to_check[-2] == "]":
+            return True
+    else:
+        return False
 
 def is_page(string):
     #The string is a page if other than digits it conatins only the following

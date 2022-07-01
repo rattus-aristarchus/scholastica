@@ -9,7 +9,6 @@ Created on Sat May 28 22:51:01 2022
 import collections
 import logging
 
-from util import STRINGS
 from util import CONF
 
 from data.base_types import Tag
@@ -152,10 +151,6 @@ def _tag_to_string_deep(tag, indent, written_tags, tag_file):
     #written down elsewhere in the file    
     if not tag in written_tags:
         written_tags.append(tag)
-#        for address in tag_file.content_by_tag[tag]:
-#            for i in range(indent + 4):
-#                result += " "
-#            result += address + "\n"            
         for child in tag.children:
             result += _tag_to_string_deep(child, 
                                           indent + 4, 
@@ -171,9 +166,5 @@ def _tag_to_string(tag, indent):
     result = ""
     for i in range(indent):
         result += " "
-  #  if not tag.text == "":
-    result += tag.text
-  #  else:
- #       result += STRINGS["data"][0][LANG]
-    result += "\n"
+    result += tag.text + "\n"
     return result

@@ -19,8 +19,6 @@ POLLED_FILE = ".scholastica_source"
 SEPARATOR = ":"
 MSG_SAVE = "FILE SAVED"
 
-
-
 class Messenger(threading.Thread):
     
     def __init__(self, msg_save, root):

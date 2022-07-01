@@ -8,8 +8,31 @@ popup:
         
     2:
         ru: "Программа изменит название метки во всех файлах, где она встречается; сохраните все открытые файлы для избежания конфликтов."
-        en: "The app will now change the name of the tag in all relevant text files; please save all opened files to avoid conflicts."
-        
+        en: "The app will now change the name of the tag in all relevant text files; please save all opened files to avoid conflicts." 
+    3:
+        ru: "Добавить метку к самой себе невозможно."
+        en: "Can't paste tag onto itself."
+    4:
+        ru: "Клавишей tab опустить эту метку ещё ниже невозможно."
+        en: "That's as low as you can push this tag with the tab button"
+    5:
+        ru: "Клавишами ctrl+tab поднять эту метку ещё выше невозможно."
+        en: "That's as high as you can push this tag with the ctrl+tab buttons."
+    6:
+        ru: "Копировать можно только метки."
+        en: "Can only copy tags."
+    7:
+        ru: "Вырезать можно только метки."
+        en: "Can only cut tags."
+    8:
+        ru: "Изменение уровня работает только для меток."
+        en: "Can only change the level of tags."
+    9:
+        ru: "Удалить эту метку и все её дочерние метки?"
+        en: "Delete this tag and all its child tags?"
+    10:
+        ru: "В главном окне можно удалять только метки. Источники и записи можно удалять в файлах .txt."
+        en: "Only tags can be deleted in the main window. Sources and entries have to be deleted in .txt files."
 data:
     0: 
         ru: "текст отсутствует"

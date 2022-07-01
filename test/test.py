@@ -46,6 +46,7 @@ def check_page():
     assert srf._is_page(s3)
     print("check_page - done")
     
+print('begin')
 check_tag_parser()
 check_source()
 check_page()

@@ -15,7 +15,6 @@ from gui.widgets import BasePopup
 
 logger = logging.getLogger(__name__)
 
-#TODO: all the function names have changed
 #TODO: some key combination should delete nodes recursively
 class KeyboardListener(Widget):
     
@@ -45,6 +44,8 @@ class KeyboardListener(Widget):
         
         key = keycode[1]
         ctrl = len(modifiers) > 0 and modifiers[0] == 'ctrl'
+        shift = len(modifiers) > 0 and modifiers[0] == 'shift'
+        alt = len(modifiers) > 0 and modifiers[0] == 'alt'
         
         # Keycode is composed of an integer + a string
         # If we hit escape, release the keyboard
@@ -75,13 +76,16 @@ class KeyboardListener(Widget):
             else:
                 self.controller.create_tag_at_selection()
         elif key == 'delete':
-            self.tree.edit(False)
+            if shift:
+                self.controller.delete_recursively_message()
+            else:
+                self.tree.edit(False)
         elif key == 'backspace':
             self.tree.edit(True)
         elif key == 'tab':
-            if ctrl:
+            if ctrl and not alt:
                 self.controller.raise_selected_node()
-            else:
+            elif not alt:
                 self.controller.lower_selected_node()
         elif key == 'c' and ctrl:
             self.controller.copy()

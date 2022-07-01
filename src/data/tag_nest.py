@@ -104,9 +104,18 @@ class TagNest:
         self.clear_refs(tag)
 
         return new_roots
+
+    """
+    Delete the tag and all its children that have only one parent, recursively.
+    """
+    def delete_tag_recursively(self, tag):
+        for child in tag.children:
+            if len(child.parents) == 1:
+                self.delete_tag_recursively(child)
+        self.clear_refs(tag)
     
     def clear_refs(self, entity):
-        if isinstance(entity, Entry) or isinstance(entity, Source):
+        if isinstance(entity, (Entry, Source)):
             for tag in entity.tags:
                 if entity in tag.content:
                     tag.content.remove(entity)

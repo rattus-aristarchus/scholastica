@@ -12,6 +12,8 @@ from kivy.uix.boxlayout import BoxLayout
 class View(BoxLayout):
     pass   
 
+#TODO: cancel button
+
 class BasePopup(Popup):    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

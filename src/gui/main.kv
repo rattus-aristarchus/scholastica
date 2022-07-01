@@ -36,8 +36,10 @@
     Label:
         id: label
         font_size: 15
-        size_hint: None, None
-        size: self.texture_size
+        size_hint_y: None
+        text_size: self.width, None
+        width: 500
+        height: self.texture_size[1]
         padding: (2, 2)
 
 <EntryNode>

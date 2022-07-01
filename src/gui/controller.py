@@ -12,7 +12,6 @@ from gui.tag_tree import TagNode
 
 import storage.tagfile as tagfile
 import storage.sourcefile as sourcefile
-from data.tag_nest import TagNest
 from util import CONF
 from util import STRINGS
 
@@ -30,7 +29,7 @@ class Controller:
  
         #the copied tagnode; this is needed for the copy-paste functionality
         self.clipboard = None
-        self.cut = False
+        self._cut = False
     
     def scroll_to(self, widget):
         if self.tree.size[1] > self.view.ids['scroll'].size[1]:
@@ -76,7 +75,7 @@ class Controller:
             return
         
         #Change data
-        if selected_node == None:
+        if selected_node == None or selected_node.parent_node == self.tree.root:
             parent = None
             index = -1
         else:
@@ -103,28 +102,33 @@ class Controller:
     Copy the currently selected node to clipboard
     """
     def copy(self):
-        if isinstance(self.tree.selected_node, TagNode):
-            if not self.clipboard == None:
-                self.tree.node_from_clipboard(self.clipboard)
-                
-            self.clipboard = self.tree.selected_node
-            self.tree.clipboard_color(self.tree.selected_node)
-            self.cut = False
+        if not isinstance(self.tree.selected_node, TagNode):
+            self.popup(STRINGS["popup"][6][LANG])
+            return
+        
+        if not self.clipboard == None:
+            self.tree.normal_color(self.clipboard)
+        self.clipboard = self.tree.selected_node
+        self.tree.clipboard_color(self.tree.selected_node)
+        self._cut = False
+        
     
     """
     Copy the currently selected node to clipboard with the flag "cut"
     """
     def cut(self):        
-        if isinstance(self.tree.selected_node, TagNode):
-            if not self.clipboard == None:
-                self.tree.node_from_clipboard(self.clipboard)
-               
-            self.clipboard = self.tree.selected_node
-            self.tree.clipboard_color(self.tree.selected_node)
-            self.cut = True
+        if not isinstance(self.tree.selected_node, TagNode):
+            self.popup(STRINGS["popup"][7][LANG])
+            return
+            
+        if not self.clipboard == None:
+            self.tree.normal_color(self.clipboard)
+        self.clipboard = self.tree.selected_node
+        self.tree.clipboard_color(self.tree.selected_node)
+        self._cut = True
         
     #TODO: the ability to change tag order
-    #TODO: what happens if you paste a node onto itself
+    #TODO: enter и paste добавляют метки непонятно куда, не соблюдается индекс
     """
     Insert node from clipboard as a child to the currently selected node
     """
@@ -138,9 +142,12 @@ class Controller:
             return
         if self.clipboard == None:
             return
+        if self.clipboard == selected_node:
+            self.popup(STRINGS["popup"][3][LANG])
+            return
         
         #If the node is cut and no tag is selected, the node becomes a new root
-        if self.cut:
+        if self._cut:
             #First, changes to the data structure
             destination = None if selected_node == None else selected_node.entity 
             self.tag_nest.move_tag(tag=self.clipboard.entity, 
@@ -154,7 +161,7 @@ class Controller:
             self.clipboard = None
             
         #If the node is copied and no tag is selected, nothing happens
-        elif not self.cut and not selected_node == None:
+        elif not self._cut and not selected_node == None:
             #First, change the data structure   
             self.tag_nest.add_child_tag(child=self.clipboard.entity, 
                                         parent=self.tree.selected_node.entity)
@@ -166,22 +173,27 @@ class Controller:
             self.tree.normal_color(self.clipboard)
             self.clipboard = None
         
+    #TODO: changing the tag structure should apply changes to all instances of
+    #the tag in the tree
     """
-    Lower the level of the currently selected node (make it the child of one of
-    its siblings)
+    Lower the level of the currently selected node (make it the child of the
+    sibling that went before it)
     """
     def lower_selected_node(self):
         node = self.tree.selected_node
         if (
                 node == None 
                 or node == self.tree.root
-                or not isinstance(node, TagNode)
             ):
             return
+        if not isinstance(node, TagNode):
+            self.popup(STRINGS["popup"][8][LANG])
+            return
+            
         parent = node.parent_node 
         index = parent.nodes.index(node)
         if index == 0:
-            #TODO: an error message to the user
+            self.popup(STRINGS["popup"][4][LANG])
             return
         prev_node = parent.nodes[index-1]
         
@@ -202,16 +214,21 @@ class Controller:
         if (
                 node == None
                 or node == self.tree.root
-                or node.parent_node == self.tree.root
-                or not isinstance(node, TagNode)
             ):
+            return
+        if not isinstance(node, TagNode):
+            self.popup(STRINGS["popup"][8][LANG])
+            return
+        if (
+                node.parent_node == self.tree.root
+            ):
+            self.popup(STRINGS["popup"][5][LANG])
             return
         parent = node.parent_node
         grandparent = parent.parent_node 
         index = grandparent.nodes.index(parent) + 1
         if grandparent == self.tree.root:
             destination = None
-          #  index = -1
         else:
             destination = grandparent.entity
         
@@ -250,4 +267,27 @@ class Controller:
                 self.tree.add_node(TagNode(new_root, self))
             self.tree.step_down()
             self.tree.remove_node(tag_node)
+            
+    def delete_recursively_message(self):
+        node = self.tree.selected_node
+        if (
+                node == None 
+                or node == self.tree.root
+            ):
+            return
+        if not isinstance(node, TagNode):
+            self.popup(STRINGS["popup"][10][LANG])
+            return
         
+        self.popup(message=STRINGS["popup"][9][LANG], 
+                   callback=lambda: self.delete_recursively(node))
+        
+    #TODO: should it be able to delete the tags in txt files as well? not sure
+    #TODO: deleting a node does not delete other instances of that node
+    def delete_recursively(self, node):   
+        logger.info(f"deleting node {node.entity.text}")
+        
+        self.tag_nest.delete_tag_recursively(node.entity)
+        self.save_file()
+        
+        self.tree.remove_node(node)
