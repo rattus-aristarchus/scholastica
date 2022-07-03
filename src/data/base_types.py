@@ -50,8 +50,7 @@ class Source:
         self.tags = []  
     
     def __eq__(self, o):
-        return isinstance(o, Source) and self.text == o
+        return isinstance(o, Source) and self.text == o.text
     
     def __hash__(self):
         return hash(self.text)
-        

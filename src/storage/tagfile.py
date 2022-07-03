@@ -7,7 +7,7 @@ Created on Sat May 28 22:51:01 2022
 """
 
 import collections
-import logging
+from kivy.logger import Logger
 
 from util import CONF
 
@@ -16,16 +16,58 @@ from data.tag_nest import TagNest
 import storage.storage as storage
 import storage.sourcefile as sourcefile
 
-logger = logging.getLogger(__name__)
+#logger = logging.getLogger(__name__)
 EMPTY_LINE = "\n"
 LANG = CONF["misc"]["language"]
 
 class TagFile:
+    
     def __init__(self, address):
         self.address = address
         self.tag_nest = TagNest()
         self.source_files = []
+        self.content_by_source = {}
+
+    #TODO: should a call to write file be part of those?
+    """
+    Add a link to a new source file.
+    
+    returned value: boolean, whether the operation to add was necessary.
+    """
+    def add_file(self, source_file):
+        if self.has_file(source_file.address):
+            return False
+        elif len(source_file.tags) == 0:
+            return False
+        else:
+            self.source_files.append(source_file)
+            contents = source_file.entries + source_file.sources
+            for content in contents:
+                self.content_by_source[content] = source_file
+            return True
+                
+    def remove_file(self, source_file):
+        contents = source_file.sources + source_file.entries
+        for content in contents:
+            self.tag_nest.clear_refs(content)
+            if content in self.content_by_source:
+                self.content_by_source.pop(content)
+        source_file.sources.clear()
+        source_file.entries.clear()
+        if source_file in self.source_files:
+            self.source_files.remove(source_file)
+        else:
+            Logger.warning(f"TagFile: trying to remove source file {source_file.address} that is not present in the list")
+
+    def has_file(self, path):
+        for source_file in self.source_files:
+            if source_file.address == path:
+                return True
+        return False
+
         
+#TODO: make this a proper class. the procedural approach looks hideous when you have
+#to call the functions - tagfile.read_tag_file(tag_file)
 
 """
 Read a tag file and create a linked structure of tags with sources and entries
@@ -33,6 +75,7 @@ hanging off of them.
 """
 def read_tag_file(address):
     result = TagFile(address)
+    messages = []
     
     try:
         with open(address, "r") as file:
@@ -83,16 +126,29 @@ def read_tag_file(address):
                     result.tag_nest.roots.append(tag)
                 tag_stack[indent] = tag
             
+            
             #Now, with a full structure of tags, all the sourcefiles can be read
             for line in source_paths:
-                if len(line) == 0 or line.isspace():
+                if (
+                        len(line) == 0 
+                        or line.isspace() 
+                        or result.has_file(line[:-1])
+                    ):
                     continue
-                file = sourcefile.read(line[:-1], result.tag_nest)
-                result.source_files.append(file)            
+                
+                file, msg = sourcefile.read(line[:-1], result.tag_nest)
+                messages += msg
+                if not file == None:
+                    result.source_files.append(file)
+                    contents = file.entries + file.sources
+                    for content in contents:
+                        result.content_by_source[content] = file
     except FileNotFoundError as e:
-        logger.error(e.strerror + ": " + e.filename)
+        Logger.error(e.strerror + ": " + e.filename)
                     
-    return result
+    return result, messages
+
+
 
 """
 Write a linked structure of tags with their contents as a file.

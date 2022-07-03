@@ -6,7 +6,7 @@ Created on Sun Jun  5 16:19:01 2022
 @author: kryis
 """
 
-import logging
+from kivy.logger import Logger
 from kivy.uix.treeview import TreeView
 from kivy.uix.treeview import TreeViewNode
 from kivy.uix.gridlayout import GridLayout
@@ -16,7 +16,8 @@ from data.base_types import Entry
 from util import CONF
 from util import STRINGS
 
-logger = logging.getLogger(__name__)
+#logging.basicConfig(level=logging.DEBUG)
+#logger = logging.getLogger(__name__)
 LANG = CONF["misc"]["language"]
 
 #TODO: it should be possible to clear the clipboard
@@ -37,14 +38,20 @@ class TagTree(TreeView):
     Traverse all the roots in the nest recursively and add them to the
     tree.
     """ 
-    def show(self, tag_nest):
-        self.tag_nest = tag_nest
-        for root_tag in tag_nest.roots:
+    def show(self, tag_file):
+        Logger.info(f"TagTree: showing tag file {tag_file.address}")
+        
+        self.tag_file = tag_file
+        self.tag_nest = tag_file.tag_nest
+        for root_tag in tag_file.tag_nest.roots:
         #    tag_node = TagNode()
         #    tag_node.add_widget(Label(text="sup"))
         #    self.add_node(tag_node)
             self._show_deep(root_tag, None, [])
 
+    #TODO: change functions such as _show_deep into internal functions of their
+    #parent function. it's gonna be moe logical since they have no use outside 
+    #their parent anyway
     
     def _show_deep(self, tag, parent_node, parents):
         #To avoid cycles in our tree we stop the traversion if the tag is 
@@ -75,50 +82,58 @@ class TagTree(TreeView):
         #Display all sources with the tag
         for content in tag.content:
             if isinstance(content, Source):
-                source_node = SourceNode(content)
+                source_node = SourceNode(content, 
+                                         self.tag_file.content_by_source[content])
                 self.add_node(source_node, tag_node)
         
         #Display all entries
         for content in tag.content:
             if isinstance(content, Entry):
-                entry_node = EntryNode(content)
+                entry_node = EntryNode(content,
+                                       self.tag_file.content_by_source[content])
                 self.add_node(entry_node, tag_node)
 
     """
     Remove all nodes corresponding to entities contained in the source file.
     """
     def remove_all_from(self, source_file):
+        Logger.info(f"TagTree: removing source file {source_file.address}")
+        
         entities = source_file.sources + source_file.entries
         for entity in entities:
+            Logger.debug(f"TagTree: removing entity {entity.text[:100]}")
             for node in self.iterate_all_nodes():
                 if (
                         isinstance(node, EntNode) 
                         and node.entity.text == entity.text
                     ):
+                    Logger.debug("TagTree: found matching node, removing")
                     self.remove_node(node)
 
     """
     Add new nodes for every entity in the source file
     """
     def add_all_from(self, source_file):
+        Logger.info(f"TagTree: adding source file {source_file.address}")
+        
         for source in source_file.sources:
             for tag in source.tags:
                 parent = self._find_node(tag)
                 if not parent == None:
-                    source_node = SourceNode(source)
+                    source_node = SourceNode(source, source_file)
                     self.add_node(source_node, parent)
                 else:
-                    logger.warning(f"source {source.text} has a tag {tag.text}"
+                    Logger.warning(f"source {source.text} has a tag {tag.text}"
                                     + f" that is not present on the tag tree")
         
         for entry in source_file.entries:
             for tag in entry.tags:
                 parent = self._find_node(tag)
                 if not parent == None:
-                    entry_node = EntryNode(entry)
+                    entry_node = EntryNode(entry, source_file)
                     self.add_node(entry_node, parent)
                 else:
-                    logger.warning(f"entry {entry.text} has a tag {tag.text}" \
+                    Logger.warning(f"entry {entry.text} has a tag {tag.text}" \
                                     + f" that is not present on the tag tree")
 
 
@@ -255,8 +270,9 @@ class TagTree(TreeView):
         if not parent == None:
             parent.is_open = True
         self.select_node(node)
-        self.edit(False)
-                        
+    #    self.edit_node(False)
+ 
+    
     
     def move_node(self, node, destination, index=-1):
         self.remove_node(node)
@@ -285,21 +301,6 @@ class TagTree(TreeView):
         for child in node.nodes:
             self.copy_node(child, new_node)
         
-    """
-    Switch the currently selected node to edit mode
-    """
-    def edit(self, from_end):
-        if (
-                isinstance(self.selected_node, TagNode)\
-                and not self.selected_node.editing
-            ):
-            self.selected_node.input_mode()
-            self.selected_node.edit_text()
-            if from_end:
-                self.selected_node.cursor_to_end()
-            else:
-                self.selected_node.cursor_to_start()
-            self.selected_node.select_text()       
     
     def clipboard_color(self, node):
         node.even_color = CONF["colors"]["clipboard_background"]
@@ -330,11 +331,11 @@ class TagTree(TreeView):
     """
     def insert_node(self, node, parent, index):
         if node == self.root:
-            logger.warning(f"INSERT NODE: trying to insert root node into "\
+            Logger.warning(f"INSERT NODE: trying to insert root node into "\
                             f"node {parent.entity.text} at index {index}")
             return
         if index > len(parent.nodes):
-            logger.warning(f"INSERT NODE: index too large, inserting node "\
+            Logger.warning(f"INSERT NODE: index too large, inserting node "\
                             f"{node.entity.text} into parent "\
                             f"{parent.entity.text} at index {index} while the"\
                             f"parent only has {len(parent.nodes)} children")
@@ -354,12 +355,12 @@ class TagTree(TreeView):
     def remove_all_instances(self, node):
         if node == self.root:
             return
-        logger.info(f"removing instances of node " + node.entity.text)
+        Logger.info(f"TagTree: removing instances of node {node.entity.text}")
         
         for check in self.iterate_all_nodes():
-            logger.debug(f"checking node {check.entity.text}")
+            Logger.debug(f"TagTree: checking node {check.entity.text}")
             if isinstance(check, type(node)) and check.entity == node.entity:
-                logger.debug(f"check passed. removing node.")
+                Logger.debug(f"TagTree: check passed. removing node.")
                 self.remove_node(check)
 
 class EntNode(GridLayout, TreeViewNode):
@@ -367,7 +368,7 @@ class EntNode(GridLayout, TreeViewNode):
     def __init__(self, entity, **kwargs):
         super().__init__(**kwargs)
         if entity == None:
-            logger.warning("creating node with None entity")
+            Logger.warning("creating node with None entity")
         self.entity = entity
         self.load_text()
             
@@ -378,13 +379,17 @@ class EntNode(GridLayout, TreeViewNode):
         return EntNode(self.entity)
 
 class SourceNode(EntNode):
-    pass
 
+    def __init__(self, entity, file, **kwargs):
+        super().__init__(entity, **kwargs)
+        self.file = file
     
 class EntryNode(EntNode):
     
-    def __init__(self, entry, **kwargs):
+    def __init__(self, entry, file, **kwargs):
         super().__init__(entry, **kwargs)
+        self.file = file
+        
         if not entry.source == None:
             reference = "(" + entry.source.text
             if len(entry.page) > 0 :

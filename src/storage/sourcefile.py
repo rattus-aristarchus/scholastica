@@ -6,12 +6,15 @@ Created on Sat May 28 22:51:12 2022
 @author: kryis
 """
 
-import logging
+from kivy.logger import Logger
 
 import storage.storage as storage
 import storage.parse as parse
+from util import CONF
+from util import STRINGS
 
-logger = logging.getLogger(__name__)
+#logger = logging.getLogger(__name__)
+LANG = CONF["misc"]["language"]
 
 class SourceFile:
     def __init__(self, address):
@@ -21,25 +24,23 @@ class SourceFile:
         #Tags that are encountered in the sourcefile
         self.tags = []
         
+  #  def __eq__(self, o):
+  #      return isinstance(o, SourceFile) and self.address == o.address
+  #      
+  #  def __hash__(self):
+  #      return hash(self.address)
 
-def synch(source_file, tag_nest):
-    clean(source_file)
-    read(source_file, tag_nest)
+#def synch(source_file, tag_nest):
+ #   clean(source_file)
+ #   read(source_file, tag_nest)
 
-
-def clean(source_file, tag_nest):
-    for source in source_file.sources:
-        tag_nest.clear_refs(source)
-    source_file.sources.clear()
-    for entry in source_file.entries:
-        tag_nest.clear_refs(entry)
-    source_file.entries.clear()
 
 #Read the file at the address and create a sourcefile object, while also 
 #connecting entries and sources to specified tags if the tags are present in 
 #the tag nest
 def read(address, tag_nest):
     result = SourceFile(address)
+    messages = []
     
     try:
         with open(address, "r") as file:        
@@ -70,7 +71,7 @@ def read(address, tag_nest):
             if has_sources:
                 result.sources = parse.read_sources(first_chunk, tag_nest)
                 for source in result.sources:
-                    logger.debug(f"SOURCE CREATED: {source.text}")
+                    Logger.debug(f"Sourcefile: created source {source.text[:100]}")
                     result.tags += source.tags
             else:
                 entries = first_chunk + [parse.EMPTY_LINE] + entries
@@ -84,16 +85,21 @@ def read(address, tag_nest):
                                              tag_nest, 
                                              result.sources)
                     if entry != None:
-                        logger.debug(f"ENTRY CREATED: {entry.text}")
+                     #   Logger.debug(f"Sourcefile: created entry {entry.text[:100]}")
                         result.entries.append(entry)
                         result.tags += entry.tags
                     chunk = []
                 else:
                     chunk.append(line)   
     except FileNotFoundError as e:
-        logger.error(e.strerror + ": " + e.filename)
-                     
-    return result
+        Logger.error(e.strerror + ": " + e.filename)
+        message = STRINGS["error"][0][LANG][0] + \
+                  e.filename + \
+                  STRINGS["error"][0][LANG][1]
+        messages.append(message)
+        result = None
+        
+    return result, messages
 
 def edit_tag(old_name, new_name, source_file):
     storage.back_up(source_file.address)
@@ -102,8 +108,8 @@ def edit_tag(old_name, new_name, source_file):
         new_file = ""
         for line in file:
             if parse.is_enclosed(line) and old_name in line:
-                logger.info(f"replacing {old_name} in line {line} with " \
-                             + f" {new_name}")                
+            #    Logger.info(f"replacing {old_name} in line {line} with " \
+            #                 + f" {new_name}")                
                 line = line.replace(old_name, new_name)
             new_file += line
         storage.write_safe(source_file.address, new_file)

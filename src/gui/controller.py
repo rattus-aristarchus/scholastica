@@ -6,25 +6,26 @@ Created on Fri May 27 15:56:59 2022
 @author: kryis
 """
 
-import logging
+from kivy.logger import Logger
 from gui.widgets import BasePopup
-from gui.tag_tree import TagNode
+from gui.tag_tree import TagNode, EntryNode, SourceNode
 
 import storage.tagfile as tagfile
 import storage.sourcefile as sourcefile
 from util import CONF
 from util import STRINGS
 
-logger = logging.getLogger(__name__)
+#logger = logging.getLogger(__name__)
 LANG = CONF["misc"]["language"]
 
 class Controller:
     
-    def __init__(self, tag_file, view, return_kbd):
+    def __init__(self, tag_file, msgr, view, return_kbd):
         self.tag_file = tag_file
         self.view = view
         self.tag_nest = tag_file.tag_nest
         self.tree = view.ids["tree"]
+        self.msgr = msgr
         self.return_kbd = return_kbd
  
         #the copied tagnode; this is needed for the copy-paste functionality
@@ -39,7 +40,7 @@ class Controller:
         tagfile.write_tag_file(self.tag_file)
 
     def popup(self, message, callback=None):
-        logger.info(f"CONTROLLER: popup created with message {message}")
+        Logger.info(f"Controller: popup created with message {message}")
         
         popup = BasePopup()
         popup.ids["label"].text = message
@@ -56,11 +57,11 @@ class Controller:
     
         if not old_name == "":
             self.popup(message=STRINGS["popup"][2][LANG],
-                       callback=lambda: self._edit_tag_in_files(old_name, 
+                       callback=lambda x: self._edit_tag_in_files(old_name, 
                                                                 new_name))   
             
     def _edit_tag_in_files(self, old_name, new_name):
-        logger.info(f"CONTROLLER: _edit_tag_in_files, changing {old_name} " \
+        Logger.info(f"Controller: _edit_tag_in_files, changing {old_name} " \
                      + f"to {new_name}")
         
         for source_file in self.tag_file.source_files:
@@ -97,7 +98,27 @@ class Controller:
             parent_node = selected_node.parent_node
         new_node = TagNode(new_tag, self)
         self.tree.insert_and_select(new_node, parent_node, index)
-        
+
+    """
+    Switch the currently selected node to edit mode
+    """
+    def edit_node(self, from_end):
+        selected_node = self.tree.selected_node
+        if (
+                isinstance(selected_node, TagNode)\
+                and not selected_node.editing
+            ):
+            selected_node.input_mode()
+            selected_node.edit_text()
+            if from_end:
+                selected_node.cursor_to_end()
+            else:
+                selected_node.cursor_to_start()
+            selected_node.select_text()
+        elif isinstance(selected_node, (EntryNode, SourceNode)):
+            self.msgr.open_file(path=selected_node.file.address,
+                                item=selected_node.entity.text)
+                
     """
     Copy the currently selected node to clipboard
     """
@@ -244,13 +265,13 @@ class Controller:
     place this tag was present in the tree, it is deleted as well.
     """
     def delete_node(self, tag_node):
-        logger.info(f"CONTROLLER: deleting node {tag_node.entity.text}")
+        Logger.info(f"Controller: deleting node {tag_node.entity.text}")
         
         if len(tag_node.entity.parents) > 1:
             #If the tag still has other parents, we're just removing the link
             #to the current parent
             if tag_node.parent_node == self.tree.root:
-                logger.warning("DELETE NODE: tag of root tree node has multiple parents")
+                Logger.warning("Delete node: tag of root tree node has multiple parents")
             self.tag_nest.remove_child_tag(child=tag_node.entity, 
                                            parent=tag_node.parent_node.entity)
             self.save_file()
@@ -285,7 +306,7 @@ class Controller:
     #TODO: should it be able to delete the tags in txt files as well? not sure
     #TODO: deleting a node does not delete other instances of that node
     def delete_recursively(self, node):   
-        logger.info(f"deleting node {node.entity.text}")
+        Logger.info(f"Controller: deleting node {node.entity.text}")
         
         self.tag_nest.delete_tag_recursively(node.entity)
         self.save_file()

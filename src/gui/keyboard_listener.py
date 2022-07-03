@@ -79,9 +79,9 @@ class KeyboardListener(Widget):
             if shift:
                 self.controller.delete_recursively_message()
             else:
-                self.tree.edit(False)
+                self.controller.edit_node(False)
         elif key == 'backspace':
-            self.tree.edit(True)
+            self.controller.edit_node(True)
         elif key == 'tab':
             if ctrl and not alt:
                 self.controller.raise_selected_node()

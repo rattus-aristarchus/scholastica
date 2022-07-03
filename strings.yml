@@ -33,7 +33,12 @@ popup:
     10:
         ru: "В главном окне можно удалять только метки. Источники и записи можно удалять в файлах .txt."
         en: "Only tags can be deleted in the main window. Sources and entries have to be deleted in .txt files."
+error:
+    0:
+        ru: ["Не удалось найти файл ", ". Скорее всего, он был переименован. Откройте переименованный файл в текстовом редакторе, и его содержимое должно загрузиться."]
+        en: ["Could not find file ", ". Most likely, it has been renamed. Open the renamed file in a text editor, it's content should re-load automatically."]
 data:
     0: 
         ru: "текст отсутствует"
         en: "text is missing"
+        
