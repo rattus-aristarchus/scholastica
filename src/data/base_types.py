@@ -39,6 +39,7 @@ class Entry:
 
     def __init__(self, text):
         self.text = text
+        self.comment = ""
         self.tags = []
         self.source = None
         self.page = ""

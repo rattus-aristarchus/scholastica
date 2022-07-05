@@ -67,13 +67,20 @@ class Controller:
         for source_file in self.tag_file.source_files:
             sourcefile.edit_tag(old_name, new_name, source_file)
         
-    def create_tag_at_selection(self):
+    def enter(self):        
         selected_node = self.tree.selected_node
         if (
                 isinstance(selected_node, TagNode)
                 and selected_node.editing
             ):
             return
+        elif isinstance(selected_node, TagNode):
+            self.create_tag_at_selection()
+        elif isinstance(selected_node, (EntryNode, SourceNode)):
+            self.edit_node(False)
+            
+    def create_tag_at_selection(self):        
+        selected_node = self.tree.selected_node
         
         #Change data
         if selected_node == None or selected_node.parent_node == self.tree.root:

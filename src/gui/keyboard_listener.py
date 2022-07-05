@@ -74,7 +74,7 @@ class KeyboardListener(Widget):
             if isinstance(root, BasePopup):
                 root.enter()
             else:
-                self.controller.create_tag_at_selection()
+                self.controller.enter()
         elif key == 'delete':
             if shift:
                 self.controller.delete_recursively_message()

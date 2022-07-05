@@ -34,19 +34,30 @@ def read_entry(chunk, tag_nest, sources):
     enclosed_lines = []
     tags = []
     source = None
-    if is_enclosed(chunk[-1]):
-        enclosed_lines.append(chunk.pop(-1))
-        
-        if len(chunk) > 0 and is_enclosed(chunk[-1]):
+    comment = ""
+    
+    for line in reversed(chunk):
+        if is_enclosed(line) or is_comment(line):
             enclosed_lines.append(chunk.pop(-1))
+        else:
+            break
+    
+ #   if is_enclosed(chunk[-1]):
+ #       enclosed_lines.append(chunk.pop(-1))
+        
+  #      if len(chunk) > 0 and is_enclosed(chunk[-1]):
+  #          enclosed_lines.append(chunk.pop(-1))
     
     #Then we try to get the tags and source from them.
     for line in enclosed_lines:
-        try_tags = get_tags(line, tag_nest)
-        if len(try_tags) == 0:
-            source = get_source(line, sources)
+        if is_comment(line):
+            comment = get_comment(line)
         else:
-            tags += try_tags
+            try_tags = get_tags(line, tag_nest)
+            if len(try_tags) == 0:
+                source = get_source(line, sources)
+            else:
+                tags += try_tags
     
     body = ""
     for line in chunk:
@@ -60,6 +71,7 @@ def read_entry(chunk, tag_nest, sources):
         result.page = source[1]
     for tag in tags:
         tag_nest.add_tag_to_entry(tag, result)
+    result.comment = comment
 
     return result
 
@@ -108,6 +120,14 @@ def get_source(line, sources):
     source = data.Source(SPLIT.join(words))
     return (source, page)
 
+def get_comment(line):
+    line = clean_line(line)
+    if len(line) > 1 and line[0] == "#":
+        line = line[1:]
+    elif len(line) > 2 and line[:2] == "//":
+        line = line[2:]
+    return line
+
 """
 Returns all the sources contained in a chunk, with their tags.
 """
@@ -143,6 +163,14 @@ def is_enclosed(line):
             return True
         if to_check[-1] == "." and to_check[-2] == "]":
             return True
+    else:
+        return False
+    
+def is_comment(line):
+    to_check = clean_line(line)
+    if (len(to_check) > 1 and to_check[0] == "#") \
+        or (len(to_check) > 2 and to_check[:2] == "//"):
+        return True
     else:
         return False
 

@@ -398,6 +398,12 @@ class EntryNode(EntNode):
             self.ids['reference'].text = reference
         else:
             self.remove_widget(self.ids['reference'])
+            
+        if not entry.comment == "":
+            comment = "//" + entry.comment
+            self.ids['comment'].text = comment
+        else:
+            self.remove_widget(self.ids['comment'])
 
 class TagNode(EntNode):
 
