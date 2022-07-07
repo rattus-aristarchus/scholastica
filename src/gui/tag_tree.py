@@ -237,6 +237,12 @@ class TagTree(TreeView):
         
         if self.selected_node.is_open:
             self.toggle_node(self.selected_node)
+        elif (
+                isinstance(self.selected_node, EntryNode) 
+                and self.selected_node.full_text == True
+            ):
+            self.selected_node.full_text = False
+            self.selected_node.load_text()
         else:
             parent = self.selected_node.parent_node
             if not parent == self.root or parent == None:
@@ -255,6 +261,9 @@ class TagTree(TreeView):
             ):
             self.toggle_node(select)
             self.step_down()
+        elif isinstance(select, EntryNode) and not select.full_text:
+            select.full_text = True
+            select.load_text()
 
     """
     Add a new child node to the parent of currently selected node
@@ -363,13 +372,14 @@ class TagTree(TreeView):
                 Logger.debug(f"TagTree: check passed. removing node.")
                 self.remove_node(check)
 
+
 class EntNode(GridLayout, TreeViewNode):
 
     def __init__(self, entity, **kwargs):
         super().__init__(**kwargs)
         if entity == None:
             Logger.warning("creating node with None entity")
-        self.entity = entity
+        self.entity = entity        
         self.load_text()
             
     def load_text(self):
@@ -387,6 +397,7 @@ class SourceNode(EntNode):
 class EntryNode(EntNode):
     
     def __init__(self, entry, file, **kwargs):
+        self.full_text = False
         super().__init__(entry, **kwargs)
         self.file = file
         
@@ -404,6 +415,15 @@ class EntryNode(EntNode):
             self.ids['comment'].text = comment
         else:
             self.remove_widget(self.ids['comment'])
+
+    def load_text(self):
+        if self.full_text:
+            self.ids['label'].text = self.entity.text
+        elif len(self.entity.text) < CONF["text"]["snippet_length"]:    
+            self.ids['label'].text = self.entity.text
+        else:
+            self.ids['label'].text = \
+                self.entity.text[:CONF["text"]["snippet_length"]] + " ..."
 
 class TagNode(EntNode):
 

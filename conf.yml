@@ -4,6 +4,7 @@ misc:
     
 text:
     separator: "====="
+    snippet_length: 100
 
 colors:
     background: [0.03, 0.03, 0.14, 1]
