@@ -57,7 +57,7 @@ class Controller:
     
         if not old_name == "":
             self.popup(message=STRINGS["popup"][2][LANG],
-                       callback=lambda x: self._edit_tag_in_files(old_name, 
+                       callback=lambda: self._edit_tag_in_files(old_name, 
                                                                 new_name))   
             
     def _edit_tag_in_files(self, old_name, new_name):

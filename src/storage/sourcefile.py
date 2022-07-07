@@ -17,8 +17,10 @@ from util import STRINGS
 LANG = CONF["misc"]["language"]
 
 class SourceFile:
-    def __init__(self, address):
+    def __init__(self, address, backup_location):
         self.address = address
+        self.backup_location = backup_location
+        
         self.sources = []
         self.entries = []
         #Tags that are encountered in the sourcefile
@@ -38,8 +40,8 @@ class SourceFile:
 #Read the file at the address and create a sourcefile object, while also 
 #connecting entries and sources to specified tags if the tags are present in 
 #the tag nest
-def read(address, tag_nest):
-    result = SourceFile(address)
+def read(address, tag_file):
+    result = SourceFile(address, tag_file.backup_location)
     messages = []
     
     try:
@@ -69,7 +71,8 @@ def read(address, tag_nest):
             entries.append(parse.EMPTY_LINE)
             
             if has_sources:
-                result.sources = parse.read_sources(first_chunk, tag_nest)
+                result.sources = parse.read_sources(first_chunk, 
+                                                    tag_file.tag_nest)
                 for source in result.sources:
                     Logger.debug(f"Sourcefile: created source {source.text[:100]}")
                     result.tags += source.tags
@@ -82,7 +85,7 @@ def read(address, tag_nest):
             for line in entries:
                 if line.isspace():
                     entry = parse.read_entry(chunk, 
-                                             tag_nest, 
+                                             tag_file.tag_nest, 
                                              result.sources)
                     if entry != None:
                      #   Logger.debug(f"Sourcefile: created entry {entry.text[:100]}")
@@ -102,7 +105,7 @@ def read(address, tag_nest):
     return result, messages
 
 def edit_tag(old_name, new_name, source_file):
-    storage.back_up(source_file.address)
+    storage.back_up(source_file.address, source_file.backup_location)
     
     with open(source_file.address, "r") as file:
         new_file = ""

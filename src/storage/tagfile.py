@@ -24,9 +24,12 @@ class TagFile:
     
     def __init__(self, address):
         self.address = address
-        self.tag_nest = TagNest()
+        self.backup_location = storage.make_backup_folder_for(address)
         self.source_files = []
+        
+        self.tag_nest = TagNest()
         self.content_by_source = {}
+        
 
     #TODO: should a call to write file be part of those?
     """
@@ -136,7 +139,7 @@ def read_tag_file(address):
                     ):
                     continue
                 
-                file, msg = sourcefile.read(line[:-1], result.tag_nest)
+                file, msg = sourcefile.read(line[:-1], result)
                 messages += msg
                 if not file == None:
                     result.source_files.append(file)
@@ -158,7 +161,7 @@ def write_tag_file(tag_file):
     indent = 0
     written_tags = []
     
-    storage.back_up(tag_file.address)
+    storage.back_up(tag_file.address, tag_file.backup_location)
 
     #Traverse the roots; for each of them call a recursive function to get 
     #their string representation

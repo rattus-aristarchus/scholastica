@@ -92,7 +92,7 @@ class Messenger(threading.Thread):
         self.view.ids['tree'].remove_all_from(old_file)        
         self.tag_file.remove_file(old_file)
         
-        new_file, messages = sourcefile.read(new_path, self.tag_file.tag_nest)
+        new_file, messages = sourcefile.read(new_path, self.tag_file)
         self.view.ids['tree'].add_all_from(new_file)
         self.tag_file.add_file(new_file)
         tagfile.write_tag_file(self.tag_file)
@@ -101,7 +101,7 @@ class Messenger(threading.Thread):
     def add_new(self, path):        
         Logger.info("Messenger: the file is new. Adding it.")
         
-        new_file, messages = sourcefile.read(path, self.tag_file.tag_nest)
+        new_file, messages = sourcefile.read(path, self.tag_file)
         self.view.ids['tree'].add_all_from(new_file)
         self.tag_file.add_file(new_file)
         tagfile.write_tag_file(self.tag_file)    

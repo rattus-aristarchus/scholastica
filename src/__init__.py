@@ -9,6 +9,6 @@ Created on Mon May 23 19:08:19 2022
 from kivy.logger import Logger, LOG_LEVELS
 import gui.main as gui
 
-Logger.setLevel(LOG_LEVELS['debug'])
+Logger.setLevel(LOG_LEVELS['warning'])
 app = gui.Main()
 app.run()
