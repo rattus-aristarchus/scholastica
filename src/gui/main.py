@@ -38,7 +38,7 @@ class Main(App):
         address = "/media/kryis/TOSHIBA EXT/записи/организатор записей/тестовый файл.txt"
         address_1 = "/media/kryis/TOSHIBA EXT/записи/погреб/описание мира/планета и ее биосфера/планетология.sca"
         address_2 = "/media/kryis/TOSHIBA EXT/наука/схоластика/капитализм.sca"
-        self.tag_file, messages = tagfile.read_tag_file(address)
+        self.tag_file, messages = tagfile.read_tag_file(address_2)
         
         self.title = "Scholastica"    
         self.view = View()

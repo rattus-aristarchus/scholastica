@@ -418,12 +418,22 @@ class EntryNode(EntNode):
 
     def load_text(self):
         if self.full_text:
-            self.ids['label'].text = self.entity.text
+            self.ids['label'].text = self.no_last_n()
         elif len(self.entity.text) < CONF["text"]["snippet_length"]:    
-            self.ids['label'].text = self.entity.text
+            self.ids['label'].text = self.no_last_n()
         else:
             self.ids['label'].text = \
                 self.entity.text[:CONF["text"]["snippet_length"]] + " ..."
+
+    def no_last_n(self):
+        text = self.entity.text
+     #   Logger.debug("EntryNode: last two symbols of text are " + text[-2] + " and " + text[-1])
+        if len(text) > 0 and text[-1:] == "\n":
+            Logger.debug("EntryNode: removing last \n")
+            return text[:-1]
+        else:
+            Logger.debug(f"EntryNode: displaying text {self.entity.text}")
+            return text
 
 class TagNode(EntNode):
 

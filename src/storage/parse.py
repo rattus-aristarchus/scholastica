@@ -28,9 +28,9 @@ def read_entry(chunk, tag_nest, sources):
     if len(chunk) == 0:
         return
     
-    #The last two lines in an entry can be a list of tags or a source, in 
-    #parentheses. First, we determine if the last or the last two lines have
-    #parentheses.
+    #The last lines in an entry can be a list of tags or a source, in 
+    #parentheses; or a comment, if the line starts with "//" or "#". First, we 
+    #determine which (if any) of the last lines are formatted like that.
     enclosed_lines = []
     tags = []
     source = None
@@ -42,13 +42,7 @@ def read_entry(chunk, tag_nest, sources):
         else:
             break
     
- #   if is_enclosed(chunk[-1]):
- #       enclosed_lines.append(chunk.pop(-1))
-        
-  #      if len(chunk) > 0 and is_enclosed(chunk[-1]):
-  #          enclosed_lines.append(chunk.pop(-1))
-    
-    #Then we try to get the tags and source from them.
+    #Then we try to get the tags, source or comment from them.
     for line in enclosed_lines:
         if is_comment(line):
             comment = get_comment(line)
@@ -64,6 +58,10 @@ def read_entry(chunk, tag_nest, sources):
         body += line
     if body == "":
         return None
+    
+    #if the last symbol is a newline, we cut it away, it messes up appearance
+ #   if len(body) > 1 and body[-2:] == "\n":
+  #      body = body[:-2]
     
     result = data.Entry(body)
     if source != None:
