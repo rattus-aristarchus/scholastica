@@ -33,6 +33,16 @@ class TagTree(TreeView):
         super().__init__(root_options=dict(text='Гнездо'), **kwargs)
         self.bind(minimum_height = self.setter("height"))        
         self.controller = None
+        self.main_controller = None
+        
+    """
+    Remove all content.
+    """
+    def clear(self):
+        for node in [i for i in self.iterate_all_nodes()]:
+        #    Logger.debug("Clear: removing node " + node.entity.text)
+            self.remove_node(node)
+        
         
     """
     Traverse all the roots in the nest recursively and add them to the
@@ -462,7 +472,7 @@ class TagNode(EntNode):
             self.input.focus = False
             self.add_widget(self.label)
             self.editing = False
-            self.controller.return_kbd()
+            self.main_controller.return_kbd()
     
     def input_mode(self):
         if not self.editing:

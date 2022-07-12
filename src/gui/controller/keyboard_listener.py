@@ -18,19 +18,19 @@ logger = logging.getLogger(__name__)
 #TODO: some key combination should delete nodes recursively
 class KeyboardListener(Widget):
     
-    def __init__(self, tree, controller, **kwargs):
+    def __init__(self, view, controller, **kwargs):
         super().__init__(**kwargs)
         self.bind_keyboard()
-        self.tree = tree
+        self.view = view
         self.controller = controller
         
     def bind_keyboard(self):
         self._keyboard = Window.request_keyboard(
-            self._keyboard_closed, self, 'text')
+            self.close_keyboard, self, 'text')
         self._keyboard.bind(on_key_down=self._on_keyboard_down)
   
     
-    def _keyboard_closed(self):
+    def close_keyboard(self):
         self._keyboard.unbind(on_key_down=self._on_keyboard_down)
         self._keyboard = None
     
@@ -42,6 +42,7 @@ class KeyboardListener(Widget):
         logger.debug(' - text is %r' % text)
         logger.debug(' - modifiers are %r' % modifiers)
         
+        tree = self.view.ids['tree']
         key = keycode[1]
         ctrl = len(modifiers) > 0 and modifiers[0] == 'ctrl'
         shift = len(modifiers) > 0 and modifiers[0] == 'shift'
@@ -55,20 +56,20 @@ class KeyboardListener(Widget):
                 root.escape()
         elif key == 'up':
             if ctrl:
-                self.tree.step_up_over()
+                tree.step_up_over()
             else:
-                self.tree.step_up()                
+                tree.step_up()                
         elif key == 'down':
             if ctrl:
-                self.tree.step_down_over()
+                tree.step_down_over()
             else:
-                self.tree.step_down()
+                tree.step_down()
         elif key == 'down':
-            self.tree.step_down()
+            tree.step_down()
         elif key == 'left':
-            self.tree.step_out()
+            tree.step_out()
         elif key == 'right':
-            self.tree.step_in()
+            tree.step_in()
         elif key == 'enter':
             root = App.get_running_app().root_window.children[0]
             if isinstance(root, BasePopup):

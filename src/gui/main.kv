@@ -12,6 +12,29 @@
             pos: self.pos
             size: self.size
     
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint_y: None
+        height: 25
+        
+        Button:
+            id: 'new'
+            text: STRINGS["menu"][0][app.lang]
+            size_hint: None, None
+            size: 200, 25
+            font_size: 18
+            background_color: CONF["colors"]["menu"]            
+            on_release: root.controller.new_file_popup()
+            
+        Button:
+            id: 'open'
+            text: STRINGS["menu"][1][app.lang]
+            size_hint: None, None
+            size: 200, 25
+            font_size: 18
+            background_color: CONF["colors"]["menu"]
+            on_release: root.controller.open_file_popup()
+    
     ScrollView:
         id: scroll
         do_scroll_x: False
@@ -80,6 +103,7 @@
     size_hint: None, None
     size: 400, 200
     on_open: self.focus = True
+    dirselect: True
 
     GridLayout:
         cols: 1
@@ -100,7 +124,72 @@
             
             Button:
                 id: ok_button
-                text: STRINGS["popup"][1][CONF["misc"]["language"]]
+                text: STRINGS["popup"][1][app.lang]
                 size_hint: None, None
                 size: 75, 25
-                on_press: root.ok()
+                on_release: root.ok()
+                
+<NewFile>:
+    title: STRINGS["file_picker"][0][app.lang]
+    separator_height: 0
+    on_open: self.focus = True
+    dirselect: True
+    
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: 'vertical'
+    
+        FileChooserListView:
+            id: filechooser
+   
+        TextInput:
+            id: file_name
+            size_hint_y: None
+            height: 25
+            multiline: False  
+            font_size: 17
+            padding: [2, 2, 2, 2]     
+        
+        BoxLayout:
+            size_hint_y: None
+            height: 25
+            orientation: 'horizontal'
+        
+            Button:
+                id: cancel
+                text: STRINGS["file_picker"][4][app.lang]
+                on_release: root.close()
+                
+            Button:
+                id: new
+                text: STRINGS["file_picker"][2][app.lang]
+                on_release: root.act(filechooser.path, file_name.text)
+    
+<OpenFile>:
+    title: STRINGS["file_picker"][1][app.lang]
+    separator_height: 0
+    on_open: self.focus = True
+    
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: 'vertical'
+        
+        FileChooserListView:
+            id: filechooser
+        
+        BoxLayout:
+            size_hint_y: None
+            height: 25
+            orientation: 'horizontal'
+            
+            Button:
+                id: cancel
+                text: STRINGS["file_picker"][4][app.lang]
+                on_release: root.close()
+                
+            Button:
+                id: open
+                text: STRINGS["file_picker"][3][app.lang]
+                on_release: root.act(filechooser.path, filechooser.selection[0])

@@ -1,72 +1,53 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri May 27 15:56:59 2022
+Created on Tue Jul 12 23:04:13 2022
 
 @author: kryis
 """
 
-from kivy.logger import Logger
-from gui.widgets import BasePopup
-from gui.tag_tree import TagNode, EntryNode, SourceNode
+import kivy.uix.filechooser
 
-import storage.tagfile as tagfile
-import storage.sourcefile as sourcefile
+from kivy.logger import Logger
+
 from util import CONF
 from util import STRINGS
+import storage.sourcefile as sourcefile
+from gui.tag_tree import TagNode, SourceNode, EntryNode
 
-#logger = logging.getLogger(__name__)
 LANG = CONF["misc"]["language"]
 
-class Controller:
+class TagTreeController:
     
-    def __init__(self, tag_file, msgr, view, return_kbd):
-        self.tag_file = tag_file
+    def __init__(self, view, main_controller):
         self.view = view
-        self.tag_nest = tag_file.tag_nest
-        self.tree = view.ids["tree"]
-        self.msgr = msgr
-        self.return_kbd = return_kbd
- 
-        #the copied tagnode; this is needed for the copy-paste functionality
-        self.clipboard = None
-        self._cut = False
-    
+        self.tree = self.view.ids['tree']
+        self.tree.controller = self
+        self.main_controller = main_controller
+        
     def scroll_to(self, widget):
         if self.tree.size[1] > self.view.ids['scroll'].size[1]:
             self.view.ids['scroll'].scroll_to(widget)
-    
-    def save_file(self):
-        tagfile.write_tag_file(self.tag_file)
 
-    def popup(self, message, callback=None):
-        Logger.info(f"Controller: popup created with message {message}")
-        
-        popup = BasePopup()
-        popup.ids["label"].text = message
-        popup.callback = callback
-        popup.open()
-            
-    def return_kbd(self):
-        self.return_kbd() 
-    
     def edit_tag(self, tag, new_name):
         old_name = tag.text
         tag.text = new_name
         self.save_file()
     
         if not old_name == "":
-            self.popup(message=STRINGS["popup"][2][LANG],
-                       callback=lambda: self._edit_tag_in_files(old_name, 
-                                                                new_name))   
+            func = lambda: self._edit_tag_in_files(old_name, 
+                                     new_name)
+            self.main_controller.popup(message=STRINGS["popup"][2][LANG],
+                                       callback=func)
             
+    
     def _edit_tag_in_files(self, old_name, new_name):
         Logger.info(f"Controller: _edit_tag_in_files, changing {old_name} " \
                      + f"to {new_name}")
         
         for source_file in self.tag_file.source_files:
             sourcefile.edit_tag(old_name, new_name, source_file)
-        
+            
     def enter(self):        
         selected_node = self.tree.selected_node
         if (
