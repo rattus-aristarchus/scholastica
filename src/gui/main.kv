@@ -130,7 +130,7 @@
                 on_release: root.ok()
                 
 <NewFile>:
-    title: STRINGS["file_picker"][0][app.lang]
+    title: STRINGS["filechooser"][0][app.lang]
     separator_height: 0
     on_open: self.focus = True
     dirselect: True
@@ -142,14 +142,23 @@
     
         FileChooserListView:
             id: filechooser
-   
+
+        Label:
+            id: file_name_caption
+            size_hint: None, None
+            width: self.texture_size[0]
+            height: 25
+            font_size: 17
+            text: STRINGS["filechooser"][7][app.lang]
+
         TextInput:
             id: file_name
             size_hint_y: None
             height: 25
             multiline: False  
             font_size: 17
-            padding: [2, 2, 2, 2]     
+            padding: [2, 2, 2, 2]
+            background_color: CONF["colors"]["input_background"]
         
         BoxLayout:
             size_hint_y: None
@@ -158,16 +167,16 @@
         
             Button:
                 id: cancel
-                text: STRINGS["file_picker"][4][app.lang]
+                text: STRINGS["filechooser"][4][app.lang]
                 on_release: root.close()
                 
             Button:
                 id: new
-                text: STRINGS["file_picker"][2][app.lang]
+                text: STRINGS["filechooser"][2][app.lang]
                 on_release: root.act(filechooser.path, file_name.text)
     
 <OpenFile>:
-    title: STRINGS["file_picker"][1][app.lang]
+    title: STRINGS["filechooser"][1][app.lang]
     separator_height: 0
     on_open: self.focus = True
     
@@ -186,10 +195,10 @@
             
             Button:
                 id: cancel
-                text: STRINGS["file_picker"][4][app.lang]
+                text: STRINGS["filechooser"][4][app.lang]
                 on_release: root.close()
                 
             Button:
                 id: open
-                text: STRINGS["file_picker"][3][app.lang]
+                text: STRINGS["filechooser"][3][app.lang]
                 on_release: root.act(filechooser.path, filechooser.selection[0])

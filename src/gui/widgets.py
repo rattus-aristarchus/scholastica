@@ -57,9 +57,9 @@ class FilePopup(Popup):
             if isinstance(child, BoxLayout):
                 for child_1 in child.children:
                     if isinstance(child_1, Label) and child_1.text == "Name":
-                        child_1.text = STRINGS["file_picker"][5][LANG]
+                        child_1.text = STRINGS["filechooser"][5][LANG]
                     if isinstance(child_1, Label) and child_1.text == "Size":
-                        child_1.text = STRINGS["file_picker"][6][LANG]
+                        child_1.text = STRINGS["filechooser"][6][LANG]
       
     def close(self):
         self.dismiss()

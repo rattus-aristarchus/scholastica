@@ -6,7 +6,7 @@ menu:
         ru: "Открыть"
         en: "Open"
 
-file_picker:
+filechooser:
     0:
         ru: "Создать файл"
         en: "New file"
@@ -28,6 +28,9 @@ file_picker:
     6:
         ru: "Размер"
         en: "Size"
+    7:
+        ru: "Введите имя файла. К нему будет автоматически добавлено расширение '.sca'"
+        en: "Please enter a name for the new file. The extension '.sca' will be automatically appended to it."
 
 popup:
     0: 
@@ -76,4 +79,3 @@ data:
     0: 
         ru: "текст отсутствует"
         en: "text is missing"
-        
