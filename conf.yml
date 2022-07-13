@@ -1,12 +1,14 @@
 misc:
     language: ru
     #possible values: ru, en
-    
+    theme: colors_strasbourg
+    extension: .sca
+
 text:
     separator: "====="
     snippet_length: 100
 
-colors:
+colors_chartres:
     background: [0.03, 0.03, 0.14, 1]
     background_odd: [0.01, 0.01, 0.07, 1]
     tag_background: [0.08, 0.16, 0.22, 1]
@@ -27,3 +29,12 @@ colors_koelner_dom:
     clipboard_background: [0.45, 0.45, 0.45, 1]
     
     selected_node_brown: [0.43, 0.36, 0.33, 1]
+
+colors_strasbourg:
+    background: [0.1, 0.06, 0.06, 1]
+    background_odd: [0.15, 0.1, 0.05, 1]
+    tag_background: [0.5, 0.27, 0.14, 1]
+    selected_node: [0.95, 0.62, 0.27, 1]
+    input_background: [0.51, 0.44, 0.34]
+    clipboard_background: [0.82, 0.46, 0.31, 1]
+    menu: [1, 0.69, 0.45, 1]

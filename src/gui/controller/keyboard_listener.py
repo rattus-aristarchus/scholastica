@@ -18,11 +18,12 @@ logger = logging.getLogger(__name__)
 #TODO: some key combination should delete nodes recursively
 class KeyboardListener(Widget):
     
-    def __init__(self, view, controller, **kwargs):
+    def __init__(self, view, main_controller, tree_controller, **kwargs):
         super().__init__(**kwargs)
         self.bind_keyboard()
         self.view = view
-        self.controller = controller
+        self.controller = main_controller
+        self.tree_controller = tree_controller
         
     def bind_keyboard(self):
         self._keyboard = Window.request_keyboard(
@@ -75,31 +76,31 @@ class KeyboardListener(Widget):
             if isinstance(root, BasePopup):
                 root.enter()
             else:
-                self.controller.enter()
+                self.tree_controller.enter()
         elif key == 'delete':
             if shift:
-                self.controller.delete_recursively_message()
+                self.tree_controller.delete_recursively_message()
             else:
-                self.controller.edit_node(False)
+                self.tree_controller.edit_node(False)
         elif key == 'backspace':
-            self.controller.edit_node(True)
+            self.tree_controller.edit_node(True)
         elif key == 'tab':
             if ctrl and not alt:
-                self.controller.raise_selected_node()
+                self.tree_controller.raise_selected_node()
             elif not alt:
-                self.controller.lower_selected_node()
+                self.tree_controller.lower_selected_node()
         elif key == 'c' and ctrl:
-            self.controller.copy()
+            self.tree_controller.copy()
         elif key == 'с' and ctrl:
-            self.controller.copy()
+            self.tree_controller.copy()
         elif key == 'x' and ctrl:
-            self.controller.cut()
+            self.tree_controller.cut()
         elif key == 'ч' and ctrl:
-            self.controller.cut()
+            self.tree_controller.cut()
         elif key == 'v' and ctrl:
-            self.controller.paste()
+            self.tree_controller.paste()
         elif key == 'м' and ctrl:
-            self.controller.paste()
+            self.tree_controller.paste()
             
         # Return True to accept the key. Otherwise, it will be used by
         # the system.

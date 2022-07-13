@@ -16,9 +16,8 @@ from data.base_types import Entry
 from util import CONF
 from util import STRINGS
 
-#logging.basicConfig(level=logging.DEBUG)
-#logger = logging.getLogger(__name__)
 LANG = CONF["misc"]["language"]
+THEME = CONF["misc"]["theme"]
 
 #TODO: it should be possible to clear the clipboard
 
@@ -76,7 +75,7 @@ class TagTree(TreeView):
             return
         
         #Display the tag itself
-        tag_node = TagNode(tag, self.controller)
+        tag_node = TagNode(tag, self.controller, self.main_controller)
         if parent_node == None:
             self.add_node(tag_node)
         else:
@@ -279,26 +278,29 @@ class TagTree(TreeView):
     Add a new child node to the parent of currently selected node
     """
     def insert_and_select(self, node, parent, index):
+        Logger.info("TagTree: insert_and_select")
         if parent == None:
+            Logger.debug("TagTree: adding new root node")
             self.add_node(node)
         elif index == -1:
+            Logger.debug("TagTree: appending new node at node " + parent.entity.text)
             self.add_tag_node(node, parent)
         else:
-            self.insert_node(node, parent, index)
+            Logger.debug("TagTree: inserting new node at node " + parent.entity.text + " at index " + str(index))
+            self.insert_tag_node(node, parent, index)
         
-        if not parent == None:
+        if not parent == None and not parent.is_open == True:
+            Logger.debug("TagTree: expanding the parent node")
             parent.is_open = True
         self.select_node(node)
-    #    self.edit_node(False)
- 
-    
-    
+        self.controller.edit_node(False)
+
     def move_node(self, node, destination, index=-1):
         self.remove_node(node)
         if index == -1:
             self.add_tag_node(node, destination)
         else:
-            self.insert_node(node, destination, index)
+            self.insert_tag_node(node, destination, index)
         
         if not destination == None:
             destination.is_open = True
@@ -322,12 +324,12 @@ class TagTree(TreeView):
         
     
     def clipboard_color(self, node):
-        node.even_color = CONF["colors"]["clipboard_background"]
-        node.odd_color = CONF["colors"]["clipboard_background"]
+        node.even_color = CONF[THEME]["clipboard_background"]
+        node.odd_color = CONF[THEME]["clipboard_background"]
     
     def normal_color(self, node):
-        node.even_color = CONF["colors"]["tag_background"]
-        node.odd_color = CONF["colors"]["tag_background"]
+        node.even_color = CONF[THEME]["tag_background"]
+        node.odd_color = CONF[THEME]["tag_background"]
     
     """
     Inserts a tag node before all content nodes at the destination
@@ -341,14 +343,15 @@ class TagTree(TreeView):
         for node in destination.nodes:
             if not isinstance(node, TagNode):
                 index = destination.nodes.index(node)
-        self.insert_node(tag_node, destination, index)
+        self.insert_tag_node(tag_node, destination, index)
         
 
     #TODO: check border cases for all functions and provide error messages    
     """
     Inserts a node among the children of the specified parent at the index
     """
-    def insert_node(self, node, parent, index):
+    def insert_tag_node(self, node, parent, index):
+        Logger.info("TagTree: insert_tag_node, node " + node.entity.text + ", parent " + parent.entity.text)
         if node == self.root:
             Logger.warning(f"INSERT NODE: trying to insert root node into "\
                             f"node {parent.entity.text} at index {index}")
@@ -359,15 +362,18 @@ class TagTree(TreeView):
                             f"{parent.entity.text} at index {index} while the"\
                             f"parent only has {len(parent.nodes)} children")
             return
+
         #Remove all nodes after node_after
-        
         after_node = parent.nodes[index:]
         for next_node in after_node:
+            Logger.debug("TagTree: removing node " + next_node.entity.text[:50] + "; to be re-added later")
             self.remove_node(next_node)
                 
         #Add the inserted node and then put back all the nodes removed before
+        Logger.debug("TagTree: adding the node")
         self.add_node(node, parent)
         for next_node in after_node:
+            Logger.debug("TagTree: re-adding removed node " + next_node.entity.text[:50])
             self.add_node(next_node, parent)
     
     #TODO: this does not remove all instances for some reason
@@ -394,6 +400,13 @@ class EntNode(GridLayout, TreeViewNode):
             
     def load_text(self):
         self.ids['label'].text = self.entity.text
+        self.set_text_height()
+
+    def set_text_height(self):
+        if self.entity.text == "":
+            self.height = 17
+        else:
+            self.height = self.minimum_height
 
     def copy(self):
         return EntNode(self.entity)
@@ -403,7 +416,11 @@ class SourceNode(EntNode):
     def __init__(self, entity, file, **kwargs):
         super().__init__(entity, **kwargs)
         self.file = file
-    
+
+    def load_text(self):
+        self.ids['label'].text = "[i]" + self.entity.text + "[/i]"
+        self.set_text_height()
+
 class EntryNode(EntNode):
     
     def __init__(self, entry, file, **kwargs):
@@ -435,11 +452,13 @@ class EntryNode(EntNode):
             self.ids['label'].text = \
                 self.entity.text[:CONF["text"]["snippet_length"]] + " ..."
 
+        self.set_text_height()
+
     def no_last_n(self):
         text = self.entity.text
      #   Logger.debug("EntryNode: last two symbols of text are " + text[-2] + " and " + text[-1])
         if len(text) > 0 and text[-1:] == "\n":
-            Logger.debug("EntryNode: removing last \n")
+            Logger.debug("EntryNode: removing last \\n")
             return text[:-1]
         else:
             Logger.debug(f"EntryNode: displaying text {self.entity.text}")
@@ -447,16 +466,17 @@ class EntryNode(EntNode):
 
 class TagNode(EntNode):
 
-    def __init__(self, tag, controller, **kwargs):
+    def __init__(self, tag, controller, main_controller, **kwargs):
         super().__init__(tag, **kwargs)
         self.controller = controller
+        self.main_controller = main_controller
         self.input = self.ids['input'].__self__
         self.label = self.ids['label'].__self__
         self.remove_widget(self.input)
         self.editing = False
         
     def copy(self):
-        return TagNode(self.entity, self.controller)
+        return TagNode(self.entity, self.controller, self.main_controller)
         
     """
     The following two methods change the appearance of the node

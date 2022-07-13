@@ -14,6 +14,7 @@ from kivy.clock import Clock
 from gui.widgets import BasePopup, OpenFile, NewFile
 from gui.tag_tree import TagNode, EntryNode, SourceNode
 from gui.controller.keyboard_listener import KeyboardListener
+from gui.controller.tag_tree_controller import TagTreeController
 import storage.tagfile as tagfile
 import storage.sourcefile as sourcefile
 from util import CONF
@@ -29,21 +30,14 @@ class Controller:
     def __init__(self, view):
         self.view = view
         self.view.controller = self
-        self.tag_file = None
-        self.tag_nest = None
-        
-       # self.tree = view.ids["tree"]
-        self.kbd_listener = KeyboardListener(view, self) 
+        self.tree_controller = TagTreeController(self.view, self)
+        self.kbd_listener = KeyboardListener(view, self, self.tree_controller)
         self.msgr = rpc.Messenger(self.view)
         self.msgr.start()
-    
-        #the copied tagnode; this is needed for the copy-paste functionality
-        self.clipboard = None
-        self._cut = False
-        
-    #    if not tag_file_path == None:
-    #        self.open_file(tag_file_path)
-    
+
+        self.tag_file = None
+        self.tag_nest = None
+
     def _get_tree(self):
         return self.view.ids['tree']
     
@@ -52,22 +46,13 @@ class Controller:
     def new_file_popup(self):
         popup = NewFile(self)
         popup.open()
-        
-        
-#        Logger.debug("The popup has the following children:")
- #       for child in popup.ids['filechooser'].children:
-  #          self.print_children(child, 0)
-        
-    def print_children(self, widget, lvl):
-        Logger.debug("lvl " + str(lvl) + ": " + str(widget))
-        #Logger.debug("id: " + widget.id)
-        for child in widget.children:
-            self.print_children(child, lvl+1)
-        
+
     def open_file_popup(self):
         OpenFile(self).open()
     
     def new_file(self, path):
+        path = path + CONF["misc"]["extension"]
+
         if os.path.exists(path):
             msg = STRINGS["error"][1][LANG][0] + \
                   path + \
@@ -89,6 +74,8 @@ class Controller:
         self.tag_file, messages = tagfile.read_tag_file(path)
         self.tag_nest = self.tag_file.tag_nest
         self.msgr.tag_file = self.tag_file
+        self.tree_controller.tag_file = self.tag_file
+        self.tree_controller.tag_nest = self.tag_nest
         self.tree.show(self.tag_file)
         if not len(messages) == 0:
             self.controller.popup("\n".join(messages))

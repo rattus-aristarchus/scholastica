@@ -7,7 +7,7 @@
     
     canvas.before:
         Color:
-            rgba: CONF["colors"]["background"]
+            rgba: CONF[app.theme]["background"]
         Rectangle:
             pos: self.pos
             size: self.size
@@ -23,7 +23,7 @@
             size_hint: None, None
             size: 200, 25
             font_size: 18
-            background_color: CONF["colors"]["menu"]            
+            background_color: CONF[app.theme]["menu"]
             on_release: root.controller.new_file_popup()
             
         Button:
@@ -32,7 +32,7 @@
             size_hint: None, None
             size: 200, 25
             font_size: 18
-            background_color: CONF["colors"]["menu"]
+            background_color: CONF[app.theme]["menu"]
             on_release: root.controller.open_file_popup()
     
     ScrollView:
@@ -52,9 +52,9 @@
     cols: 1
     height: self.minimum_height
     orientation: 'lr-tb'
-    color_selected: CONF["colors"]["selected_node"]    
-    even_color: CONF["colors"]["background"]
-    odd_color: CONF["colors"]["background_odd"]
+    color_selected: CONF[app.theme]["selected_node"]
+    even_color: CONF[app.theme]["background"]
+    odd_color: CONF[app.theme]["background_odd"]
             
     Label:
         id: label
@@ -64,6 +64,17 @@
         width: 500
         height: self.texture_size[1]
         padding: (2, 2)
+
+<SourceNode>
+    Label:
+        id: label
+        font_size: 15
+        size_hint_y: None
+        text_size: self.width, None
+        width: 500
+        height: self.texture_size[1]
+        padding: (2, 2)
+        markup: True
 
 <EntryNode>
     rows: 3
@@ -84,8 +95,8 @@
 
 <TagNode>:    
     cols: 2
-    even_color: CONF["colors"]["tag_background"]
-    odd_color: CONF["colors"]["tag_background"]    
+    even_color: CONF[app.theme]["tag_background"]
+    odd_color: CONF[app.theme]["tag_background"]
     
     TextInput:
         id: input
@@ -95,7 +106,7 @@
         size_hint_y: None
         height: 22
         padding: [2, 2, 2, 2]
-        background_color: CONF["colors"]["input_background"]
+        background_color: CONF[app.theme]["input_background"]
         
 <BasePopup>:
     title: ""
@@ -158,7 +169,7 @@
             multiline: False  
             font_size: 17
             padding: [2, 2, 2, 2]
-            background_color: CONF["colors"]["input_background"]
+            background_color: CONF[app.theme]["input_background"]
         
         BoxLayout:
             size_hint_y: None

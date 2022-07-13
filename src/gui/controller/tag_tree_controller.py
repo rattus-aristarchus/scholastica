@@ -21,10 +21,21 @@ class TagTreeController:
     
     def __init__(self, view, main_controller):
         self.view = view
-        self.tree = self.view.ids['tree']
         self.tree.controller = self
         self.main_controller = main_controller
-        
+
+        self.tag_file = None
+        self.tag_nest = None
+
+        # the copied tagnode; this is needed for the copy-paste functionality
+        self.clipboard = None
+        self._cut = False
+
+    def _get_tree(self):
+        return self.view.ids['tree']
+
+    tree = property(fget=_get_tree)
+
     def scroll_to(self, widget):
         if self.tree.size[1] > self.view.ids['scroll'].size[1]:
             self.view.ids['scroll'].scroll_to(widget)
@@ -32,11 +43,10 @@ class TagTreeController:
     def edit_tag(self, tag, new_name):
         old_name = tag.text
         tag.text = new_name
-        self.save_file()
+        self.main_controller.save_file()
     
         if not old_name == "":
-            func = lambda: self._edit_tag_in_files(old_name, 
-                                     new_name)
+            func = lambda: self._edit_tag_in_files(old_name, new_name)
             self.main_controller.popup(message=STRINGS["popup"][2][LANG],
                                        callback=func)
             
@@ -63,7 +73,7 @@ class TagTreeController:
     def create_tag_at_selection(self):        
         selected_node = self.tree.selected_node
         
-        #Change data
+        #First, change the data
         if selected_node == None or selected_node.parent_node == self.tree.root:
             parent = None
             index = -1
@@ -77,14 +87,14 @@ class TagTreeController:
                 index = len(parent.children)
         
         new_tag = self.tag_nest.create_tag(parent, index)
-        self.save_file()
+        self.main_controller.save_file()
         
         #Change the representation
         if selected_node == None or selected_node.parent_node == self.tree.root:
             parent_node = None
         else:
             parent_node = selected_node.parent_node
-        new_node = TagNode(new_tag, self)
+        new_node = TagNode(new_tag, self, self.main_controller)
         self.tree.insert_and_select(new_node, parent_node, index)
 
     """
@@ -104,15 +114,15 @@ class TagTreeController:
                 selected_node.cursor_to_start()
             selected_node.select_text()
         elif isinstance(selected_node, (EntryNode, SourceNode)):
-            self.msgr.open_file(path=selected_node.file.address,
-                                item=selected_node.entity.text)
+            self.main_controller.msgr.open_file(path=selected_node.file.address,
+                                                item=selected_node.entity.text)
                 
     """
     Copy the currently selected node to clipboard
     """
     def copy(self):
         if not isinstance(self.tree.selected_node, TagNode):
-            self.popup(STRINGS["popup"][6][LANG])
+            self.main_controller.popup(STRINGS["popup"][6][LANG])
             return
         
         if not self.clipboard == None:
@@ -127,7 +137,7 @@ class TagTreeController:
     """
     def cut(self):        
         if not isinstance(self.tree.selected_node, TagNode):
-            self.popup(STRINGS["popup"][7][LANG])
+            self.main_controller.popup(STRINGS["popup"][7][LANG])
             return
             
         if not self.clipboard == None:
@@ -147,12 +157,12 @@ class TagTreeController:
                 not selected_node == None 
                 and not isinstance(selected_node, TagNode)
             ):
-            self.popup(STRINGS["popup"][0][LANG])
+            self.main_controller.popup(STRINGS["popup"][0][LANG])
             return
         if self.clipboard == None:
             return
         if self.clipboard == selected_node:
-            self.popup(STRINGS["popup"][3][LANG])
+            self.main_controller.popup(STRINGS["popup"][3][LANG])
             return
         
         #If the node is cut and no tag is selected, the node becomes a new root
@@ -161,7 +171,7 @@ class TagTreeController:
             destination = None if selected_node == None else selected_node.entity 
             self.tag_nest.move_tag(tag=self.clipboard.entity, 
                                    destination=destination)
-            self.save_file()
+            self.main_controller.save_file()
             
             #Then, changes to the representation
             self.tree.move_node(node=self.clipboard, 
@@ -174,7 +184,7 @@ class TagTreeController:
             #First, change the data structure   
             self.tag_nest.add_child_tag(child=self.clipboard.entity, 
                                         parent=self.tree.selected_node.entity)
-            self.save_file()
+            self.main_controller.save_file()
         
             #Then, the representation
             self.tree.copy_node(node=self.clipboard, 
@@ -196,20 +206,20 @@ class TagTreeController:
             ):
             return
         if not isinstance(node, TagNode):
-            self.popup(STRINGS["popup"][8][LANG])
+            self.main_controller.popup(STRINGS["popup"][8][LANG])
             return
             
         parent = node.parent_node 
         index = parent.nodes.index(node)
         if index == 0:
-            self.popup(STRINGS["popup"][4][LANG])
+            self.main_controller.popup(STRINGS["popup"][4][LANG])
             return
         prev_node = parent.nodes[index-1]
         
         #Change the data
         self.tag_nest.move_tag(tag=node.entity, 
                                destination=prev_node.entity)
-        self.save_file()
+        self.main_controller.save_file()
         
         #Change the representation
         self.tree.move_node(node, prev_node)
@@ -226,12 +236,12 @@ class TagTreeController:
             ):
             return
         if not isinstance(node, TagNode):
-            self.popup(STRINGS["popup"][8][LANG])
+            self.main_controller.popup(STRINGS["popup"][8][LANG])
             return
         if (
                 node.parent_node == self.tree.root
             ):
-            self.popup(STRINGS["popup"][5][LANG])
+            self.main_controller.popup(STRINGS["popup"][5][LANG])
             return
         parent = node.parent_node
         grandparent = parent.parent_node 
@@ -243,7 +253,7 @@ class TagTreeController:
         
         #Change the data
         self.tag_nest.move_tag(node.entity, destination, index)
-        self.save_file()
+        self.main_controller.save_file()
         
         #Change the representation
         self.tree.move_node(node, grandparent, index)
@@ -262,18 +272,18 @@ class TagTreeController:
                 Logger.warning("Delete node: tag of root tree node has multiple parents")
             self.tag_nest.remove_child_tag(child=tag_node.entity, 
                                            parent=tag_node.parent_node.entity)
-            self.save_file()
+            self.main_controller.save_file()
             
             self.tree.remove_node(tag_node)
         else:
             #If the tag has only one parent, we're deleting the tag
             #First, apply the changes to the data structure
             new_roots = self.tag_nest.delete_tag(tag_node.entity)        
-            self.save_file()
+            self.main_controller.save_file()
             
             #Then, change the representation
             for new_root in new_roots:
-                self.tree.add_node(TagNode(new_root, self))
+                self.tree.add_node(TagNode(new_root, self, self.main_controller))
             self.tree.step_down()
             self.tree.remove_node(tag_node)
             
@@ -285,10 +295,10 @@ class TagTreeController:
             ):
             return
         if not isinstance(node, TagNode):
-            self.popup(STRINGS["popup"][10][LANG])
+            self.main_controller.popup(STRINGS["popup"][10][LANG])
             return
         
-        self.popup(message=STRINGS["popup"][9][LANG], 
+        self.main_controller.popup(message=STRINGS["popup"][9][LANG],
                    callback=lambda: self.delete_recursively(node))
         
     #TODO: should it be able to delete the tags in txt files as well? not sure
@@ -297,6 +307,6 @@ class TagTreeController:
         Logger.info(f"Controller: deleting node {node.entity.text}")
         
         self.tag_nest.delete_tag_recursively(node.entity)
-        self.save_file()
+        self.main_controller.save_file()
         
         self.tree.remove_node(node)

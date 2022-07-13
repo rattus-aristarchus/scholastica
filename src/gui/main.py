@@ -24,12 +24,14 @@ from gui.controller.tag_tree_controller import TagTreeController
 STRINGS = util.STRINGS
 CONF = util.CONF
 LANG = CONF["misc"]["language"]
+THEME = CONF["misc"]["theme"]
 
 class Main(App):
 
     def __init__(self):
         super().__init__()
         self.lang = LANG
+        self.theme = THEME
 
     def build(self):
         Logger.info("Main: building the app")
@@ -46,7 +48,6 @@ class Main(App):
         def set_tree_controller(dt):
             tree = self.view.ids['tree']
             tree.main_controller = self.controller
-            TagTreeController(self.view, self.controller)
             self.controller.open_file(address)
         Clock.schedule_once(set_tree_controller, 0.5)
         
