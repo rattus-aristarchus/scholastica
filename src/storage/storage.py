@@ -14,12 +14,14 @@ import os
 TMP = ".tmp"
 BAK = ".bak"
 
+
 def make_backup_folder_for(path):
     file_dir = os.path.dirname(path)
     backup_dir = os.path.join(file_dir, "backup")
     if not (os.path.exists(backup_dir)):
         os.makedirs(backup_dir)
     return backup_dir
+
 
 def back_up(path, backup_dir):    
     file_name = os.path.basename(path)
@@ -29,7 +31,8 @@ def back_up(path, backup_dir):
         content = file_obj.read()
         with open(backup_path, "w") as backup:
             backup.write(content)
-            
+
+
 def write_safe(path, content):
     new_file = open(path + TMP, "w")
     new_file.write(content)

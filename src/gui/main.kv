@@ -139,18 +139,28 @@
                 size_hint: None, None
                 size: 75, 25
                 on_release: root.ok()
-                
-<NewFile>:
-    title: STRINGS["filechooser"][0][app.lang]
+
+<FilePopup>:
+    title_size: 20
+    title_align: 'center'
     separator_height: 0
     on_open: self.focus = True
-    dirselect: True
-    
+
+<NewFile>:
+    title: STRINGS["filechooser"][0][app.lang]
+
     BoxLayout:
         size: root.size
         pos: root.pos
         orientation: 'vertical'
-    
+
+        canvas.before:
+            Color:
+                rgba: CONF[app.theme]["tag_background"]
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
         FileChooserListView:
             id: filechooser
 
@@ -180,17 +190,17 @@
                 id: cancel
                 text: STRINGS["filechooser"][4][app.lang]
                 on_release: root.close()
+                background_color: CONF[app.theme]["menu"]
                 
             Button:
                 id: new
                 text: STRINGS["filechooser"][2][app.lang]
                 on_release: root.act(filechooser.path, file_name.text)
+                background_color: CONF[app.theme]["menu"]
     
 <OpenFile>:
     title: STRINGS["filechooser"][1][app.lang]
-    separator_height: 0
-    on_open: self.focus = True
-    
+
     BoxLayout:
         size: root.size
         pos: root.pos
@@ -208,8 +218,10 @@
                 id: cancel
                 text: STRINGS["filechooser"][4][app.lang]
                 on_release: root.close()
+                background_color: CONF[app.theme]["menu"]
                 
             Button:
                 id: open
                 text: STRINGS["filechooser"][3][app.lang]
                 on_release: root.act(filechooser.path, filechooser.selection[0])
+                background_color: CONF[app.theme]["menu"]

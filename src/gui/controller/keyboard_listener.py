@@ -15,11 +15,14 @@ from gui.widgets import BasePopup
 
 logger = logging.getLogger(__name__)
 
-#TODO: some key combination should delete nodes recursively
+# TODO: some key combination should delete nodes recursively
+
+
 class KeyboardListener(Widget):
     
     def __init__(self, view, main_controller, tree_controller, **kwargs):
         super().__init__(**kwargs)
+        self._keyboard = None
         self.bind_keyboard()
         self.view = view
         self.controller = main_controller
@@ -29,8 +32,7 @@ class KeyboardListener(Widget):
         self._keyboard = Window.request_keyboard(
             self.close_keyboard, self, 'text')
         self._keyboard.bind(on_key_down=self._on_keyboard_down)
-  
-    
+
     def close_keyboard(self):
         self._keyboard.unbind(on_key_down=self._on_keyboard_down)
         self._keyboard = None

@@ -19,6 +19,7 @@ POLLED_FILE = ".scholastica_source"
 SEPARATOR = ":"
 MSG_SAVE = "FILE SAVED"
 
+
 class Messenger(threading.Thread):
     
     def __init__(self, msg_save, root):
@@ -29,7 +30,7 @@ class Messenger(threading.Thread):
 
     def read_message(self, message):
         message = message.replace("\n", "")
-        #Extract message type and content from the string
+        # Extract message type and content from the string
         if SEPARATOR in message:
             sep = message.index(SEPARATOR)
             msg_type = message[:sep]
@@ -43,11 +44,9 @@ class Messenger(threading.Thread):
             
         if MSG_SAVE in msg_type:
             self.msg_save(msg_content)
-        
-    
-    """
-    hopefully this will never have to be used
-    """
+
+    # hopefully this will never have to be used
+
     def traverse(self, directory):
         files = []
         for obj in os.listdir(directory):
@@ -69,9 +68,8 @@ class Messenger(threading.Thread):
             if not present:
                 files.append(Input(path))
                 
-            #TODO: then we also have to figure out which files don't have corresponding paths
-        
-     
+            # TODO: then we also have to figure out which files don't have corresponding paths
+
     def run(self):       
         last_size = 0
         last_line = 0
@@ -88,7 +86,8 @@ class Messenger(threading.Thread):
                     last_line = len(all_lines)
                     for line in new_lines:
                         self.read_message(line)
-                        
+
+
 class Input:
     
     def __init__(self, path):

@@ -15,9 +15,9 @@ from kivy.uix.label import Label
 
 from util import CONF
 from util import STRINGS
-import messaging.rpc as rpc
 
 LANG = CONF["misc"]["language"]
+
 
 class View(BoxLayout):
     
@@ -25,7 +25,8 @@ class View(BoxLayout):
         super().__init__(**kwargs)
         self.controller = None
     
-#TODO: cancel button
+# TODO: cancel button
+
 
 class BasePopup(Popup):    
     
@@ -40,19 +41,20 @@ class BasePopup(Popup):
         self.dismiss()
         
     def ok(self):
-        if not self.callback == None:
+        if self.callback is not None:
             self.callback()
         self.dismiss()
-      
+
+
 class FilePopup(Popup):
     
     def __init__(self, controller, **kwargs):
         super().__init__(**kwargs)
         self.controller = controller
         
-        #I have found no simple way to change the text of labels inside the 
-        #file picker into different
-        #languages; the following monstrosity takes care of that
+        # I have found no simple way to change the text of labels inside the
+        # file picker into different
+        # languages; the following monstrosity takes care of that
         for child in self.ids['filechooser'].children[0].children[0].children:
             if isinstance(child, BoxLayout):
                 for child_1 in child.children:
@@ -69,10 +71,11 @@ class OpenFile(FilePopup):
         
     def act(self, directory, filename):
         self.dismiss()
-        if not self.controller == None:
+        if self.controller is not None:
             path = os.path.join(directory, filename)
             self.controller.open_file(path)
-        
+
+
 class NewFile(FilePopup):
         
     def act(self, directory, filename):

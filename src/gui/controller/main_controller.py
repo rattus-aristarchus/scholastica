@@ -23,10 +23,9 @@ import messaging.rpc as rpc
 
 LANG = CONF["misc"]["language"]
 
-#TODO: create a tree controller and separate all tree functions into that
 
 class Controller:
-    
+
     def __init__(self, view):
         self.view = view
         self.view.controller = self
@@ -38,18 +37,17 @@ class Controller:
         self.tag_file = None
         self.tag_nest = None
 
-    def _get_tree(self):
+    @property
+    def tree(self):
         return self.view.ids['tree']
-    
-    tree = property(fget=_get_tree)
-    
+
     def new_file_popup(self):
         popup = NewFile(self)
         popup.open()
 
     def open_file_popup(self):
         OpenFile(self).open()
-    
+
     def new_file(self, path):
         path = path + CONF["misc"]["extension"]
 
@@ -63,14 +61,14 @@ class Controller:
                 open(path, 'w').close()
                 self.open_file(path)
             except OSError as e:
-                #TODO: test specifically that this works 
+                # TODO: test specifically that this works
                 self.popup(e.strerror + "; " + e.filename)
-            
+
     def open_file(self, path):
-        if not self.tag_file == None:
+        if self.tag_file is not None:
             self.close_file()
-        
-        #First, open the file
+
+        # First, open the file
         self.tag_file, messages = tagfile.read_tag_file(path)
         self.tag_nest = self.tag_file.tag_nest
         self.msgr.tag_file = self.tag_file
@@ -78,24 +76,24 @@ class Controller:
         self.tree_controller.tag_nest = self.tag_nest
         self.tree.show(self.tag_file)
         if not len(messages) == 0:
-            self.controller.popup("\n".join(messages))
-        
+            self.popup("\n".join(messages))
+
     def close_file(self):
         self.tree.clear()
         self.msgr.tag_file = None
         self.tag_file = None
         self.tag_nest = None
-    
+
     def save_file(self):
         tagfile.write_tag_file(self.tag_file)
 
     def popup(self, message, callback=None):
         Logger.info(f"Controller: popup created with message {message}")
-        
+
         popup = BasePopup()
         popup.ids["label"].text = message
         popup.callback = callback
         popup.open()
-            
+
     def return_kbd(self):
-        self.kbd_listener.bind_keyboard() 
+        self.kbd_listener.bind_keyboard()
