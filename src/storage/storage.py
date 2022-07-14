@@ -9,7 +9,7 @@ Operations for handling files
 """
 
 import os
-
+import kivy.resources
 
 TMP = ".tmp"
 BAK = ".bak"

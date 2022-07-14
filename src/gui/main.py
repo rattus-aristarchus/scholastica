@@ -37,7 +37,6 @@ class Main(App):
 
         self.title = "Scholastica"
         self.view = View()
-        self.controller = Controller(self.view)
 
         address = "/media/kryis/TOSHIBA EXT/записи/организатор записей/тестовый файл.txt"
         address_1 = "/media/kryis/TOSHIBA EXT/записи/погреб/описание мира/планета и ее биосфера/планетология.sca"
@@ -47,9 +46,10 @@ class Main(App):
         # settingg the controller for the tree
         def set_tree_controller(dt):
             tree = self.view.ids['tree']
+            self.controller = Controller(self.view)
             tree.main_controller = self.controller
             self.controller.open_file(address)
 
-        Clock.schedule_once(set_tree_controller, 0.5)
+        Clock.schedule_once(set_tree_controller, 5)
 
         return self.view

@@ -43,7 +43,7 @@ class TagTreeController:
         tag.text = new_name
         self.main_controller.save_file()
 
-        if not old_name == "":
+        if not old_name == "" and not old_name == new_name:
             func = lambda: self._edit_tag_in_files(old_name, new_name)
             self.main_controller.popup(message=STRINGS["popup"][2][LANG],
                                        callback=func)
