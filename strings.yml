@@ -29,8 +29,8 @@ filechooser:
         ru: "Размер"
         en: "Size"
     7:
-        ru: "Введите имя файла. К нему будет автоматически добавлено расширение '.sca'"
-        en: "Please enter a name for the new file. The extension '.sca' will be automatically appended to it."
+        ru: "Введите имя файла. К нему будет автоматически добавлено расширение '.scla'"
+        en: "Please enter a name for the new file. The extension '.scla' will be automatically appended to it."
 
 popup:
     0: 

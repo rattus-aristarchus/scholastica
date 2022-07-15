@@ -19,5 +19,5 @@ from kivy.logger import Logger
 MAIN_DIR = os.path.dirname(sys.path[0])
 Logger.info("Util: using dir " + MAIN_DIR)
 
-CONF = yaml.safe_load(open(MAIN_DIR + "/conf.yml", "r"))
-STRINGS = yaml.safe_load(open(MAIN_DIR + "/strings.yml", "r"))
+CONF = yaml.safe_load(open(MAIN_DIR + "/conf.yml", "r", encoding="utf-8"))
+STRINGS = yaml.safe_load(open(MAIN_DIR + "/strings.yml", "r", encoding="utf-8"))
