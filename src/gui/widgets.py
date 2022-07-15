@@ -12,6 +12,7 @@ from kivy.logger import Logger
 from kivy.uix.popup import Popup
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
+from kivy.properties import  ObjectProperty
 
 from util import CONF
 from util import STRINGS
@@ -20,10 +21,10 @@ LANG = CONF["misc"]["language"]
 
 
 class View(BoxLayout):
-    
-    def __init__(self, **kwargs):
+
+    def __init__(self, controller, **kwargs):
+        self.controller = controller
         super().__init__(**kwargs)
-        self.controller = None
     
 # TODO: cancel button
 

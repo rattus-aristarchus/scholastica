@@ -18,9 +18,7 @@ LANG = CONF["misc"]["language"]
 
 class TagTreeController:
 
-    def __init__(self, view, main_controller):
-        self.view = view
-        self.tree.controller = self
+    def __init__(self, main_controller):
         self.main_controller = main_controller
 
         self.tag_file = None
@@ -29,6 +27,9 @@ class TagTreeController:
         # the copied tagnode; this is needed for the copy-paste functionality
         self.clipboard = None
         self._cut = False
+
+    def set_view(self, view):
+        self.view = view
 
     @property
     def tree(self):

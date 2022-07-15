@@ -21,10 +21,9 @@ import storage.sourcefile as sourcefile
 
 class Messenger(threading.Thread):
 
-    def __init__(self, view, tag_file=None):
+    def __init__(self, tag_file=None):
         super().__init__()
         self.tag_file = tag_file
-        self.view = view
 
         self.server = SimpleXMLRPCServer(('localhost', 9000),
                                          logRequests=True,
@@ -33,6 +32,9 @@ class Messenger(threading.Thread):
         self.server.register_function(self.query_tags, 'query_tags')
         self.server.register_function(self.query_sources, 'query_sources')
         self.proxy = ServerProxy('http://localhost:8000', allow_none=True)
+
+    def set_view(self, view):
+        self.view = view
 
     def run(self):
         try:

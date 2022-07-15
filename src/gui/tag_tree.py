@@ -10,6 +10,7 @@ from kivy.logger import Logger
 from kivy.uix.treeview import TreeView
 from kivy.uix.treeview import TreeViewNode
 from kivy.uix.gridlayout import GridLayout
+from kivy.properties import ObjectProperty
 
 from data.base_types import Source
 from data.base_types import Entry
@@ -31,11 +32,14 @@ tree.
 
 class TagTree(TreeView):
 
+    controller = ObjectProperty()
+    main_controller = ObjectProperty()
+
     def __init__(self, **kwargs):
         super().__init__(root_options=dict(text='Гнездо'), **kwargs)
         self.bind(minimum_height=self.setter("height"))
-        self.controller = None
-        self.main_controller = None
+      #  self.controller = None
+#        self.main_controller = None
 
         self.tag_file = None
         self.tag_nest = None

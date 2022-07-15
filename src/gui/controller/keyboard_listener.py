@@ -20,14 +20,16 @@ logger = logging.getLogger(__name__)
 
 class KeyboardListener(Widget):
     
-    def __init__(self, view, main_controller, tree_controller, **kwargs):
+    def __init__(self, main_controller, tree_controller, **kwargs):
         super().__init__(**kwargs)
         self._keyboard = None
         self.bind_keyboard()
-        self.view = view
         self.controller = main_controller
         self.tree_controller = tree_controller
-        
+
+    def set_view(self, view):
+        self.view = view
+
     def bind_keyboard(self):
         self._keyboard = Window.request_keyboard(
             self.close_keyboard, self, 'text')

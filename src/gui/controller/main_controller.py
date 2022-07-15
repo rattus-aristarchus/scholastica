@@ -26,16 +26,20 @@ LANG = CONF["misc"]["language"]
 
 class Controller:
 
-    def __init__(self, view):
-        self.view = view
-        self.view.controller = self
-        self.tree_controller = TagTreeController(self.view, self)
-        self.kbd_listener = KeyboardListener(view, self, self.tree_controller)
-        self.msgr = rpc.Messenger(self.view)
+    def __init__(self):
+        self.tree_controller = TagTreeController(self)
+        self.kbd_listener = KeyboardListener(self, self.tree_controller)
+        self.msgr = rpc.Messenger()
         self.msgr.start()
 
         self.tag_file = None
         self.tag_nest = None
+
+    def set_view(self, view):
+        self.view = view
+        self.tree_controller.set_view(view)
+        self.kbd_listener.set_view(view)
+        self.msgr.set_view(view)
 
     @property
     def tree(self):

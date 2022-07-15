@@ -41,16 +41,9 @@ class Main(App):
         Logger.info("Main: building the app")
 
         self.title = "Scholastica"
-        self.view = View()
-
-        # since the interface hasn't been initialized yet we've got to delay
-        # settingg the controller for the tree
-        def set_tree_controller(dt):
-            tree = self.view.ids['tree']
-            self.controller = Controller(self.view)
-            tree.main_controller = self.controller
-            self.controller.open_file(self.path)
-
-        Clock.schedule_once(set_tree_controller, 5)
+        self.controller = Controller()
+        self.view = View(self.controller)
+        self.controller.set_view(self.view)
+        self.controller.open_file(self.path)
 
         return self.view
