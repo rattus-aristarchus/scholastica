@@ -24,13 +24,18 @@ CONF = util.CONF
 LANG = CONF["misc"]["language"]
 THEME = CONF["misc"]["theme"]
 
+path = "/media/kryis/TOSHIBA EXT/записи/организатор записей/тестовый файл.scla"
+path_1 = "/media/kryis/TOSHIBA EXT/записи/погреб/описание мира/планета и ее биосфера/планетология.scla"
+path_2 = "/media/kryis/TOSHIBA EXT/наука/схоластика/капитализм.scla"
+
 
 class Main(App):
 
-    def __init__(self):
+    def __init__(self, file_path=path):
         super().__init__()
         self.lang = LANG
         self.theme = THEME
+        self.path = file_path
 
     def build(self):
         Logger.info("Main: building the app")
@@ -38,17 +43,13 @@ class Main(App):
         self.title = "Scholastica"
         self.view = View()
 
-        address = "/media/kryis/TOSHIBA EXT/записи/организатор записей/тестовый файл.txt"
-        address_1 = "/media/kryis/TOSHIBA EXT/записи/погреб/описание мира/планета и ее биосфера/планетология.sca"
-        address_2 = "/media/kryis/TOSHIBA EXT/наука/схоластика/капитализм.sca"
-
         # since the interface hasn't been initialized yet we've got to delay
         # settingg the controller for the tree
         def set_tree_controller(dt):
             tree = self.view.ids['tree']
             self.controller = Controller(self.view)
             tree.main_controller = self.controller
-            self.controller.open_file(address)
+            self.controller.open_file(self.path)
 
         Clock.schedule_once(set_tree_controller, 5)
 
