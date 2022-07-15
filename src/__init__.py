@@ -6,9 +6,16 @@ Created on Mon May 23 19:08:19 2022
 @author: kryis
 """
 
+import sys
 from kivy.logger import Logger, LOG_LEVELS
+Logger.setLevel(LOG_LEVELS['info'])
 import gui.main as gui
 
-Logger.setLevel(LOG_LEVELS['debug'])
-app = gui.Main()
+Logger.info("Starting application with arguments " + str(sys.argv))
+
+if len(sys.argv) > 1:
+    app = gui.Main(sys.argv[1])
+else:
+    app = gui.Main()
+
 app.run()

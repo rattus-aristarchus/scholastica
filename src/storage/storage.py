@@ -9,13 +9,15 @@ Operations for handling files
 """
 
 import os
-import kivy.resources
+from kivy.logger import Logger
+
 
 TMP = ".tmp"
 BAK = ".bak"
 
 
 def make_backup_folder_for(path):
+    Logger.info("Storage: creating backup folder for " + path)
     file_dir = os.path.dirname(path)
     backup_dir = os.path.join(file_dir, "backup")
     if not (os.path.exists(backup_dir)):
