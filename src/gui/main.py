@@ -42,7 +42,12 @@ class Main(App):
         Logger.info("Main: building the app")
 
         self.title = "Scholastica"
+
+        def set_title(title):
+            self.title = title
+
         self.controller = Controller()
+        self.controller.set_title = set_title
         self.view = View(self.controller)
         self.controller.set_view(self.view)
         self.controller.open_file(self.path)

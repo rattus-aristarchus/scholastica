@@ -66,7 +66,9 @@ class FilePopup(Popup):
       
     def close(self):
         self.dismiss()
-        
+
+    def set_path(self, path):
+        self.ids["filechooser"].path = path
       
 class OpenFile(FilePopup):
         

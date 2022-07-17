@@ -11,6 +11,7 @@ import os
 from kivy.logger import Logger
 from kivy.clock import Clock
 
+import util
 from gui.widgets import BasePopup, OpenFile, NewFile
 from gui.tag_tree import TagNode, EntryNode, SourceNode
 from gui.controller.keyboard_listener import KeyboardListener
@@ -47,10 +48,13 @@ class Controller:
 
     def new_file_popup(self):
         popup = NewFile(self)
+        popup.set_path(CONF["misc"]["default_location"])
         popup.open()
 
     def open_file_popup(self):
-        OpenFile(self).open()
+        popup = OpenFile(self)
+        popup.set_path(CONF["misc"]["default_location"])
+        popup.open()
 
     def new_file(self, path):
         path = path + CONF["misc"]["extension"]
@@ -83,6 +87,10 @@ class Controller:
         # doesn't revive for any next file; although when you just open a new file it works
         # fine. can't for the life of me understand why
         self.kbd_listener.bind_keyboard()
+        self.set_title(os.path.basename(path))
+
+        # change the default location for opening files
+        util.set_conf("misc", "default_location", path)
         if not len(messages) == 0:
             self.popup("\n".join(messages))
 

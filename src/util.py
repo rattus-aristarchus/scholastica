@@ -20,4 +20,11 @@ MAIN_DIR = os.path.dirname(sys.path[0])
 Logger.info("Util: using dir " + MAIN_DIR)
 
 CONF = yaml.safe_load(open(MAIN_DIR + "/conf.yml", "r", encoding="utf-8"))
+CONST = yaml.safe_load(open(MAIN_DIR + "/const.yml", "r", encoding="utf-8"))
 STRINGS = yaml.safe_load(open(MAIN_DIR + "/strings.yml", "r", encoding="utf-8"))
+
+
+def set_conf(category, name, value):
+    CONF[category][name] = value
+    with open(MAIN_DIR + "/conf.yml", "w", encoding="utf-8") as file:
+        yaml.dump(CONF, file)

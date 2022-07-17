@@ -81,12 +81,14 @@ class TagNest:
 
         return new_tag
 
-    def move_tag(self, tag, destination, index=-1):
+    def move_tag(self, tag, destination, former_parent=None, index=-1):
         if tag in self.roots:
             self.roots.remove(tag)
-        else:
+        elif former_parent is None:
             for parent in tag.parents:
                 self.remove_child_tag(tag, parent)
+        else:
+            self.remove_child_tag(tag, former_parent)
 
         self.add_child_tag(tag, destination, index)
 

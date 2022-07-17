@@ -15,7 +15,7 @@ from kivy.properties import ObjectProperty
 from data.base_types import Source
 from data.base_types import Entry
 from util import CONF
-from util import STRINGS
+from util import CONST
 
 LANG = CONF["misc"]["language"]
 THEME = CONF["misc"]["theme"]
@@ -341,12 +341,12 @@ class TagTree(TreeView):
             self.copy_node(child, new_node)
 
     def clipboard_color(self, node):
-        node.even_color = CONF[THEME]["clipboard_background"]
-        node.odd_color = CONF[THEME]["clipboard_background"]
+        node.even_color = CONST[THEME]["clipboard_background"]
+        node.odd_color = CONST[THEME]["clipboard_background"]
 
     def normal_color(self, node):
-        node.even_color = CONF[THEME]["tag_background"]
-        node.odd_color = CONF[THEME]["tag_background"]
+        node.even_color = CONST[THEME]["tag_background"]
+        node.odd_color = CONST[THEME]["tag_background"]
 
     """
     Inserts a tag node before all content nodes at the destination

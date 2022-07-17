@@ -1,5 +1,6 @@
 #:import CONF util.CONF
 #:import STRINGS util.STRINGS
+#:import CONST util.CONST
 
 <View>:
     id: view
@@ -7,7 +8,7 @@
     
     canvas.before:
         Color:
-            rgba: CONF[app.theme]["background"]
+            rgba: CONST[app.theme]["background"]
         Rectangle:
             pos: self.pos
             size: self.size
@@ -23,7 +24,7 @@
             size_hint: None, None
             size: 200, 25
             font_size: 18
-            background_color: CONF[app.theme]["menu"]
+            background_color: CONST[app.theme]["menu"]
             on_release: root.controller.new_file_popup()
             
         Button:
@@ -32,7 +33,7 @@
             size_hint: None, None
             size: 200, 25
             font_size: 18
-            background_color: CONF[app.theme]["menu"]
+            background_color: CONST[app.theme]["menu"]
             on_release: root.controller.open_file_popup()
     
     ScrollView:
@@ -55,9 +56,9 @@
     cols: 1
     height: self.minimum_height
     orientation: 'lr-tb'
-    color_selected: CONF[app.theme]["selected_node"]
-    even_color: CONF[app.theme]["background"]
-    odd_color: CONF[app.theme]["background_odd"]
+    color_selected: CONST[app.theme]["selected_node"]
+    even_color: CONST[app.theme]["background"]
+    odd_color: CONST[app.theme]["background_odd"]
             
     Label:
         id: label
@@ -98,8 +99,8 @@
 
 <TagNode>:    
     cols: 2
-    even_color: CONF[app.theme]["tag_background"]
-    odd_color: CONF[app.theme]["tag_background"]
+    even_color: CONST[app.theme]["tag_background"]
+    odd_color: CONST[app.theme]["tag_background"]
     
     TextInput:
         id: input
@@ -109,7 +110,7 @@
         size_hint_y: None
         height: 22
         padding: [2, 2, 2, 2]
-        background_color: CONF[app.theme]["input_background"]
+        background_color: CONST[app.theme]["input_background"]
         foreground_color: [1, 1, 1, 1]
         
 <BasePopup>:
@@ -160,7 +161,7 @@
 
         canvas.before:
             Color:
-                rgba: CONF[app.theme]["tag_background"]
+                rgba: CONST[app.theme]["tag_background"]
             Rectangle:
                 pos: self.pos
                 size: self.size
@@ -183,7 +184,7 @@
             multiline: False  
             font_size: 17
             padding: [2, 2, 2, 2]
-            background_color: CONF[app.theme]["input_background"]
+            background_color: CONST[app.theme]["input_background"]
         
         BoxLayout:
             size_hint_y: None
@@ -194,13 +195,13 @@
                 id: cancel
                 text: STRINGS["filechooser"][4][app.lang]
                 on_release: root.close()
-                background_color: CONF[app.theme]["menu"]
+                background_color: CONST[app.theme]["menu"]
                 
             Button:
                 id: new
                 text: STRINGS["filechooser"][2][app.lang]
                 on_release: root.act(filechooser.path, file_name.text)
-                background_color: CONF[app.theme]["menu"]
+                background_color: CONST[app.theme]["menu"]
     
 <OpenFile>:
     title: STRINGS["filechooser"][1][app.lang]
@@ -212,7 +213,7 @@
 
         canvas.before:
             Color:
-                rgba: CONF[app.theme]["tag_background"]
+                rgba: CONST[app.theme]["tag_background"]
             Rectangle:
                 pos: self.pos
                 size: self.size
@@ -229,10 +230,10 @@
                 id: cancel
                 text: STRINGS["filechooser"][4][app.lang]
                 on_release: root.close()
-                background_color: CONF[app.theme]["menu"]
+                background_color: CONST[app.theme]["menu"]
                 
             Button:
                 id: open
                 text: STRINGS["filechooser"][3][app.lang]
                 on_release: root.act(filechooser.path, filechooser.selection[0])
-                background_color: CONF[app.theme]["menu"]
+                background_color: CONST[app.theme]["menu"]

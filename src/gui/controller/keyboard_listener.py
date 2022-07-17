@@ -49,9 +49,9 @@ class KeyboardListener(Widget):
         
         tree = self.view.ids['tree']
         key = keycode[1]
-        ctrl = len(modifiers) > 0 and modifiers[0] == 'ctrl'
-        shift = len(modifiers) > 0 and modifiers[0] == 'shift'
-        alt = len(modifiers) > 0 and modifiers[0] == 'alt'
+        ctrl = 'ctrl' in modifiers
+        shift = 'shift' in modifiers
+        alt = 'alt' in modifiers
         
         # Keycode is composed of an integer + a string
         # If we hit escape, release the keyboard
@@ -60,17 +60,19 @@ class KeyboardListener(Widget):
             if isinstance(root, BasePopup):
                 root.escape()
         elif key == 'up':
-            if ctrl:
+            if ctrl and shift:
+                self.tree_controller.push_node(forward=False)
+            elif ctrl:
                 tree.step_up_over()
             else:
                 tree.step_up()                
         elif key == 'down':
-            if ctrl:
+            if ctrl and shift:
+                self.tree_controller.push_node(forward=True)
+            elif ctrl:
                 tree.step_down_over()
             else:
                 tree.step_down()
-        elif key == 'down':
-            tree.step_down()
         elif key == 'left':
             tree.step_out()
         elif key == 'right':
@@ -85,9 +87,9 @@ class KeyboardListener(Widget):
             if shift:
                 self.tree_controller.delete_recursively_message()
             else:
-                self.tree_controller.edit_node(False)
+                self.tree_controller.edit_node(from_end=False)
         elif key == 'backspace':
-            self.tree_controller.edit_node(True)
+            self.tree_controller.edit_node(from_end=True)
         elif key == 'tab':
             if ctrl and not alt:
                 self.tree_controller.raise_selected_node()

@@ -215,8 +215,10 @@ class TagTreeController:
         prev_node = parent.nodes[index - 1]
 
         # Change the data
+        parent_tag = None if parent == self.tree.root else parent.entity
         self.tag_nest.move_tag(tag=node.entity,
-                               destination=prev_node.entity)
+                               destination=prev_node.entity,
+                               former_parent=parent_tag)
         self.main_controller.save_file()
 
         # Change the representation
@@ -237,9 +239,7 @@ class TagTreeController:
         if not isinstance(node, TagNode):
             self.main_controller.popup(STRINGS["popup"][8][LANG])
             return
-        if (
-                node.parent_node == self.tree.root
-        ):
+        if node.parent_node == self.tree.root:
             self.main_controller.popup(STRINGS["popup"][5][LANG])
             return
         parent = node.parent_node
@@ -251,7 +251,10 @@ class TagTreeController:
             destination = grandparent.entity
 
         # Change the data
-        self.tag_nest.move_tag(node.entity, destination, index)
+        self.tag_nest.move_tag(tag=node.entity,
+                               destination=destination,
+                               former_parent=parent.entity,
+                               index=index)
         self.main_controller.save_file()
 
         # Change the representation
@@ -310,3 +313,38 @@ class TagTreeController:
         self.main_controller.save_file()
 
         self.tree.remove_node(node)
+
+    def push_node(self, forward):
+        selected_node = self.tree.selected_node
+
+        if selected_node is None or not isinstance(selected_node, TagNode):
+            self.main_controller.popup(STRINGS["warning"][0])
+            return
+
+        tag = selected_node.entity
+
+        # First, change the data
+        if tag in self.tag_nest.roots:
+            index = self.tag_nest.roots.index(tag)
+            max_index = len(self.tag_nest.roots)
+            parent = None
+        else:
+            parent = selected_node.parent_node.entity
+            index = parent.children.index(tag)
+            max_index = len(parent.children)
+
+        if (index == 0 and not forward) or (index >= max_index - 1 and forward):
+            return
+
+        new_index = index + 1 if forward else index - 1
+        self.tag_nest.move_tag(tag=tag,
+                               destination=parent,
+                               former_parent=parent,
+                               index=new_index)
+
+        # Then, the representation
+        index = selected_node.parent_node.nodes.index(selected_node)
+        new_index = index + 1 if forward else index - 1
+        self.tree.move_node(node=selected_node,
+                            destination=selected_node.parent_node,
+                            index=new_index)

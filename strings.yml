@@ -67,6 +67,10 @@ popup:
     10:
         ru: "В главном окне можно удалять только метки. Источники и записи можно удалять в файлах .txt."
         en: "Only tags can be deleted in the main window. Sources and entries have to be deleted in .txt files."
+warning:
+    0:
+        ru: "Изменять последовательность можно только для меток."
+        en: "Can only change order of tags."
 error:
     0:
         ru: ["Не удалось найти файл ", ". Скорее всего, он был переименован. Откройте переименованный файл в текстовом редакторе, и его содержимое должно загрузиться."]
