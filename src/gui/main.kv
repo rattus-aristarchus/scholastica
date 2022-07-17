@@ -16,14 +16,14 @@
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: None
-        height: 25
+        height: dp(25)
         
         Button:
             id: 'new'
             text: STRINGS["menu"][0][app.lang]
             size_hint: None, None
-            size: 200, 25
-            font_size: 18
+            size: dp(200), dp(25)
+            font_size: sp(18)
             background_color: CONST[app.theme]["menu"]
             on_release: root.controller.new_file_popup()
             
@@ -31,8 +31,8 @@
             id: 'open'
             text: STRINGS["menu"][1][app.lang]
             size_hint: None, None
-            size: 200, 25
-            font_size: 18
+            size: dp(200), dp(25)
+            font_size: sp(18)
             background_color: CONST[app.theme]["menu"]
             on_release: root.controller.open_file_popup()
     
@@ -40,7 +40,7 @@
         id: scroll
         do_scroll_x: False
         do_scroll_y: True
-        bar_width: 10
+        bar_width: dp(10)
         scroll_timeout: 1000
         effect_cls: 'ScrollEffect'
         
@@ -62,20 +62,20 @@
             
     Label:
         id: label
-        font_size: 15
+        font_size: sp(15)
         size_hint_y: None
         text_size: self.width, None
-        width: 500
+        width: dp(500)
         height: self.texture_size[1]
         padding: (2, 2)
 
 <SourceNode>
     Label:
         id: label
-        font_size: 15
+        font_size: sp(15)
         size_hint_y: None
         text_size: self.width, None
-        width: 500
+        width: dp(500)
         height: self.texture_size[1]
         padding: (2, 2)
         markup: True
@@ -85,14 +85,14 @@
     
     Label:
         id: comment
-        font_size: 15
+        font_size: sp(15)
         size_hint: None, None
         size: self.texture_size
         padding: (2, 2)
     
     Label:
         id: reference
-        font_size: 15
+        font_size: sp(15)
         size_hint: None, None
         size: self.texture_size
         padding: (2, 2)
@@ -106,9 +106,9 @@
         id: input
         multiline: False
         on_text_validate: root.edit_done()
-        font_size: 15
+        font_size: sp(15)
         size_hint_y: None
-        height: 22
+        height: dp(22)
         padding: [2, 2, 2, 2]
         background_color: CONST[app.theme]["input_background"]
         foreground_color: [1, 1, 1, 1]
@@ -117,7 +117,7 @@
     title: ""
     separator_height: 0
     size_hint: None, None
-    size: 400, 200
+    size: dp(400), dp(200)
     on_open: self.focus = True
     dirselect: True
 
@@ -129,24 +129,24 @@
     
         Label:
             id: label
-            font_size: 15
+            font_size: sp(15)
             text_size: self.size
             valign: 'middle'
-            padding: 20, 20
+            padding: dp(20), dp(20)
             
         AnchorLayout
             size_hint: 1, None
-            height: 25
+            height: dp(25)
             
             Button:
                 id: ok_button
                 text: STRINGS["popup"][1][app.lang]
                 size_hint: None, None
-                size: 75, 25
+                size: dp(75), dp(25)
                 on_release: root.ok()
 
 <FilePopup>:
-    title_size: 20
+    title_size: sp(20)
     title_align: 'center'
     separator_height: 0
     on_open: self.focus = True
@@ -166,29 +166,29 @@
                 pos: self.pos
                 size: self.size
 
-        FileChooserListView:
+        FileChooserIconView:
             id: filechooser
 
         Label:
             id: file_name_caption
             size_hint: None, None
             width: self.texture_size[0]
-            height: 25
-            font_size: 17
+            height: dp(25)
+            font_size: sp(17)
             text: STRINGS["filechooser"][7][app.lang]
 
         TextInput:
             id: file_name
             size_hint_y: None
-            height: 25
+            height: dp(25)
             multiline: False  
-            font_size: 17
+            font_size: sp(17)
             padding: [2, 2, 2, 2]
             background_color: CONST[app.theme]["input_background"]
         
         BoxLayout:
             size_hint_y: None
-            height: 25
+            height: dp(25)
             orientation: 'horizontal'
         
             Button:
@@ -218,12 +218,12 @@
                 pos: self.pos
                 size: self.size
 
-        FileChooserListView:
+        FileChooserIconView:
             id: filechooser
         
         BoxLayout:
             size_hint_y: None
-            height: 25
+            height: dp(25)
             orientation: 'horizontal'
             
             Button:

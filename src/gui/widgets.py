@@ -56,6 +56,7 @@ class FilePopup(Popup):
         # I have found no simple way to change the text of labels inside the
         # file picker into different
         # languages; the following monstrosity takes care of that
+        """
         for child in self.ids['filechooser'].children[0].children[0].children:
             if isinstance(child, BoxLayout):
                 for child_1 in child.children:
@@ -63,6 +64,7 @@ class FilePopup(Popup):
                         child_1.text = STRINGS["filechooser"][5][LANG]
                     if isinstance(child_1, Label) and child_1.text == "Size":
                         child_1.text = STRINGS["filechooser"][6][LANG]
+                    """
       
     def close(self):
         self.dismiss()
