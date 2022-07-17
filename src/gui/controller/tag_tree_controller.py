@@ -63,7 +63,7 @@ class TagTreeController:
                 and selected_node.editing
         ):
             return
-        elif isinstance(selected_node, TagNode):
+        elif isinstance(selected_node, TagNode) or selected_node is None:
             self.create_tag_at_selection()
         elif isinstance(selected_node, (EntryNode, SourceNode)):
             self.edit_node(False)

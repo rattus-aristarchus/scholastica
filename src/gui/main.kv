@@ -209,7 +209,14 @@
         size: root.size
         pos: root.pos
         orientation: 'vertical'
-        
+
+        canvas.before:
+            Color:
+                rgba: CONF[app.theme]["tag_background"]
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
         FileChooserListView:
             id: filechooser
         

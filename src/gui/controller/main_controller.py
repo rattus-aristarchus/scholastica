@@ -79,6 +79,10 @@ class Controller:
         self.tree_controller.tag_file = self.tag_file
         self.tree_controller.tag_nest = self.tag_nest
         self.tree.show(self.tag_file)
+        # without the next line, when you create a new file the keyboard listener dies and
+        # doesn't revive for any next file; although when you just open a new file it works
+        # fine. can't for the life of me understand why
+        self.kbd_listener.bind_keyboard()
         if not len(messages) == 0:
             self.popup("\n".join(messages))
 

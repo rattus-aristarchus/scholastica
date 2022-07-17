@@ -3,6 +3,7 @@ misc:
     #possible values: ru, en
     theme: colors_strasbourg
     extension: .scla
+    log_level: info
 
 text:
     separator: "====="

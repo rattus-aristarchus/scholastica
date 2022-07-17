@@ -81,7 +81,7 @@ class NewFile(FilePopup):
         
     def act(self, directory, filename):
         self.dismiss()
-        if not self.controller == None:
+        if self.controller is not None:
             path = os.path.join(directory, filename)
             self.controller.new_file(path)
         

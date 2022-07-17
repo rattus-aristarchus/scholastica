@@ -369,7 +369,8 @@ class TagTree(TreeView):
     """
 
     def insert_tag_node(self, node, parent, index):
-        Logger.info("TagTree: insert_tag_node, node " + node.entity.text + ", parent " + parent.entity.text)
+        parent_name = "root" if parent == self.root else parent.entity.text
+        Logger.info("TagTree: insert_tag_node, node " + node.entity.text + ", parent " + parent_name)
         if node == self.root:
             Logger.warning(f"INSERT NODE: trying to insert root node into "
                            f"node {parent.entity.text} at index {index}")

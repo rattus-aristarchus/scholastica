@@ -27,11 +27,12 @@ THEME = CONF["misc"]["theme"]
 path = "/media/kryis/TOSHIBA EXT/записи/организатор записей/тестовый файл.scla"
 path_1 = "/media/kryis/TOSHIBA EXT/записи/погреб/описание мира/планета и ее биосфера/планетология.scla"
 path_2 = "/media/kryis/TOSHIBA EXT/наука/схоластика/капитализм.scla"
+path_3 = "/media/kryis/TOSHIBA EXT/наука/схоластика/гендер.scla"
 
 
 class Main(App):
 
-    def __init__(self, file_path=path):
+    def __init__(self, file_path=path_3):
         super().__init__()
         self.lang = LANG
         self.theme = THEME
