@@ -101,9 +101,13 @@ class TagTree(TreeView):
         # Display all sources with the tag
         for content in tag.content:
             if isinstance(content, Source):
-                source_node = SourceNode(content,
-                                         self.tag_file.content_by_source[content])
+                source_node = SourceNode(source=content,
+                                         file=self.tag_file.content_by_source[content])
                 self.add_node(source_node, tag_node)
+                for description in content.descriptions:
+                    entry_node = EntryNode(entry=description,
+                                           file=self.tag_file.content_by_source[content])
+                    self.add_node(entry_node, source_node)
 
         # Display all entries
         for content in tag.content:
@@ -433,8 +437,8 @@ class EntNode(GridLayout, TreeViewNode):
 
 class SourceNode(EntNode):
 
-    def __init__(self, entity, file, **kwargs):
-        super().__init__(entity, **kwargs)
+    def __init__(self, source, file, **kwargs):
+        super().__init__(source, **kwargs)
         self.file = file
 
     def load_text(self):

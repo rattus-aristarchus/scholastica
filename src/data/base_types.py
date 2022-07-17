@@ -52,6 +52,7 @@ class Source:
     def __init__(self, text):
         self.text = text
         self.tags = []
+        self.descriptions = []
 
     def __eq__(self, o):
         return isinstance(o, Source) and self.text == o.text

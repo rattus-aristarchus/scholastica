@@ -146,10 +146,14 @@ Returns all the sources contained in a chunk, with their tags.
 def read_sources(chunk, tag_nest):
     result = []
     for line in chunk:
-        if is_enclosed(line):
+        if is_enclosed(line) and len(result) > 0:
             tags = get_tags(line, tag_nest)
             for tag in tags:
                 tag_nest.add_tag_to_source(tag, result[-1])
+        elif is_comment(line) and len(result) > 0:
+            line = get_comment(line)
+            description = data.Entry(line)
+            result[-1].descriptions.append(description)
         else:
             source = data.Source(clean_line(line))
             result.append(source)

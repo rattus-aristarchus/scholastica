@@ -64,6 +64,9 @@ class TagNest:
                 child.parents.append(parent)
 
     def remove_child_tag(self, child, parent):
+        """
+        Does not make the new child a root if it has no other parents.
+        """
         if parent in child.parents:
             child.parents.remove(parent)
         if child in parent.children:
@@ -118,6 +121,8 @@ class TagNest:
         for child in tag.children:
             if len(child.parents) == 1:
                 self.delete_tag_recursively(child)
+            else:
+                self.remove_child_tag(child, tag)
         self.clear_refs(tag)
 
     def clear_refs(self, entity):
