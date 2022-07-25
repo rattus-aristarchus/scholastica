@@ -12,7 +12,7 @@ from kivy.logger import Logger
 from kivy.uix.popup import Popup
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
-from kivy.properties import  ObjectProperty
+from kivy.properties import ObjectProperty
 
 from util import CONF
 from util import STRINGS
@@ -71,7 +71,8 @@ class FilePopup(Popup):
 
     def set_path(self, path):
         self.ids["filechooser"].path = path
-      
+
+
 class OpenFile(FilePopup):
         
     def act(self, directory, filename):

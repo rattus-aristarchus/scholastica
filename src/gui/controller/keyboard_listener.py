@@ -5,15 +5,13 @@ Created on Mon Jun 13 15:39:42 2022
 
 @author: kryis
 """
-import logging
 from kivy.uix.widget import Widget
 from kivy.core.window import Window
 from kivy.app import App
+from kivy.logger import Logger
 
-import gui.main as main
 from gui.widgets import BasePopup
 
-logger = logging.getLogger(__name__)
 
 # TODO: some key combination should delete nodes recursively
 
@@ -43,16 +41,16 @@ class KeyboardListener(Widget):
     This is called when a key is pressed.
     """
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
-        logger.debug('The key', keycode, 'have been pressed')
-        logger.debug(' - text is %r' % text)
-        logger.debug(' - modifiers are %r' % modifiers)
-        
         tree = self.view.ids['tree']
         key = keycode[1]
         ctrl = 'ctrl' in modifiers
         shift = 'shift' in modifiers
         alt = 'alt' in modifiers
-        
+
+        Logger.debug("KBD_LISTENER: The " + key + " key has been pressed")
+        Logger.debug(' - text is %r' % text)
+        Logger.debug(' - modifiers are %r' % modifiers)
+
         # Keycode is composed of an integer + a string
         # If we hit escape, release the keyboard
         if key == 'escape':            
@@ -97,15 +95,15 @@ class KeyboardListener(Widget):
                 self.tree_controller.lower_selected_node()
         elif key == 'c' and ctrl:
             self.tree_controller.copy()
-        elif key == 'с' and ctrl:
+        elif text == 'с' and ctrl:
             self.tree_controller.copy()
         elif key == 'x' and ctrl:
             self.tree_controller.cut()
-        elif key == 'ч' and ctrl:
+        elif text == 'ч' and ctrl:
             self.tree_controller.cut()
         elif key == 'v' and ctrl:
             self.tree_controller.paste()
-        elif key == 'м' and ctrl:
+        elif text == 'м' and ctrl:
             self.tree_controller.paste()
             
         # Return True to accept the key. Otherwise, it will be used by
