@@ -9,12 +9,12 @@ Created on Sat May 28 22:51:01 2022
 import collections
 from kivy.logger import Logger
 
-from util import CONF
+from util import CONF, STRINGS
 
 from data.base_types import Tag
 from data.tag_nest import TagNest
 import storage.storage as storage
-import storage.sourcefile as sourcefile
+from storage.sourcefile import SourceFile
 
 EMPTY_LINE = "\n"
 LANG = CONF["misc"]["language"]
@@ -28,16 +28,15 @@ class TagFile:
         self.source_files = []
 
         self.tag_nest = TagNest()
-        self.content_by_source = {}
-
-    # TODO: should a call to write file be part of those?
-    """
-    Add a link to a new source file.
-    
-    returned value: boolean, whether the operation to add was necessary.
-    """
+        self.content_by_source_file = {}
 
     def add_file(self, source_file):
+        """
+        Add a link to a new source file.
+
+        returned value: boolean, whether the operation to add was necessary.
+        """
+        # TODO: should a call to write file be part of those?
         if self.has_file(source_file.address):
             return False
         elif len(source_file.tags) == 0:
@@ -46,15 +45,15 @@ class TagFile:
             self.source_files.append(source_file)
             contents = source_file.entries + source_file.sources
             for content in contents:
-                self.content_by_source[content] = source_file
+                self.content_by_source_file[content] = source_file
             return True
 
     def remove_file(self, source_file):
         contents = source_file.sources + source_file.entries
         for content in contents:
             self.tag_nest.clear_refs(content)
-            if content in self.content_by_source:
-                self.content_by_source.pop(content)
+            if content in self.content_by_source_file:
+                self.content_by_source_file.pop(content)
         source_file.sources.clear()
         source_file.entries.clear()
         if source_file in self.source_files:
@@ -73,13 +72,12 @@ class TagFile:
 # TODO: make this a proper class. the procedural approach looks hideous when you have
 # to call the functions - tagfile.read_tag_file(tag_file)
 
-"""
-Read a tag file and create a linked structure of tags with sources and entries
-hanging off of them.
-"""
-
 
 def read_tag_file(address):
+    """
+    Read a tag file and create a linked structure of tags with sources and entries
+    hanging off of them.
+    """
     result = TagFile(address)
     messages = []
 
@@ -132,7 +130,8 @@ def read_tag_file(address):
                     result.tag_nest.roots.append(tag)
                 tag_stack[indent] = tag
 
-            # Now, with a full structure of tags, all the sourcefiles can be read
+            # Now, with a full structure of tags, all the sourcefiles can be read.
+            # First, we create the files
             for line in source_paths:
                 if (
                         len(line) == 0
@@ -140,26 +139,41 @@ def read_tag_file(address):
                         or result.has_file(line[:-1])
                 ):
                     continue
+                else:
+                    try:
+                        file = SourceFile(line[:-1], result.backup_location)
+                        result.source_files.append(file)
+                    except FileNotFoundError as e:
+                        Logger.error(e.strerror + ": " + e.filename)
+                        message = STRINGS["error"][0][LANG][0] + \
+                                    e.filename + \
+                                    STRINGS["error"][0][LANG][1]
+                        messages.append(message)
 
-                file, msg = sourcefile.read(line[:-1], result)
-                messages += msg
-                if file is not None:
-                    result.source_files.append(file)
-                    contents = file.entries + file.sources
-                    for content in contents:
-                        result.content_by_source[content] = file
+            # Then, we read only the sources
+            for source_file in result.source_files:
+                source_file.read_sources(result)
+                for source in source_file.sources:
+                    result.content_by_source_file[source] = source_file
+                    result.tag_nest.sources.append(source)
+
+            # Finally, we read everything else in the file
+            for source_file in result.source_files:
+                source_file.read(result)
+                for entry in source_file.entries:
+                    result.content_by_source_file[entry] = source_file
+                    result.tag_nest.entries.append(entry)
+
     except FileNotFoundError as e:
         Logger.error(e.strerror + ": " + e.filename)
 
     return result, messages
 
 
-"""
-Write a linked structure of tags with their contents as a file.
-"""
-
-
 def write_tag_file(tag_file):
+    """
+    Write a linked structure of tags with their contents as a file.
+    """
     output = ""
     indent = 0
     written_tags = []

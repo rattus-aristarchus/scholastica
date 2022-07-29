@@ -28,3 +28,7 @@ colors_strasbourg:
     input_background: [0.51, 0.44, 0.34]
     clipboard_background: [0.82, 0.46, 0.31, 1]
     menu: [1, 0.69, 0.45, 1]
+    
+parameters:
+    source: ["источник", "source"]
+    subject: ["предмет", "subject"]

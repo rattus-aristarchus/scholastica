@@ -46,6 +46,7 @@ class Entry:
         self.tags = []
         self.source = None
         self.page = ""
+        self.subjects = []
 
 
 class Source:
@@ -53,6 +54,15 @@ class Source:
         self.text = text
         self.tags = []
         self.descriptions = []
+
+    def get_first_word(self):
+        word = ""
+        for char in self.text:
+            if char in " ,.;:-=":
+                break
+            else:
+                word += char
+        return word
 
     def __eq__(self, o):
         return isinstance(o, Source) and self.text == o.text

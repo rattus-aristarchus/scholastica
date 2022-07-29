@@ -77,6 +77,7 @@ class Controller:
             self.close_file()
 
         # First, open the file
+
         self.tag_file, messages = tagfile.read_tag_file(path)
         self.tag_nest = self.tag_file.tag_nest
         self.msgr.tag_file = self.tag_file
@@ -113,3 +114,10 @@ class Controller:
 
     def return_kbd(self):
         self.kbd_listener.bind_keyboard()
+
+    def change_language(self):
+        if LANG == 'ru':
+            util.set_conf('misc', 'language', 'en')
+        elif LANG == 'en':
+            util.set_conf('misc', 'language', 'ru')
+        self.popup(STRINGS['popup'][11][LANG])

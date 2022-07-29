@@ -9,6 +9,7 @@ Contains basic operations for parsing text
 """
 
 import data.base_types as data
+from util import CONST, CONF
 
 EMPTY_LINE = "\n"
 OPEN = "("
@@ -19,16 +20,23 @@ SPLIT = ","
 def clean_line(line):
     line = line.replace("\n", "")
     line = line.strip()
+    if line[-1] == ".":
+        line = line[:-1]
     return line
 
 
-"""
-Reads the chunk as an entry. If the chunk doesn't contain an entry, returns
-None.
-"""
+def clean_and_remove_brackets(line):
+    result = clean_line(line)
+    if is_enclosed(result):
+        result = result[1:-1]
+    return result
 
 
 def read_entry(chunk, tag_nest, sources):
+    """
+    Reads the chunk as an entry. If the chunk doesn't contain an entry, returns
+    None.
+    """
     if len(chunk) == 0:
         return
 
@@ -39,6 +47,7 @@ def read_entry(chunk, tag_nest, sources):
     tags = []
     source = None
     comment = ""
+    parameters = {}
 
     for line in reversed(chunk):
         if is_enclosed(line) or is_comment(line):
@@ -50,6 +59,8 @@ def read_entry(chunk, tag_nest, sources):
     for line in enclosed_lines:
         if is_comment(line):
             comment = get_comment(line)
+        elif is_parameter(line):
+            parameters = get_parameters(line)
         else:
             try_tags = get_tags(line, tag_nest)
             if len(try_tags) == 0:
@@ -74,17 +85,31 @@ def read_entry(chunk, tag_nest, sources):
     for tag in tags:
         tag_nest.add_tag_to_entry(tag, result)
     result.comment = comment
+    add_parameters(result, parameters, tag_nest, sources)
 
     return result
 
 
-"""
-Returns all the tags from the tag nest that are contained in a line
-"""
+def add_parameters(object, parameters, tag_nest, sources=[]):
+    for parameter, value in parameters.items():
+        if parameter in CONST['parameters']['source']:
+            words = value.split(" ")
+            for i in range(len(words)):
+                words[i] = words[i].strip()
+            object.source = get_source_from_short_name(words, sources)
+        elif parameter in CONST['parameters']['subject']:
+            words = value.split(" ")
+            for i in range(len(words)):
+                words[i] = words[i].strip()
+            source = get_source_from_short_name(words, sources)
+            tag_nest.add_description(description=object, source=source)
 
 
 def get_tags(line, tag_nest):
-    line = clean_line(line)[1:-1]
+    """
+    Returns all the tags from the tag nest that are contained in a line
+    """
+    line = clean_and_remove_brackets(line)
     names = line.split(SPLIT)
     for i in range(len(names)):
         names[i] = names[i].strip()
@@ -95,13 +120,11 @@ def get_tags(line, tag_nest):
     return tags
 
 
-"""
-Returns a source and a page from a line as a tuple
-"""
-
-
 def get_source(line, sources):
-    line = clean_line(line)[1:-1]
+    """
+    Returns a source and a page from a line as a tuple
+    """
+    line = clean_and_remove_brackets(line)
     words = line.split(SPLIT)
     for i in range(len(words)):
         words[i] = words[i].strip()
@@ -111,22 +134,29 @@ def get_source(line, sources):
     if is_page(words[-1]):
         page = words.pop()
 
+    source = get_source_from_short_name(words, sources)
+    return source, page
+
+
+def get_source_from_short_name(words, sources):
     # If the reference in parentheses is to some source that already exists in
     # the system, then it will contain only words that exist in the name of
     # that source
     for source in sources:
         contains = True
         for word in words:
+            if word[-1] == ",":
+                word = word[:-1]
             if word not in source.text:
                 contains = False
                 break
         if contains:
-            return source, page
+            return source
 
     # If we've not been able to find the source among existing ones, we create
     # a new one
     source = data.Source(SPLIT.join(words))
-    return source, page
+    return source
 
 
 def get_comment(line):
@@ -138,15 +168,16 @@ def get_comment(line):
     return line
 
 
-"""
-Returns all the sources contained in a chunk, with their tags.
-"""
-
-
 def read_sources(chunk, tag_nest):
+    """
+    Returns all the sources contained in a chunk, with their tags.
+    """
     result = []
     for line in chunk:
-        if is_enclosed(line) and len(result) > 0:
+        if is_enclosed(line) and is_parameter(line) and len(result) > 0:
+            parameters = get_parameters(line)
+            add_parameters(result[-1], parameters, tag_nest)
+        elif is_enclosed(line) and len(result) > 0:
             tags = get_tags(line, tag_nest)
             for tag in tags:
                 tag_nest.add_tag_to_source(tag, result[-1])
@@ -160,28 +191,68 @@ def read_sources(chunk, tag_nest):
     return result
 
 
+def get_parameters(line):
+    result = {}
+    if not CONF['text']['parameter_start'] in line:
+        return result
+    line = clean_and_remove_brackets(line)
+
+    # since splitting the line by semicolon will result in both the name of the next
+    # parameter and the value for the previous parameter to reside in the same string,
+    # we need a function that will split the string into value and parameter
+    def get_string_and_last_word(string):
+        if " " in string:
+            words = string.split(" ")
+            without_last = ""
+            for word in words[:-1]:
+                without_last += word + " "
+            without_last = without_last[:-1]
+            return without_last, words[-1]
+        else:
+            return string, string
+
+    # now we go through the list of strings, extract parameter names and values and write
+    # them into result
+    separated = line.split(CONF['text']['parameter_start'])
+    for i in range(len(separated)):
+        separated[i] = separated[i].strip()
+
+    nothing, parameter = get_string_and_last_word(separated[0])
+    for i in range(len(separated)):
+        if i == 0:
+            continue
+        elif i < len(separated) - 1:
+            string = separated[i]
+            value, next_parameter = get_string_and_last_word(separated[i])
+            for name, representations in CONST['parameters'].items():
+                if parameter in representations:
+                    result[parameter] = value
+                    break
+            parameter = next_parameter
+        else:
+            for name, representations in CONST['parameters'].items():
+                if parameter in representations:
+                    result[parameter] = separated[i]
+                    break
+    return result
+
+
 """
 Various checkers go below
-"""
-"""
-Checks whether the line has opening and closing parentheses.
 """
 
 
 def is_enclosed(line):
+    """
+    Checks whether the line has opening and closing parentheses.
+    """
     to_check = clean_line(line)
     if len(to_check) == 0:
         return False
-    elif to_check[0] == OPEN:
-        if to_check[-1] == CLOSE:
-            return True
-        if to_check[-1] == "." and to_check[-2] == CLOSE:
-            return True
-    elif to_check[0] == "[":
-        if to_check[-1] == "]":
-            return True
-        if to_check[-1] == "." and to_check[-2] == "]":
-            return True
+    elif to_check[0] == OPEN and to_check[-1] == CLOSE:
+        return True
+    elif to_check[0] == "[" and to_check[-1] == "]":
+        return True
     else:
         return False
 
@@ -222,15 +293,11 @@ def is_page(string):
     return True
 
 
-"""
-Checks whether the line is the name of a source.
-"""
-
-
 def is_source(line):
-    line = clean_line(line)
-    if line[-1] == ".":
-        line = line[:-1]
+    """
+    Checks whether the line is the name of a source.
+    """
+    line = clean_and_remove_brackets(line)
 
     if line == EMPTY_LINE or len(line) < 5:
         return False
@@ -271,3 +338,14 @@ def is_source(line):
         return True
 
     return False
+
+
+def is_parameter(line):
+    line = clean_and_remove_brackets(line)
+
+    if CONF['text']['parameter_start'] in line:
+        return True
+    else:
+        return False
+
+    # TODO: maybe add a check confirming that the next symbol after the semicolon is a whitespace?

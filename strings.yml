@@ -5,6 +5,9 @@ menu:
     1:
         ru: "Открыть"
         en: "Open"
+    2:
+        ru: "Язык: русский"
+        en: "Lanuage: english"
 
 filechooser:
     0:
@@ -67,6 +70,9 @@ popup:
     10:
         ru: "В главном окне можно удалять только метки. Источники и записи можно удалять в файлах .txt."
         en: "Only tags can be deleted in the main window. Sources and entries have to be deleted in .txt files."
+    11:
+        ru: "Чтобы изменения вступили в действия, перезапустите программу."
+        en: "The changes will take effect after you restart the program."
 warning:
     0:
         ru: "Изменять последовательность можно только для меток."

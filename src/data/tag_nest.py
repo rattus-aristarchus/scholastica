@@ -17,11 +17,13 @@ class TagNest:
         self.tags = []
         self.roots = []
 
-    """
-    Finds a tag with the specified name.
-    """
+        self.sources = []
+        self.entries = []
 
     def get(self, name):
+        """
+        Finds a tag with the specified name.
+        """
         for tag in self.tags:
             if tag.text == name:
                 return tag
@@ -95,11 +97,10 @@ class TagNest:
 
         self.add_child_tag(tag, destination, index)
 
-    """
-    Returns a list of tags that have become new roots
-    """
-
     def delete_tag(self, tag):
+        """
+        Delete the tag. Returns a list of child tags that have become new roots
+        """
         # Find the nodes whose tags have only one parent. Those are added to
         # the nest as new roots
         new_roots = []
@@ -113,11 +114,10 @@ class TagNest:
 
         return new_roots
 
-    """
-    Delete the tag and all its children that have only one parent, recursively.
-    """
-
     def delete_tag_recursively(self, tag):
+        """
+        Delete the tag and all its children that have only one parent, recursively.
+        """
         for child in tag.children:
             if len(child.parents) == 1:
                 self.delete_tag_recursively(child)
@@ -126,12 +126,20 @@ class TagNest:
         self.clear_refs(tag)
 
     def clear_refs(self, entity):
-        if isinstance(entity, (Entry, Source)):
+        if isinstance(entity, Entry):
+            self.entries.remove(entity)
+            for tag in entity.tags:
+                if entity in tag.content:
+                    tag.content.remove(entity)
+
+        elif isinstance(entity, Source):
+            self.sources.remove(entity)
             for tag in entity.tags:
                 if entity in tag.content:
                     tag.content.remove(entity)
 
         elif isinstance(entity, Tag):
+            self.tags.remove(entity)
             for content in entity.content:
                 content.tags.remove(entity)
             for tag in entity.parents:
@@ -140,3 +148,9 @@ class TagNest:
                 tag.parents.remove(entity)
             if entity in self.roots:
                 self.roots.remove(entity)
+
+    def add_description(self, description, source):
+        if description not in source.descriptions:
+            source.descriptions.append(description)
+        if source not in description.subjects:
+            description.subjects.append(source)

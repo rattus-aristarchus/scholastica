@@ -4,8 +4,9 @@ misc:
     \u0435\u0440.scla"
   extension: .scla
   language: ru
-  log_level: debug
-  theme: colors_strasbourg
+  log_level: warning
+  theme: colors_chartres
 text:
+  parameter_start: ':'
   separator: =====
   snippet_length: 100

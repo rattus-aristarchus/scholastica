@@ -17,7 +17,11 @@ LANG = CONF["misc"]["language"]
 
 
 class SourceFile:
+
     def __init__(self, address, backup_location):
+        """
+        This can throw an exception
+        """
         self.address = address
         self.backup_location = backup_location
 
@@ -26,16 +30,41 @@ class SourceFile:
         # Tags that are encountered in the sourcefile
         self.tags = []
 
+        # This is added so that if the address doesn't exist an exception is thrown
+        open(self.address, "r")
 
-# Read the file at the address and create a sourcefile object, while also
-# connecting entries and sources to specified tags if the tags are present in
-# the tag nest
-def read(address, tag_file):
-    result = SourceFile(address, tag_file.backup_location)
-    messages = []
+    def read_sources(self, tag_file):
+        with open(self.address, "r") as file:
 
-    try:
-        with open(address, "r") as file:
+            has_sources = False
+            first_chunk = []
+            after_break = False
+
+            for line in file:
+                if line.isspace():
+                    after_break = True
+                    break
+                else:
+                    first_chunk.append(line)
+                    if parse.is_source(line):
+                        has_sources = True
+
+            if has_sources:
+                self.sources = parse.read_sources(first_chunk,
+                                                  tag_file.tag_nest)
+                for source in self.sources:
+                    Logger.debug(f"Sourcefile: created source {source.text[:100]}")
+                    for tag in source.tags:
+                        if tag not in self.tags:
+                            self.tags.append(tag)
+
+    def read(self, tag_file):
+        """
+        Read the file at the address and create a sourcefile object, while also
+        connecting entries and sources to specified tags if the tags are present in
+        the tag nest
+        """
+        with open(self.address, "r") as file:
             # The lines before the first empty line in a file can be sources. Split
             # the file in two halves, before the first empty line and after; if
             # the first lines are sources, read them separately; if not, add them
@@ -60,38 +89,29 @@ def read(address, tag_file):
             # always needs to be empty
             entries.append(parse.EMPTY_LINE)
 
-            if has_sources:
-                result.sources = parse.read_sources(first_chunk,
-                                                    tag_file.tag_nest)
-                for source in result.sources:
-                    Logger.debug(f"Sourcefile: created source {source.text[:100]}")
-                    result.tags += source.tags
-            else:
+            if not has_sources:
                 entries = first_chunk + [parse.EMPTY_LINE] + entries
 
             # Read the lines as entries
             chunk = []
             for line in entries:
                 if line.isspace():
+                    all_sources = self.sources
+                    all_sources.extend(tag_file.tag_nest.sources)
+                    if "Anuradha" in self.address:
+                        s = ""
                     entry = parse.read_entry(chunk,
                                              tag_file.tag_nest,
-                                             result.sources)
+                                             all_sources)
                     if entry is not None:
                         #   Logger.debug(f"Sourcefile: created entry {entry.text[:100]}")
-                        result.entries.append(entry)
-                        result.tags += entry.tags
+                        self.entries.append(entry)
+                        for tag in entry.tags:
+                            if tag not in self.tags:
+                                self.tags.append(entry.tags)
                     chunk = []
                 else:
                     chunk.append(line)
-    except FileNotFoundError as e:
-        Logger.error(e.strerror + ": " + e.filename)
-        message = STRINGS["error"][0][LANG][0] + \
-                    e.filename + \
-                    STRINGS["error"][0][LANG][1]
-        messages.append(message)
-        result = None
-
-    return result, messages
 
 
 def edit_tag(old_name, new_name, source_file):

@@ -102,18 +102,18 @@ class TagTree(TreeView):
         for content in tag.content:
             if isinstance(content, Source):
                 source_node = SourceNode(source=content,
-                                         file=self.tag_file.content_by_source[content])
+                                         file=self.tag_file.content_by_source_file[content])
                 self.add_node(source_node, tag_node)
                 for description in content.descriptions:
                     entry_node = EntryNode(entry=description,
-                                           file=self.tag_file.content_by_source[content])
+                                           file=self.tag_file.content_by_source_file[content])
                     self.add_node(entry_node, source_node)
 
         # Display all entries
         for content in tag.content:
             if isinstance(content, Entry):
                 entry_node = EntryNode(content,
-                                       self.tag_file.content_by_source[content])
+                                       self.tag_file.content_by_source_file[content])
                 self.add_node(entry_node, tag_node)
 
     """
@@ -454,7 +454,7 @@ class EntryNode(EntNode):
         self.file = file
 
         if entry.source is not None:
-            reference = "(" + entry.source.text
+            reference = "(" + entry.source.get_first_word()
             if len(entry.page) > 0:
                 reference += ", " + entry.page
             reference += ")"

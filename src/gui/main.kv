@@ -35,7 +35,16 @@
             font_size: sp(18)
             background_color: CONST[app.theme]["menu"]
             on_release: root.controller.open_file_popup()
-    
+
+        Button:
+            id: 'language'
+            text: STRINGS["menu"][2][app.lang]
+            size_hint: None, None
+            size: dp(200), dp(25)
+            font_size: sp(18)
+            background_color: CONST[app.theme]["menu"]
+            on_release: root.controller.change_language()
+
     ScrollView:
         id: scroll
         do_scroll_x: False
