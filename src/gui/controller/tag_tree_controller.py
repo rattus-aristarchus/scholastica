@@ -95,10 +95,10 @@ class TagTreeController:
         new_node = TagNode(new_tag, self, self.main_controller)
         self.tree.insert_and_select(new_node, parent_node, index)
 
-    """
-    Switch the currently selected node to edit mode
-    """
     def edit_node(self, from_end):
+        """
+        Switch the currently selected node to edit mode
+        """
         selected_node = self.tree.selected_node
         if (
                 isinstance(selected_node, TagNode)
@@ -115,10 +115,10 @@ class TagTreeController:
             self.main_controller.msgr.open_file(path=selected_node.file.address,
                                                 item=selected_node.entity.text)
 
-    """
-    Copy the currently selected node to clipboard
-    """
     def copy(self):
+        """
+        Copy the currently selected node to clipboard
+        """
         if not isinstance(self.tree.selected_node, TagNode):
             self.main_controller.popup(STRINGS["popup"][6][LANG])
             return
@@ -129,10 +129,10 @@ class TagTreeController:
         self.tree.clipboard_color(self.tree.selected_node)
         self._cut = False
 
-    """
-    Copy the currently selected node to clipboard with the flag "cut"
-    """
     def cut(self):
+        """
+        Copy the currently selected node to clipboard with the flag "cut"
+        """
         if not isinstance(self.tree.selected_node, TagNode):
             self.main_controller.popup(STRINGS["popup"][7][LANG])
             return
@@ -146,10 +146,10 @@ class TagTreeController:
     # TODO: the ability to change tag order
     # TODO: enter и paste добавляют метки непонятно куда, не соблюдается индекс
 
-    """
-    Insert node from clipboard as a child to the currently selected node
-    """
     def paste(self):
+        """
+        Insert node from clipboard as a child to the currently selected node
+        """
         selected_node = self.tree.selected_node
         if (
                 selected_node is not None

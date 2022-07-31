@@ -346,11 +346,10 @@ class TagTree(TreeView):
         node.even_color = CONST[THEME]["tag_background"]
         node.odd_color = CONST[THEME]["tag_background"]
 
-    """
-    Inserts a tag node before all content nodes at the destination
-    """
-
     def add_tag_node(self, tag_node, destination):
+        """
+        Inserts a tag node before all content nodes at the destination
+        """
         after_tag_node = []
         if destination is None:
             destination = self.root
@@ -359,14 +358,15 @@ class TagTree(TreeView):
         for node in destination.nodes:
             if not isinstance(node, TagNode):
                 index = destination.nodes.index(node)
+                break
         self.insert_tag_node(tag_node, destination, index)
 
     # TODO: check border cases for all functions and provide error messages
-    """
-    Inserts a node among the children of the specified parent at the index
-    """
 
     def insert_tag_node(self, node, parent, index):
+        """
+        Inserts a node among the children of the specified parent at the index
+        """
         parent_name = "root" if parent == self.root else parent.entity.text
         Logger.info("TagTree: insert_tag_node, node " + node.entity.text + ", parent " + parent_name)
         if node == self.root:
