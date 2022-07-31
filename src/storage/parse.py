@@ -20,7 +20,7 @@ SPLIT = ","
 def clean_line(line):
     line = line.replace("\n", "")
     line = line.strip()
-    if line[-1] == ".":
+    if len(line) > 0 and line[-1] == ".":
         line = line[:-1]
     return line
 

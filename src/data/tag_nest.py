@@ -127,13 +127,15 @@ class TagNest:
 
     def clear_refs(self, entity):
         if isinstance(entity, Entry):
-            self.entries.remove(entity)
+            if entity in self.entries:
+                self.entries.remove(entity)
             for tag in entity.tags:
                 if entity in tag.content:
                     tag.content.remove(entity)
 
         elif isinstance(entity, Source):
-            self.sources.remove(entity)
+            if entity in self.sources:
+                self.sources.remove(entity)
             for tag in entity.tags:
                 if entity in tag.content:
                     tag.content.remove(entity)

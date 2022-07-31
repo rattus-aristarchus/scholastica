@@ -96,10 +96,8 @@ class SourceFile:
             chunk = []
             for line in entries:
                 if line.isspace():
-                    all_sources = self.sources
+                    all_sources = self.sources.copy()
                     all_sources.extend(tag_file.tag_nest.sources)
-                    if "Anuradha" in self.address:
-                        s = ""
                     entry = parse.read_entry(chunk,
                                              tag_file.tag_nest,
                                              all_sources)

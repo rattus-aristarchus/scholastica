@@ -16,7 +16,10 @@ import threading
 from kivy.clock import mainthread
 
 import storage.tagfile as tagfile
-import storage.sourcefile as sourcefile
+from storage.sourcefile import SourceFile
+from util import STRINGS, CONF
+
+LANG = CONF['misc']['language']
 
 
 class Messenger(threading.Thread):
@@ -105,29 +108,36 @@ class Messenger(threading.Thread):
 
         self.view.ids['tree'].remove_all_from(old_file)
         self.tag_file.remove_file(old_file)
-
-        new_file, messages = sourcefile.read(new_path, self.tag_file)
-        self.view.ids['tree'].add_all_from(new_file)
-        self.tag_file.add_file(new_file)
-        tagfile.write_tag_file(self.tag_file)
+        self._read_sourcefile(new_path)
 
     @mainthread
     def add_new(self, path):
         Logger.info("Messenger: the file is new. Adding it.")
+        self._read_sourcefile(path)
 
-        new_file, messages = sourcefile.read(path, self.tag_file)
-        self.view.ids['tree'].add_all_from(new_file)
-        self.tag_file.add_file(new_file)
-        tagfile.write_tag_file(self.tag_file)
-
-    """
-    Send a message to the plugin to open a file located at path and scroll to
-    the piece of text in item.
-    
-    path, item - strings.
-    """
+    def _read_sourcefile(self, new_path):
+        try:
+            new_file = SourceFile(new_path, self.tag_file.backup_location)
+            self.tag_file.source_files.append(new_file)
+            new_file.read_sources(self.tag_file)
+            new_file.read(self.tag_file)
+            self.view.ids['tree'].add_all_from(new_file)
+            self.tag_file.add_file(new_file)
+            tagfile.write_tag_file(self.tag_file)
+        except FileNotFoundError as e:
+            Logger.error(e.strerror + ": " + e.filename)
+            message = STRINGS["error"][0][LANG][0] + \
+                      e.filename + \
+                      STRINGS["error"][0][LANG][1]
+            self.view.controller.popup(message)
 
     def open_file(self, path, item):
+        """
+        Send a message to the plugin to open a file located at path and scroll to
+        the piece of text in item.
+
+        path, item - strings.
+        """
         Logger.info(f"Messenger: opening file {path} at item {item}")
 
         try:

@@ -20,17 +20,13 @@ from util import CONST
 LANG = CONF["misc"]["language"]
 THEME = CONF["misc"]["theme"]
 
-# TODO: it should be possible to clear the clipboard
-
-
-"""
-The visual representation of a TagNest. Synchronization with the tagnest should
-happen elsewhere, this just provides the basic methods for manipulating the 
-tree.
-"""
-
 
 class TagTree(TreeView):
+    """
+    The visual representation of a TagNest. Synchronization with the tagnest should
+    happen elsewhere, this just provides the basic methods for manipulating the
+    tree.
+    """
 
     controller = ObjectProperty()
     main_controller = ObjectProperty()
@@ -44,20 +40,18 @@ class TagTree(TreeView):
         self.tag_file = None
         self.tag_nest = None
 
-    """
-    Remove all content.
-    """
-
     def clear(self):
+        """
+        Remove all content.
+        """
         for node in [i for i in self.iterate_all_nodes()]:
             self.remove_node(node)
 
-    """
-    Traverse all the roots in the nest recursively and add them to the
-    tree.
-    """
-
     def show(self, tag_file):
+        """
+        Traverse all the roots in the nest recursively and add them to the
+        tree.
+        """
         Logger.info(f"TagTree: showing tag file {tag_file.address}")
 
         self.tag_file = tag_file
