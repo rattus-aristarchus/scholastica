@@ -93,7 +93,7 @@ class Controller:
         # change the default location for opening files
         util.set_conf("misc", "default_location", path)
         if not len(messages) == 0:
-            self.popup("\n".join(messages))
+            Clock.schedule_once(lambda dt: self.popup("\n".join(messages)), 0.5)
 
     def close_file(self):
         self.tree.clear()

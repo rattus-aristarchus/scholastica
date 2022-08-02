@@ -192,11 +192,11 @@ class TagTreeController:
 
     # TODO: changing the tag structure should apply changes to all instances of
     # the tag in the tree
-    """
-    Lower the level of the currently selected node (make it the child of the
-    sibling that went before it)
-    """
     def lower_selected_node(self):
+        """
+        Lower the level of the currently selected node (make it the child of the
+        sibling that went before it)
+        """
         node = self.tree.selected_node
         if (
                 node is None
