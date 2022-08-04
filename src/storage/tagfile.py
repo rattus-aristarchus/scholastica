@@ -28,7 +28,7 @@ class TagFile:
         self.source_files = []
 
         self.tag_nest = TagNest()
-        self.content_by_source_file = {}
+        # self.content_by_source_file = {}
 
     def add_file(self, source_file):
         """
@@ -43,17 +43,17 @@ class TagFile:
             return False
         else:
             self.source_files.append(source_file)
-            contents = source_file.entries + source_file.sources
-            for content in contents:
-                self.content_by_source_file[content] = source_file
+            # contents = source_file.entries + source_file.sources
+            # for content in contents:
+            #    self.content_by_source_file[content] = source_file
             return True
 
     def remove_file(self, source_file):
         contents = source_file.sources + source_file.entries
         for content in contents:
             self.tag_nest.clear_refs(content)
-            if content in self.content_by_source_file:
-                self.content_by_source_file.pop(content)
+            #if content in self.content_by_source_file:
+            #    self.content_by_source_file.pop(content)
         source_file.sources.clear()
         source_file.entries.clear()
         if source_file in self.source_files:
@@ -67,6 +67,13 @@ class TagFile:
             if source_file.address == path:
                 return True
         return False
+
+    def get_file_with(self, content):
+        for source_file in self.source_files:
+            file_contents = source_file.sources + source_file.entries
+            if content in file_contents:
+                return source_file
+        return None
 
 
 # TODO: make this a proper class. the procedural approach looks hideous when you have
@@ -154,14 +161,14 @@ def read_tag_file(address):
             for source_file in result.source_files:
                 source_file.read_sources(result)
                 for source in source_file.sources:
-                    result.content_by_source_file[source] = source_file
+                    # result.content_by_source_file[source] = source_file
                     result.tag_nest.sources.append(source)
 
             # Finally, we read everything else in the file
             for source_file in result.source_files:
                 source_file.read(result)
                 for entry in source_file.entries:
-                    result.content_by_source_file[entry] = source_file
+                    # result.content_by_source_file[entry] = source_file
                     result.tag_nest.entries.append(entry)
 
     except FileNotFoundError as e:

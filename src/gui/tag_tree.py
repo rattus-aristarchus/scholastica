@@ -95,26 +95,37 @@ class TagTree(TreeView):
         # Display all sources with the tag
         for content in tag.content:
             if isinstance(content, Source):
-                source_node = SourceNode(source=content,
-                                         file=self.tag_file.content_by_source_file[content])
-                self.add_node(source_node, tag_node)
-                for description in content.descriptions:
-                    entry_node = EntryNode(entry=description,
-                                           file=self.tag_file.content_by_source_file[content])
-                    self.add_node(entry_node, source_node)
+                self.display_source(content, tag_node)
 
         # Display all entries
         for content in tag.content:
             if isinstance(content, Entry):
-                entry_node = EntryNode(content,
-                                       self.tag_file.content_by_source_file[content])
-                self.add_node(entry_node, tag_node)
+                self.display_entry(content, tag_node)
 
-    """
-    Remove all nodes corresponding to entities contained in the source file.
-    """
+    def display_source(self, source, parent_node):
+        file = self.tag_file.get_file_with(source)
+        if file is None:
+            Logger.error("TagTree: display_source, source " + source.text +
+                         "is not found in any file")
+        source_node = SourceNode(source, file)
+                                 # file=self.tag_file.content_by_source_file[source])
+        self.add_node(source_node, parent_node)
+        for description in source.descriptions:
+            self.display_entry(description, source_node)
+
+    def display_entry(self, entry, parent_node):
+        file = self.tag_file.get_file_with(entry)
+        if file is None:
+            Logger.error("TagTree: display_entry, entry " + entry.text +
+                         "is not found in any file")
+        entry_node = EntryNode(entry, file)
+        # file=self.tag_file.content_by_source_file[description])
+        self.add_node(entry_node, parent_node)
 
     def remove_all_from(self, source_file):
+        """
+        Remove all nodes corresponding to entities contained in the source file.
+        """
         Logger.info(f"TagTree: removing source file {source_file.address}")
 
         entities = source_file.sources + source_file.entries
@@ -128,36 +139,35 @@ class TagTree(TreeView):
                     Logger.debug("TagTree: found matching node, removing")
                     self.remove_node(node)
 
-    """
-    Add new nodes for every entity in the source file
-    """
-
     def add_all_from(self, source_file):
+        """
+        Add new nodes for every entity in the source file
+        """
         Logger.info(f"TagTree: adding source file {source_file.address}")
 
         for source in source_file.sources:
             for tag in source.tags:
                 parent = self._find_node(tag)
                 if parent is not None:
-                    source_node = SourceNode(source, source_file)
-                    self.add_node(source_node, parent)
+                    self.display_source(source, parent)
                 else:
                     Logger.warning(f"source {source.text} has a tag {tag.text}"
                                    + f" that is not present on the tag tree")
 
         for entry in source_file.entries:
-            for tag in entry.tags:
-                parent = self._find_node(tag)
-                if parent is not None:
-                    entry_node = EntryNode(entry, source_file)
-                    self.add_node(entry_node, parent)
+            parents = entry.tags.copy()
+            parents.extend(entry.subjects)
+            for parent in parents:
+                parent_node = self._find_node(parent)
+                if parent_node is not None:
+                    self.display_entry(entry, parent_node)
                 else:
-                    Logger.warning(f"entry {entry.text} has a tag {tag.text}" \
-                                   + f" that is not present on the tag tree")
+                    Logger.warning(f"entry {entry.text} has a tag or description "
+                                   f"{parent.text} that is not present on the tag tree")
 
-    def _find_node(self, tag):
+    def _find_node(self, entity):
         for node in list(self.iterate_all_nodes()):
-            if isinstance(node, TagNode) and node.entity.text == tag.text:
+            if isinstance(node, EntNode) and node.entity.text == entity.text:
                 return node
         return None
 
@@ -165,11 +175,11 @@ class TagTree(TreeView):
     # if we really don't want the user to interact with them.
     # Either that, or implement opening the relevant .txt file when trying to
     # edit entries and sources
-    """
-    Select next node
-    """
 
     def step_down(self):
+        """
+        Select next node
+        """
         if self.selected_node is None:
             if len(self.root.nodes) > 0:
                 self._select_and_scroll(self.root.nodes[0])
@@ -178,11 +188,10 @@ class TagTree(TreeView):
         else:
             self._select_and_scroll(self.selected_node.nodes[0])
 
-    """
-    Select next node, stepping over lower-level nodes
-    """
-
     def step_down_over(self):
+        """
+        Select next node, stepping over lower-level nodes
+        """
         if self.selected_node is None:
             if len(self.root.nodes) > 0:
                 self._select_and_scroll(self.root.nodes[0])
@@ -203,18 +212,16 @@ class TagTree(TreeView):
         else:
             self._traverse_down(parent)
 
-    """
-    Select previous node
-    """
-
     def step_up(self):
+        """
+        Select previous node
+        """
         self._step_up(False)
 
-    """
-    Select previous node, stepping over lower-level nodes
-    """
-
     def step_up_over(self):
+        """
+        Select previous node, stepping over lower-level nodes
+        """
         self._step_up(True)
 
     def _step_up(self, over):
@@ -250,11 +257,10 @@ class TagTree(TreeView):
         self.select_node(node)
         self.controller.scroll_to(node)
 
-    """
-    Select the parent of current node and collapse the current node
-    """
-
     def step_out(self):
+        """
+        Select the parent of current node and collapse the current node
+        """
         if self.selected_node is None:
             return
 
@@ -272,11 +278,10 @@ class TagTree(TreeView):
                 self.toggle_node(parent)
                 self._select_and_scroll(parent)
 
-    """
-    Expand current node and select its first child
-    """
-
     def step_in(self):
+        """
+        Expand current node and select its first child
+        """
         select = self.selected_node
         if (
                 not select is None
@@ -289,11 +294,10 @@ class TagTree(TreeView):
             select.full_text = True
             select.load_text()
 
-    """
-    Add a new child node to the parent of currently selected node
-    """
-
     def insert_and_select(self, node, parent, index):
+        """
+        Add a new child node to the parent of currently selected node
+        """
         Logger.info("TagTree: insert_and_select")
         if parent is None:
             Logger.debug("TagTree: adding new root node")
@@ -456,9 +460,11 @@ class EntryNode(EntNode):
         else:
             self.remove_widget(self.ids['reference'])
 
-        if not entry.comment == "":
-            comment = "//" + entry.comment
-            self.ids['comment'].text = comment
+        if not len(entry.comments) == 0:
+            comments = ""
+            for comment in entry.comments:
+                comments += "//" + comment + "\n"
+            self.ids['comment'].text = comments[:-1]
         else:
             self.remove_widget(self.ids['comment'])
 

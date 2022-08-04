@@ -46,7 +46,7 @@ def read_entry(chunk, tag_nest, sources):
     enclosed_lines = []
     tags = []
     source = None
-    comment = ""
+    comments = []
     parameters = {}
 
     for line in reversed(chunk):
@@ -59,6 +59,7 @@ def read_entry(chunk, tag_nest, sources):
     for line in enclosed_lines:
         if is_comment(line):
             comment = get_comment(line)
+            comments.append(comment)
         elif is_parameter(line):
             parameters = get_parameters(line)
         else:
@@ -84,7 +85,7 @@ def read_entry(chunk, tag_nest, sources):
         result.page = source[1]
     for tag in tags:
         tag_nest.add_tag_to_entry(tag, result)
-    result.comment = comment
+    result.comments = comments
     add_parameters(result, parameters, tag_nest, sources)
 
     return result
