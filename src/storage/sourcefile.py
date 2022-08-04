@@ -33,6 +33,22 @@ class SourceFile:
         # This is added so that if the address doesn't exist an exception is thrown
         open(self.address, "r")
 
+    def add_source(self, source):
+        if source not in self.sources:
+            self.sources.append(source)
+        for tag in source.tags:
+            if tag not in self.tags:
+                self.tags.append(tag)
+        for description in source.descriptions:
+            self.add_entry(description)
+
+    def add_entry(self, entry):
+        if entry not in self.entries:
+            self.entries.append(entry)
+        for tag in entry.tags:
+            if tag not in self.tags:
+                self.tags.append(entry.tags)
+
     def read_sources(self, tag_file):
         with open(self.address, "r") as file:
 
@@ -50,13 +66,10 @@ class SourceFile:
                         has_sources = True
 
             if has_sources:
-                self.sources = parse.read_sources(first_chunk,
-                                                  tag_file.tag_nest)
-                for source in self.sources:
+                sources = parse.read_sources(first_chunk, tag_file.tag_nest)
+                for source in sources:
                     Logger.debug(f"Sourcefile: created source {source.text[:100]}")
-                    for tag in source.tags:
-                        if tag not in self.tags:
-                            self.tags.append(tag)
+                    self.add_source(source)
 
     def read(self, tag_file):
         """
@@ -103,10 +116,7 @@ class SourceFile:
                                              all_sources)
                     if entry is not None:
                         #   Logger.debug(f"Sourcefile: created entry {entry.text[:100]}")
-                        self.entries.append(entry)
-                        for tag in entry.tags:
-                            if tag not in self.tags:
-                                self.tags.append(entry.tags)
+                        self.add_entry(entry)
                     chunk = []
                 else:
                     chunk.append(line)

@@ -32,7 +32,7 @@ path_3 = "/media/kryis/TOSHIBA EXT/наука/схоластика/гендер.
 
 class Main(App):
 
-    def __init__(self, file_path=path):
+    def __init__(self, file_path=path_3):
         super().__init__()
         self.lang = LANG
         self.theme = THEME

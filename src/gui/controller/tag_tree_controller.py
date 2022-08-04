@@ -112,8 +112,13 @@ class TagTreeController:
                 selected_node.cursor_to_start()
             selected_node.select_text()
         elif isinstance(selected_node, (EntryNode, SourceNode)):
-            self.main_controller.msgr.open_file(path=selected_node.file.address,
-                                                item=selected_node.entity.text)
+            if selected_node.file is None:
+                Logger.error("TagTreeController: edit_node, node " +
+                             selected_node.entity.text[:50] +
+                             " doesn't have a file")
+            else:
+                self.main_controller.msgr.open_file(path=selected_node.file.address,
+                                                    item=selected_node.entity.text)
 
     def copy(self):
         """

@@ -150,6 +150,8 @@ def read_tag_file(address):
                     try:
                         file = SourceFile(line[:-1], result.backup_location)
                         result.source_files.append(file)
+                        Logger.debug("TagFile: read_tag_file, created source file " +
+                                     file.address)
                     except FileNotFoundError as e:
                         Logger.error(e.strerror + ": " + e.filename)
                         message = STRINGS["error"][0][LANG][0] + \

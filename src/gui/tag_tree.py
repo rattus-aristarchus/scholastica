@@ -106,9 +106,8 @@ class TagTree(TreeView):
         file = self.tag_file.get_file_with(source)
         if file is None:
             Logger.error("TagTree: display_source, source " + source.text +
-                         "is not found in any file")
+                         " is not found in any file")
         source_node = SourceNode(source, file)
-                                 # file=self.tag_file.content_by_source_file[source])
         self.add_node(source_node, parent_node)
         for description in source.descriptions:
             self.display_entry(description, source_node)
@@ -117,9 +116,8 @@ class TagTree(TreeView):
         file = self.tag_file.get_file_with(entry)
         if file is None:
             Logger.error("TagTree: display_entry, entry " + entry.text +
-                         "is not found in any file")
+                         " is not found in any file")
         entry_node = EntryNode(entry, file)
-        # file=self.tag_file.content_by_source_file[description])
         self.add_node(entry_node, parent_node)
 
     def remove_all_from(self, source_file):
