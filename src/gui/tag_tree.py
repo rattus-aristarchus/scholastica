@@ -34,8 +34,6 @@ class TagTree(TreeView):
     def __init__(self, **kwargs):
         super().__init__(root_options=dict(text='Гнездо'), **kwargs)
         self.bind(minimum_height=self.setter("height"))
-      #  self.controller = None
-#        self.main_controller = None
 
         self.tag_file = None
         self.tag_nest = None
@@ -57,9 +55,6 @@ class TagTree(TreeView):
         self.tag_file = tag_file
         self.tag_nest = tag_file.tag_nest
         for root_tag in tag_file.tag_nest.roots:
-            #    tag_node = TagNode()
-            #    tag_node.add_widget(Label(text="sup"))
-            #    self.add_node(tag_node)
             self._show_deep(root_tag, None, [])
 
     # TODO: change functions such as _show_deep into internal functions of their
@@ -72,9 +67,9 @@ class TagTree(TreeView):
         if (
                 tag in parents
                 or (
-                not parent_node is None
-                and tag == parent_node.entity
-        )
+                    not parent_node is None
+                    and tag == parent_node.entity
+                )
         ):
             return
 
@@ -102,24 +97,6 @@ class TagTree(TreeView):
             if isinstance(content, Entry):
                 self.display_entry(content, tag_node)
 
-    def display_source(self, source, parent_node):
-        file = self.tag_file.get_file_with(source)
-        if file is None:
-            Logger.error("TagTree: display_source, source " + source.text +
-                         " is not found in any file")
-        source_node = SourceNode(source, file)
-        self.add_node(source_node, parent_node)
-        for description in source.descriptions:
-            self.display_entry(description, source_node)
-
-    def display_entry(self, entry, parent_node):
-        file = self.tag_file.get_file_with(entry)
-        if file is None:
-            Logger.error("TagTree: display_entry, entry " + entry.text +
-                         " is not found in any file")
-        entry_node = EntryNode(entry, file)
-        self.add_node(entry_node, parent_node)
-
     def remove_all_from(self, source_file):
         """
         Remove all nodes corresponding to entities contained in the source file.
@@ -145,34 +122,128 @@ class TagTree(TreeView):
 
         for source in source_file.sources:
             for tag in source.tags:
-                parent = self._find_node(tag)
-                if parent is not None:
-                    self.display_source(source, parent)
+                parent_nodes = self._find_nodes(tag)
+                if len(parent_nodes) > 0:
+                    for parent_node in parent_nodes:
+                        self.display_source(source, parent_node)
                 else:
                     Logger.warning(f"source {source.text} has a tag {tag.text}"
                                    + f" that is not present on the tag tree")
 
         for entry in source_file.entries:
-            parents = entry.tags.copy()
-            parents.extend(entry.subjects)
+            parents = entry.tags + entry.subjects
             for parent in parents:
-                parent_node = self._find_node(parent)
-                if parent_node is not None:
-                    self.display_entry(entry, parent_node)
+                parent_nodes = self._find_nodes(parent)
+                if len(parent_nodes) > 0:
+                    for parent_node in parent_nodes:
+                        self.display_entry(entry, parent_node)
                 else:
                     Logger.warning(f"entry {entry.text} has a tag or description "
                                    f"{parent.text} that is not present on the tag tree")
 
-    def _find_node(self, entity):
+    def _find_nodes(self, entity):
+        result = []
         for node in list(self.iterate_all_nodes()):
             if isinstance(node, EntNode) and node.entity.text == entity.text:
-                return node
-        return None
+                result.append(node)
+        return result
 
     # TODO: it might be a good idea to step over nodes that aren't tag nodes -
     # if we really don't want the user to interact with them.
     # Either that, or implement opening the relevant .txt file when trying to
     # edit entries and sources
+
+    def display_source(self, source, parent_node):
+        file = self.tag_file.get_file_with(source)
+        if file is None:
+            Logger.error("TagTree: display_source, source " + source.text +
+                         " is not found in any file")
+        source_node = SourceNode(source, file)
+        self.add_source_node(source_node, parent_node)
+        for description in source.descriptions:
+            self.display_entry(description, source_node)
+
+    def display_entry(self, entry, parent_node):
+        file = self.tag_file.get_file_with(entry)
+        if file is None:
+            Logger.error("TagTree: display_entry, entry " + entry.text +
+                         " is not found in any file")
+        entry_node = EntryNode(entry, file)
+        self.add_node(entry_node, parent_node)
+
+    def add_tag_node(self, tag_node, destination):
+        """
+        Inserts a tag node before all content nodes at the destination
+        """
+        if destination is None:
+            destination = self.root
+
+        index = len(destination.nodes)
+        for node in destination.nodes:
+            if not isinstance(node, TagNode):
+                index = destination.nodes.index(node)
+                break
+        self.insert_node(tag_node, destination, index)
+
+    # TODO: check border cases for all functions and provide error messages
+
+    def add_source_node(self, source_node, destination):
+        """
+        Inserts a source node before entries but after tags at destination
+        """
+        if destination is None:
+            destination = self.root
+
+        index = len(destination.nodes)
+        for node in destination.nodes:
+            if not isinstance(node, (TagNode, SourceNode)):
+                index = destination.nodes.index(node)
+                break
+        self.insert_node(source_node, destination, index)
+
+    def insert_node(self, node, parent, index):
+        """
+        Inserts a node among the children of the specified parent at the index
+        """
+        parent_name = "root" if parent == self.root else parent.entity.text
+        Logger.info("TagTree: insert node at index " + str(index) +
+                    ", node " + node.entity.text[:50] + ", parent " +
+                    parent_name)
+        if node == self.root:
+            Logger.warning(f"INSERT NODE: trying to insert root node into "
+                           f"node {parent.entity.text} at index {index}")
+            return
+        if index > len(parent.nodes):
+            Logger.warning(f"INSERT NODE: index too large, inserting node "
+                           f"{node.entity.text} into parent "
+                           f"{parent.entity.text} at index {index} while the"
+                           f"parent only has {len(parent.nodes)} children")
+            return
+
+        # Remove all nodes after node_after
+        after_node = parent.nodes[index:]
+        for next_node in after_node:
+            Logger.debug("TagTree: removing node " + next_node.entity.text[:50] + "; to be re-added later")
+            self.remove_node(next_node)
+
+        # Add the inserted node and then put back all the nodes removed before
+        Logger.debug("TagTree: adding the node")
+        self.add_node(node, parent)
+        for next_node in after_node:
+            Logger.debug("TagTree: re-adding removed node " + next_node.entity.text[:50])
+            self.add_node(next_node, parent)
+
+    # TODO: this does not remove all instances for some reason
+    def remove_all_instances(self, node):
+        if node == self.root:
+            return
+        Logger.info(f"TagTree: removing instances of node {node.entity.text}")
+
+        for check in self.iterate_all_nodes():
+            Logger.debug(f"TagTree: checking node {check.entity.text}")
+            if isinstance(check, type(node)) and check.entity == node.entity:
+                Logger.debug(f"TagTree: check passed. removing node.")
+                self.remove_node(check)
 
     def step_down(self):
         """
@@ -305,7 +376,7 @@ class TagTree(TreeView):
             self.add_tag_node(node, parent)
         else:
             Logger.debug("TagTree: inserting new node at node " + parent.entity.text + " at index " + str(index))
-            self.insert_tag_node(node, parent, index)
+            self.insert_node(node, parent, index)
 
         if parent is not None and parent.is_open is not True:
             Logger.debug("TagTree: expanding the parent node")
@@ -318,7 +389,7 @@ class TagTree(TreeView):
         if index == -1:
             self.add_tag_node(node, destination)
         else:
-            self.insert_tag_node(node, destination, index)
+            self.insert_node(node, destination, index)
 
         if destination is not None:
             destination.is_open = True
@@ -347,65 +418,6 @@ class TagTree(TreeView):
     def normal_color(self, node):
         node.even_color = CONST[THEME]["tag_background"]
         node.odd_color = CONST[THEME]["tag_background"]
-
-    def add_tag_node(self, tag_node, destination):
-        """
-        Inserts a tag node before all content nodes at the destination
-        """
-        after_tag_node = []
-        if destination is None:
-            destination = self.root
-
-        index = len(destination.nodes)
-        for node in destination.nodes:
-            if not isinstance(node, TagNode):
-                index = destination.nodes.index(node)
-                break
-        self.insert_tag_node(tag_node, destination, index)
-
-    # TODO: check border cases for all functions and provide error messages
-
-    def insert_tag_node(self, node, parent, index):
-        """
-        Inserts a node among the children of the specified parent at the index
-        """
-        parent_name = "root" if parent == self.root else parent.entity.text
-        Logger.info("TagTree: insert_tag_node, node " + node.entity.text + ", parent " + parent_name)
-        if node == self.root:
-            Logger.warning(f"INSERT NODE: trying to insert root node into "
-                           f"node {parent.entity.text} at index {index}")
-            return
-        if index > len(parent.nodes):
-            Logger.warning(f"INSERT NODE: index too large, inserting node "
-                           f"{node.entity.text} into parent "
-                           f"{parent.entity.text} at index {index} while the"
-                           f"parent only has {len(parent.nodes)} children")
-            return
-
-        # Remove all nodes after node_after
-        after_node = parent.nodes[index:]
-        for next_node in after_node:
-            Logger.debug("TagTree: removing node " + next_node.entity.text[:50] + "; to be re-added later")
-            self.remove_node(next_node)
-
-        # Add the inserted node and then put back all the nodes removed before
-        Logger.debug("TagTree: adding the node")
-        self.add_node(node, parent)
-        for next_node in after_node:
-            Logger.debug("TagTree: re-adding removed node " + next_node.entity.text[:50])
-            self.add_node(next_node, parent)
-
-    # TODO: this does not remove all instances for some reason
-    def remove_all_instances(self, node):
-        if node == self.root:
-            return
-        Logger.info(f"TagTree: removing instances of node {node.entity.text}")
-
-        for check in self.iterate_all_nodes():
-            Logger.debug(f"TagTree: checking node {check.entity.text}")
-            if isinstance(check, type(node)) and check.entity == node.entity:
-                Logger.debug(f"TagTree: check passed. removing node.")
-                self.remove_node(check)
 
 
 class EntNode(GridLayout, TreeViewNode):
