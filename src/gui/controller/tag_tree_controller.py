@@ -229,12 +229,11 @@ class TagTreeController:
         # Change the representation
         self.tree.move_node(node, prev_node)
 
-    """
-    Increase the level of the currently selected node (make it the sibling of
-    its parent)
-    """
-
     def raise_selected_node(self):
+        """
+        Increase the level of the currently selected node (make it the sibling of
+        its parent)
+        """
         node = self.tree.selected_node
         if (
                 node is None
@@ -265,12 +264,11 @@ class TagTreeController:
         # Change the representation
         self.tree.move_node(node, grandparent, index)
 
-    """
-    Removes the node from its current place in the tree. If that was the last
-    place this tag was present in the tree, it is deleted as well.
-    """
-
     def delete_node(self, tag_node):
+        """
+        Removes the node from its current place in the tree. If that was the last
+        place this tag was present in the tree, it is deleted as well.
+        """
         Logger.info(f"Controller: deleting node {tag_node.entity.text}")
 
         if len(tag_node.entity.parents) > 1:

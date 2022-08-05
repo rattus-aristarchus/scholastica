@@ -6,6 +6,7 @@ Created on Sun Jun  5 16:19:01 2022
 @author: kryis
 """
 
+from kivy.clock import Clock
 from kivy.logger import Logger
 from kivy.uix.treeview import TreeView
 from kivy.uix.treeview import TreeViewNode
@@ -381,8 +382,12 @@ class TagTree(TreeView):
         if parent is not None and parent.is_open is not True:
             Logger.debug("TagTree: expanding the parent node")
             parent.is_open = True
-        self.select_node(node)
-        self.controller.edit_node(False)
+
+        def edit(dt):
+            self._select_and_scroll(node)
+            self.controller.edit_node(False)
+
+        Clock.schedule_once(edit, 0.1)
 
     def move_node(self, node, destination, index=-1):
         self.remove_node(node)
@@ -393,7 +398,8 @@ class TagTree(TreeView):
 
         if destination is not None:
             destination.is_open = True
-        self.select_node(node)
+
+        Clock.schedule_once(lambda dt: self._select_and_scroll(node), 0.1)
 
     def copy_node(self, node, destination):
         if node.parent_node == self.root:
