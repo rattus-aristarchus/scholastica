@@ -54,6 +54,8 @@ class Source:
         self.text = text
         self.tags = []
         self.descriptions = []
+        self.editions = []
+        self.source = None
 
     def get_first_word(self):
         word = ""

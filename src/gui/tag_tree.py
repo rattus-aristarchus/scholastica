@@ -161,6 +161,8 @@ class TagTree(TreeView):
                          " is not found in any file")
         source_node = SourceNode(source, file)
         self.add_source_node(source_node, parent_node)
+        for edition in source.editions:
+            self.display_source(edition, source_node)
         for description in source.descriptions:
             self.display_entry(description, source_node)
 
@@ -405,17 +407,24 @@ class TagTree(TreeView):
         if node.parent_node == self.root:
             self.remove_node(node)
 
-        self._copy_node(node, destination)
+        new_node = self._copy_node(node, destination)
 
         if destination is not None:
             destination.is_open = True
-        self.select_node(node)
+        self._select_and_scroll(new_node)
 
     def _copy_node(self, node, destination):
         new_node = node.copy()
-        self.add_node(new_node, destination)
+        if isinstance(node, TagNode):
+            self.add_tag_node(new_node, destination)
+        elif isinstance(node, SourceNode):
+            self.add_source_node(new_node, destination)
+        else:
+            self.add_node(node, destination)
+
         for child in node.nodes:
-            self.copy_node(child, new_node)
+            self._copy_node(child, new_node)
+        return new_node
 
     def clipboard_color(self, node):
         node.even_color = CONST[THEME]["clipboard_background"]

@@ -8,7 +8,7 @@ Created on Sat Jun 11 15:35:01 2022
 Contains basic operations for parsing text
 """
 
-import data.base_types as data
+from data.base_types import Tag, Entry, Source
 from util import CONST, CONF
 
 EMPTY_LINE = "\n"
@@ -79,7 +79,7 @@ def read_entry(chunk, tag_nest, sources):
     #   if len(body) > 1 and body[-2:] == "\n":
     #      body = body[:-2]
 
-    result = data.Entry(body)
+    result = Entry(body)
     if source is not None:
         result.source = source[0]
         result.page = source[1]
@@ -97,7 +97,11 @@ def add_parameters(object, parameters, tag_nest, sources=[]):
             words = value.split(" ")
             for i in range(len(words)):
                 words[i] = words[i].strip()
-            object.source = get_source_from_short_name(words, sources)
+            if isinstance(object, Source):
+                source = get_source_from_short_name(words, sources)
+                tag_nest.add_edition(source, object)
+            else:
+                object.source = get_source_from_short_name(words, sources)
         elif parameter in CONST['parameters']['subject']:
             words = value.split(" ")
             for i in range(len(words)):
@@ -156,7 +160,7 @@ def get_source_from_short_name(words, sources):
 
     # If we've not been able to find the source among existing ones, we create
     # a new one
-    source = data.Source(SPLIT.join(words))
+    source = Source(SPLIT.join(words))
     return source
 
 
@@ -184,10 +188,10 @@ def read_sources(chunk, tag_nest):
                 tag_nest.add_tag_to_source(tag, result[-1])
         elif is_comment(line) and len(result) > 0:
             line = get_comment(line)
-            description = data.Entry(line)
+            description = Entry(line)
             result[-1].descriptions.append(description)
         else:
-            source = data.Source(clean_line(line))
+            source = Source(clean_line(line))
             result.append(source)
     return result
 

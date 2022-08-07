@@ -156,3 +156,8 @@ class TagNest:
             source.descriptions.append(description)
         if source not in description.subjects:
             description.subjects.append(source)
+
+    def add_edition(self, source, edition):
+        if edition not in source.editions:
+            source.editions.append(edition)
+        edition.source = source
