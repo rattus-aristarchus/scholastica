@@ -11,13 +11,17 @@ Contains basic operations for parsing text
 from data.base_types import Tag, Entry, Source
 from util import CONST, CONF
 
-EMPTY_LINE = "\n"
-OPEN = "("
-CLOSE = ")"
-SPLIT = ","
+EMPTY_LINE = CONF['text']['empty_line']
+OPEN = CONF['text']['line_open']
+CLOSE = CONF['text']['line_close']
+SPLIT = CONF['text']['split']
+PARAMETER = CONF['text']['parameter_start']
 
 
 def clean_line(line):
+    """
+    Remove newline, dots and spaces at the end of the line
+    """
     line = line.replace("\n", "")
     line = line.strip()
     if len(line) > 0 and line[-1] == ".":
@@ -29,6 +33,58 @@ def clean_and_remove_brackets(line):
     result = clean_line(line)
     if is_enclosed(result):
         result = result[1:-1]
+    return result
+
+
+def add_parameters(object, parameters, tag_nest, sources=[]):
+    """
+    Turns parameters represented by a dictionary of strings into actual fields for the object
+    """
+    for parameter, value in parameters.items():
+        if parameter in CONST['parameters']['source']:
+            words = value.split(" ")
+            for i in range(len(words)):
+                words[i] = words[i].strip()
+            if isinstance(object, Source):
+                source = get_source_from_short_name(words, sources)
+                tag_nest.add_edition(source, object)
+            else:
+                object.source = get_source_from_short_name(words, sources)
+        elif parameter in CONST['parameters']['subject']:
+            words = value.split(" ")
+            for i in range(len(words)):
+                words[i] = words[i].strip()
+            source = get_source_from_short_name(words, sources)
+            tag_nest.add_description(description=object, source=source)
+
+
+"""
+======================================================================
+Methods for reading chunks
+"""
+
+
+def read_sources(chunk, tag_nest):
+    """
+    Returns all the sources contained in a chunk, with their tags.
+    """
+    result = []
+    for line in chunk:
+        # all lines in a chunk of sources are either sources, comments,
+        # or tags and parameters
+        if is_enclosed(line) and len(result) > 0:
+            parameters = get_parameters(line)
+            add_parameters(result[-1], parameters, tag_nest)
+            tags = get_tags(line, tag_nest)
+            for tag in tags:
+                tag_nest.add_tag_to_source(tag, result[-1])
+        elif is_comment(line) and len(result) > 0:
+            line = get_comment(line)
+            description = Entry(line)
+            result[-1].descriptions.append(description)
+        else:
+            source = Source(clean_line(line))
+            result.append(source)
     return result
 
 
@@ -60,13 +116,13 @@ def read_entry(chunk, tag_nest, sources):
         if is_comment(line):
             comment = get_comment(line)
             comments.append(comment)
-        elif is_parameter(line):
-            parameters = get_parameters(line)
         else:
+            try_parameters = get_parameters(line)
             try_tags = get_tags(line, tag_nest)
-            if len(try_tags) == 0:
+            if len(try_tags) == 0 and len(try_parameters) == 0:
                 source = get_source(line, sources)
             else:
+                parameters.update(try_parameters)
                 tags += try_tags
 
     body = ""
@@ -91,38 +147,10 @@ def read_entry(chunk, tag_nest, sources):
     return result
 
 
-def add_parameters(object, parameters, tag_nest, sources=[]):
-    for parameter, value in parameters.items():
-        if parameter in CONST['parameters']['source']:
-            words = value.split(" ")
-            for i in range(len(words)):
-                words[i] = words[i].strip()
-            if isinstance(object, Source):
-                source = get_source_from_short_name(words, sources)
-                tag_nest.add_edition(source, object)
-            else:
-                object.source = get_source_from_short_name(words, sources)
-        elif parameter in CONST['parameters']['subject']:
-            words = value.split(" ")
-            for i in range(len(words)):
-                words[i] = words[i].strip()
-            source = get_source_from_short_name(words, sources)
-            tag_nest.add_description(description=object, source=source)
-
-
-def get_tags(line, tag_nest):
-    """
-    Returns all the tags from the tag nest that are contained in a line
-    """
-    line = clean_and_remove_brackets(line)
-    names = line.split(SPLIT)
-    for i in range(len(names)):
-        names[i] = names[i].strip()
-    tags = []
-    for tag in tag_nest.tags:
-        if tag.text in names:
-            tags.append(tag)
-    return tags
+"""
+============================================================================
+Methods for reading lines
+"""
 
 
 def get_source(line, sources):
@@ -173,77 +201,42 @@ def get_comment(line):
     return line
 
 
-def read_sources(chunk, tag_nest):
+def get_tags(line, tag_nest):
     """
-    Returns all the sources contained in a chunk, with their tags.
+    Returns all the tags from the tag nest that are contained in a line
     """
-    result = []
-    for line in chunk:
-        if is_enclosed(line) and is_parameter(line) and len(result) > 0:
-            parameters = get_parameters(line)
-            add_parameters(result[-1], parameters, tag_nest)
-        elif is_enclosed(line) and len(result) > 0:
-            tags = get_tags(line, tag_nest)
-            for tag in tags:
-                tag_nest.add_tag_to_source(tag, result[-1])
-        elif is_comment(line) and len(result) > 0:
-            line = get_comment(line)
-            description = Entry(line)
-            result[-1].descriptions.append(description)
-        else:
-            source = Source(clean_line(line))
-            result.append(source)
-    return result
+    line = clean_and_remove_brackets(line)
+    names = line.split(SPLIT)
+    for i in range(len(names)):
+        names[i] = names[i].strip()
+    tags = []
+    for tag in tag_nest.tags:
+        if tag.text in names:
+            tags.append(tag)
+    return tags
 
 
 def get_parameters(line):
     result = {}
-    if not CONF['text']['parameter_start'] in line:
+    if PARAMETER not in line:
         return result
     line = clean_and_remove_brackets(line)
 
-    # since splitting the line by semicolon will result in both the name of the next
-    # parameter and the value for the previous parameter to reside in the same string,
-    # we need a function that will split the string into value and parameter
-    def get_string_and_last_word(string):
-        if " " in string:
-            words = string.split(" ")
-            without_last = ""
-            for word in words[:-1]:
-                without_last += word + " "
-            without_last = without_last[:-1]
-            return without_last, words[-1]
-        else:
-            return string, string
-
-    # now we go through the list of strings, extract parameter names and values and write
-    # them into result
-    separated = line.split(CONF['text']['parameter_start'])
-    for i in range(len(separated)):
-        separated[i] = separated[i].strip()
-
-    nothing, parameter = get_string_and_last_word(separated[0])
-    for i in range(len(separated)):
-        if i == 0:
-            continue
-        elif i < len(separated) - 1:
-            string = separated[i]
-            value, next_parameter = get_string_and_last_word(separated[i])
-            for name, representations in CONST['parameters'].items():
-                if parameter in representations:
-                    result[parameter] = value
-                    break
-            parameter = next_parameter
-        else:
-            for name, representations in CONST['parameters'].items():
-                if parameter in representations:
-                    result[parameter] = separated[i]
-                    break
+    # we split the line by commas and go through the resulting
+    # strings - if a string contains a semicolon, it's a parameter
+    strings = line.split(SPLIT)
+    for string in strings:
+        if PARAMETER in string:
+            name_and_value = string.split(PARAMETER)
+            name = clean_line(name_and_value[0])
+            value = clean_line(name_and_value[1])
+            result[name] = value
     return result
 
 
 """
-Various checkers go below
+===========================================================================================
+Various checkers
 """
 
 
