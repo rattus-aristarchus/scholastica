@@ -56,6 +56,7 @@ class FilePopup(Popup):
         # I have found no simple way to change the text of labels inside the
         # file picker into different
         # languages; the following monstrosity takes care of that
+        # Thankfully, it's not needed if the view is in icons instead of a list
         """
         for child in self.ids['filechooser'].children[0].children[0].children:
             if isinstance(child, BoxLayout):
@@ -75,18 +76,20 @@ class FilePopup(Popup):
 
 class OpenFile(FilePopup):
         
-    def act(self, directory, filename):
+    def act(self, filechooser_selection, filename):
         self.dismiss()
         if self.controller is not None:
-            path = os.path.join(directory, filename)
+            dir_path = os.path.dirname(filechooser_selection)
+            path = os.path.join(dir_path, filename)
             self.controller.open_file(path)
 
 
 class NewFile(FilePopup):
         
-    def act(self, directory, filename):
+    def act(self, filechooser_selection, filename):
         self.dismiss()
         if self.controller is not None:
-            path = os.path.join(directory, filename)
+            dir_path = os.path.dirname(filechooser_selection)
+            path = os.path.join(dir_path, filename)
             self.controller.new_file(path)
         
