@@ -46,15 +46,15 @@ def add_parameters(object, parameters, tag_nest, sources=[]):
             for i in range(len(words)):
                 words[i] = words[i].strip()
             if isinstance(object, Source):
-                source = get_source_from_short_name(words, sources)
+                source = get_reference_from_short_name(words, sources)
                 tag_nest.add_edition(source, object)
             else:
-                object.source = get_source_from_short_name(words, sources)
+                object.source = get_reference_from_short_name(words, sources)
         elif parameter in CONST['parameters']['subject']:
             words = value.split(" ")
             for i in range(len(words)):
                 words[i] = words[i].strip()
-            source = get_source_from_short_name(words, sources)
+            source = get_reference_from_short_name(words, sources)
             tag_nest.add_description(description=object, source=source)
 
 
@@ -83,7 +83,7 @@ def read_sources(chunk, tag_nest):
             description = Entry(line)
             result[-1].descriptions.append(description)
         else:
-            source = Source(clean_line(line))
+            source = get_source(line)
             result.append(source)
     return result
 
@@ -120,7 +120,7 @@ def read_entry(chunk, tag_nest, sources):
             try_parameters = get_parameters(line)
             try_tags = get_tags(line, tag_nest)
             if len(try_tags) == 0 and len(try_parameters) == 0:
-                source = get_source(line, sources)
+                source = get_reference(line, sources)
             else:
                 parameters.update(try_parameters)
                 tags += try_tags
@@ -153,9 +153,73 @@ Methods for reading lines
 """
 
 
-def get_source(line, sources):
+def get_source(line):
     """
-    Returns a source and a page from a line as a tuple
+    Reads the full name of the source and creates a source object
+    """
+    line = clean_and_remove_brackets(line)
+    source = Source(line)
+
+    # let's try to determine if the first words of the source are author names
+    # possible scenarios:
+    # surname, first letter of name, dot, possible comma
+    # name, surname, dot or comma
+    # surname, comma, name, dot or comma
+
+    # TODO well, this won't be easy
+    def has_type_0(words):
+        if len(words) < 2:
+            return False
+        # surname cant end with a comma or fullstop
+        if words[0][-1] in ".,":
+            return False
+
+        # the next few words can be initials
+        initials = []
+        for i in range(len(words) - 1):
+            possible_initial = words[i+1]
+            is_initial = True
+
+            # let's run some checks
+            if len(possible_initial > 4):
+                # let's say that an abbreviated letter can at most be 3 characters, plus 1 for the dot
+                is_initial = False
+            if (
+                    not possible_initial[-1] == "."
+                    and not possible_initial[-2:] == ".,"
+            ):
+                # ...and, obviously, the inital has to end with a dot (or dot-comma)
+                is_initial = False
+
+            if is_initial:
+                initials.append(possible_initial)
+
+            # if we've encountered a word that doesn't conform to the pattern or a dot-comma,
+            # it means the initals have ended
+            if not is_initial or possible_initial[-2:] == ".,":
+                break
+
+        if len(initials) == 0:
+            return False
+
+        return True
+
+
+#    words = line.split(" ")
+
+ #   maybe_surname = True
+
+  #  for word in words:
+   #     if maybe_surname:
+
+ #       elif:
+
+    return source
+
+
+def get_reference(line, sources):
+    """
+    Returns a source the line references and a page number as a tuple
     """
     line = clean_and_remove_brackets(line)
     words = line.split(SPLIT)
@@ -167,11 +231,11 @@ def get_source(line, sources):
     if is_page(words[-1]):
         page = words.pop()
 
-    source = get_source_from_short_name(words, sources)
+    source = get_reference_from_short_name(words, sources)
     return source, page
 
 
-def get_source_from_short_name(words, sources):
+def get_reference_from_short_name(words, sources):
     # If the reference in parentheses is to some source that already exists in
     # the system, then it will contain only words that exist in the name of
     # that source

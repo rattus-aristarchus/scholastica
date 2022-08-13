@@ -56,6 +56,7 @@ class Source:
         self.descriptions = []
         self.editions = []
         self.source = None
+        self.authors = []
 
     def get_first_word(self):
         word = ""
