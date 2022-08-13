@@ -1,0 +1,14 @@
+misc:
+  default_location: ""
+  extension: .scla
+  language: ru
+  log_level: warning
+  theme: colors_chartres
+text:
+  empty_line: '\n'
+  line_close: )
+  line_open: (
+  parameter_start: ':'
+  separator: =====
+  snippet_length: 100
+  split: ','
