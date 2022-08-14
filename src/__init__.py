@@ -9,7 +9,7 @@ Created on Mon May 23 19:08:19 2022
 import sys
 from kivy.logger import Logger, LOG_LEVELS
 from util import CONF
-Logger.setLevel(LOG_LEVELS[CONF["misc"]["log_level"]])
+Logger.setLevel(LOG_LEVELS[CONF['misc']['log_level']])
 import gui.main as gui
 
 Logger.info("Starting application with arguments " + str(sys.argv))

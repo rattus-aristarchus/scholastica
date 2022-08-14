@@ -36,7 +36,7 @@ class Main(App):
         self.lang = LANG
         self.theme = THEME
         if file_path is None:
-            self.path = CONF['misc']['default_location']
+            self.path = CONF['misc']['last_file']
         else:
             self.path = file_path
 

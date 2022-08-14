@@ -38,8 +38,12 @@ def back_up(path, backup_dir):
 def write_safe(path, content):
     new_file = open(path + TMP, "w")
     new_file.write(content)
+    new_file.close()
+
     existing = os.path.exists(path)
-    if existing: 
+    if existing:
+        #if os.path.exists(path + BAK):
+        #    os.remove(path + BAK)
         os.rename(path, path + BAK)
     os.rename(new_file.name, path)
     if existing:

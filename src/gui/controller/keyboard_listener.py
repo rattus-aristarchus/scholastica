@@ -36,11 +36,11 @@ class KeyboardListener(Widget):
     def close_keyboard(self):
         self._keyboard.unbind(on_key_down=self._on_keyboard_down)
         self._keyboard = None
-    
-    """
-    This is called when a key is pressed.
-    """
+
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
+        """
+        This is called when a key is pressed.
+        """
         tree = self.view.ids['tree']
         key = keycode[1]
         ctrl = 'ctrl' in modifiers

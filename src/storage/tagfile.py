@@ -90,7 +90,6 @@ def read_tag_file(address):
 
     try:
         with open(address, "r") as file:
-
             indent = 0
             tag_stack = collections.OrderedDict()
             parent = None

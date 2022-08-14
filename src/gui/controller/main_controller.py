@@ -12,14 +12,11 @@ from kivy.logger import Logger
 from kivy.clock import Clock
 
 import util
+from util import CONF, STRINGS
 from gui.widgets import BasePopup, OpenFile, NewFile
-from gui.tag_tree import TagNode, EntryNode, SourceNode
 from gui.controller.keyboard_listener import KeyboardListener
 from gui.controller.tag_tree_controller import TagTreeController
 import storage.tagfile as tagfile
-import storage.sourcefile as sourcefile
-from util import CONF
-from util import STRINGS
 import messaging.rpc as rpc
 
 LANG = CONF["misc"]["language"]
@@ -48,13 +45,19 @@ class Controller:
 
     def new_file_popup(self):
         popup = NewFile(self)
+        self._check_default_location()
         popup.set_path(CONF["misc"]["default_location"])
         popup.open()
 
     def open_file_popup(self):
         popup = OpenFile(self)
-        popup.set_path(CONF["misc"]["default_location"])
+        self._check_default_location()
+        popup.set_path(CONF['misc']['default_location'])
         popup.open()
+
+    def _check_default_location(self):
+        if CONF['misc']['default_location'] is None:
+            util.set_conf('misc', 'default_location', util.MAIN_DIR)
 
     def new_file(self, path):
         path = path + CONF["misc"]["extension"]
@@ -77,13 +80,15 @@ class Controller:
             self.close_file()
 
         # First, open the file
-
         self.tag_file, messages = tagfile.read_tag_file(path)
+        if not len(messages) == 0:
+            Clock.schedule_once(lambda dt: self.popup("\n".join(messages)), 0.5)
         self.tag_nest = self.tag_file.tag_nest
         self.msgr.tag_file = self.tag_file
         self.tree_controller.tag_file = self.tag_file
         self.tree_controller.tag_nest = self.tag_nest
         self.tree.show(self.tag_file)
+
         # without the next line, when you create a new file the keyboard listener dies and
         # doesn't revive for any next file; although when you just open a new file it works
         # fine. can't for the life of me understand why
@@ -91,9 +96,9 @@ class Controller:
         self.set_title(os.path.basename(path))
 
         # change the default location for opening files
-        util.set_conf("misc", "default_location", path)
-        if not len(messages) == 0:
-            Clock.schedule_once(lambda dt: self.popup("\n".join(messages)), 0.5)
+        util.set_conf('misc', 'default_location', os.path.dirname(path))
+        util.set_conf('misc', 'last_file', path)
+
 
     def close_file(self):
         self.tree.clear()
