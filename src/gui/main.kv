@@ -41,17 +41,18 @@
         id: tutorial_parent
         orientation: 'horizontal'
 
-        ScrollView:
-            id: scroll
-            do_scroll_x: False
-            do_scroll_y: True
-            bar_width: dp(10)
-            scroll_timeout: 1000
-            effect_cls: 'ScrollEffect'
+        BoxLayout:
+            id: tree_and_hint
+            orientation: 'vertical'
 
-            BoxLayout:
-                id: inside_scroll
-                orientation: 'vertical'
+            ScrollView:
+                id: scroll
+                do_scroll_x: False
+                do_scroll_y: True
+                bar_width: dp(10)
+                scroll_timeout: 1000
+                effect_cls: 'ScrollEffect'
+                size_hint_y: 0.5
 
                 TagTree:
                     id: tree
@@ -60,12 +61,28 @@
                     controller: root.controller.tree_controller
                     main_controller: root.controller
 
+            AnchorLayout:
+                id: hint
+                anchor_y: 'top'
+                size_hint_y: 0.5
+
+                canvas.before:
+                    Color:
+                        rgba: [1, 0, 0, 1]
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+
                 Label:
-                    id: hint
                     text: STRINGS['tag_tree'][0][app.lang]
                     color: CONST[app.theme]['text_transparent']
+                    size_hint: None, None
+                    size: self.texture_size[0], dp(20)
+                    text_size: None, self.height
 
-                BoxLayout:
+            BoxLayout:
+                size_hint_y: None
+                height: dp(0)
 
         Tutorial:
             id: tutorial
@@ -164,16 +181,20 @@
     Label:
         id: comment
         font_size: sp(15)
-        size_hint: None, None
-        size: self.texture_size
+        size_hint_y: None
+        width: dp(500)
+        height: self.texture_size[1]
+        text_size: self.width, None
         padding: (2, 2)
         color: CONST[app.theme]['text']
     
     Label:
         id: reference
         font_size: sp(15)
-        size_hint: None, None
-        size: self.texture_size
+        size_hint_y: None
+        width: dp(500)
+        height: self.texture_size[1]
+        text_size: self.width, None
         padding: (2, 2)
         color: CONST[app.theme]['text']
 

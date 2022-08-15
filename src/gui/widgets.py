@@ -46,12 +46,12 @@ class View(BoxLayout):
         self.options.ids['tutorial'].text = STRINGS['menu'][5][LANG]
 
     def hide_hint(self):
-        self.ids['inside_scroll'].remove_widget(self.ids['hint'])
+        self.ids['tree_and_hint'].remove_widget(self.ids['hint'])
         self.hint_shown = False
 
     def show_hint(self):
         if not self.hint_shown:
-            self.ids['inside_scroll'].add_widget(self.hint, 1)
+            self.ids['tree_and_hint'].add_widget(self.hint, 1)
             self.hint_shown = True
 
 # TODO: cancel button

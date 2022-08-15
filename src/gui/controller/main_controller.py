@@ -137,7 +137,7 @@ class Controller:
         self.popup(STRINGS['popup'][11][LANG])
 
     def hide_tutorial(self):
-        self.hide_tutorial()
+        self.view.hide_tutorial()
         util.set_conf('misc', 'show_tutorial', False)
 
     def show_tutorial(self):
