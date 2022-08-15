@@ -43,7 +43,7 @@ class Main(App):
     def build(self):
         Logger.info("Main: building the app")
 
-        self.title = "Scholastica"
+        self.title = STRINGS['misc'][0][LANG]
 
         def set_title(title):
             self.title = title

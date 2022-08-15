@@ -5,6 +5,7 @@ misc:
   language: ru
   log_level: warning
   theme: colors_chartres
+  show_tutorial: True
 text:
   empty_line: '\n'
   line_close: )

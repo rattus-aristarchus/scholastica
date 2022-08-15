@@ -9,23 +9,32 @@ Created on Mon Jun 27 13:44:51 2022
 import os
 
 from kivy.logger import Logger
+from kivy.uix.button import Button
+from kivy.uix.dropdown import DropDown
 from kivy.uix.popup import Popup
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.label import Label
 from kivy.properties import ObjectProperty
 
-from util import CONF
-from util import STRINGS
+from util import CONF, STRINGS
 
 LANG = CONF["misc"]["language"]
 
 
 class View(BoxLayout):
 
+    options = ObjectProperty()
+
     def __init__(self, controller, **kwargs):
         self.controller = controller
         super().__init__(**kwargs)
-    
+        self.options = Options()
+        self.options.controller = controller
+        self.tutorial = self.ids['tutorial'].__self__
+
+        if not CONF['misc']['show_tutorial']:
+            self.ids['tutorial_parent'].remove_widget(self.tutorial)
+
+
 # TODO: cancel button
 
 
@@ -92,4 +101,23 @@ class NewFile(FilePopup):
             dir_path = os.path.dirname(filechooser_selection)
             path = os.path.join(dir_path, filename)
             self.controller.new_file(path)
-        
+
+
+class Tutorial(BoxLayout):
+
+    controller = ObjectProperty()
+
+
+class Options(DropDown):
+
+    controller = ObjectProperty()
+
+    def tutorial_text(self):
+        if CONF['misc']['show_tutorial']:
+            return STRINGS['menu'][4][LANG]
+        else:
+            return STRINGS['menu'][5][LANG]
+
+class MenuButton(Button):
+
+    pass

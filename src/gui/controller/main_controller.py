@@ -19,7 +19,7 @@ from gui.controller.tag_tree_controller import TagTreeController
 import storage.tagfile as tagfile
 import messaging.rpc as rpc
 
-LANG = CONF["misc"]["language"]
+LANG = CONF['misc']['language']
 
 
 class Controller:
@@ -46,7 +46,7 @@ class Controller:
     def new_file_popup(self):
         popup = NewFile(self)
         self._check_default_location()
-        popup.set_path(CONF["misc"]["default_location"])
+        popup.set_path(CONF['misc']['default_location'])
         popup.open()
 
     def open_file_popup(self):
@@ -60,12 +60,12 @@ class Controller:
             util.set_conf('misc', 'default_location', util.MAIN_DIR)
 
     def new_file(self, path):
-        path = path + CONF["misc"]["extension"]
+        path = path + CONF['misc']['extension']
 
         if os.path.exists(path):
-            msg = STRINGS["error"][1][LANG][0] + \
+            msg = STRINGS['error'][1][LANG][0] + \
                   path + \
-                  STRINGS["error"][1][LANG][1]
+                  STRINGS['error'][1][LANG][1]
             self.popup(msg)
         else:
             try:
@@ -99,7 +99,6 @@ class Controller:
         util.set_conf('misc', 'default_location', os.path.dirname(path))
         util.set_conf('misc', 'last_file', path)
 
-
     def close_file(self):
         self.tree.clear()
         self.msgr.tag_file = None
@@ -126,3 +125,19 @@ class Controller:
         elif LANG == 'en':
             util.set_conf('misc', 'language', 'ru')
         self.popup(STRINGS['popup'][11][LANG])
+
+    def hide_tutorial(self):
+        self.view.ids['tutorial_parent'].remove_widget(self.view.tutorial)
+        util.set_conf('misc', 'show_tutorial', False)
+        self.view.options.ids['tutorial'].text = STRINGS['menu'][5][LANG]
+
+    def show_tutorial(self):
+        self.view.ids['tutorial_parent'].add_widget(self.view.tutorial)
+        util.set_conf('misc', 'show_tutorial', True)
+        self.view.options.ids['tutorial'].text = STRINGS['menu'][4][LANG]
+
+    def toggle_tutorial(self):
+        if CONF['misc']['show_tutorial']:
+            self.hide_tutorial()
+        else:
+            self.show_tutorial()

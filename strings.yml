@@ -1,36 +1,50 @@
+misc:
+    0:
+        ru: "scholastica"
+        en: "scholastica"
+
 menu:
     0:
-        ru: "Создать"
-        en: "New"
+        ru: "создать"
+        en: "new"
     1:
-        ru: "Открыть"
-        en: "Open"
+        ru: "открыть"
+        en: "open"
     2:
-        ru: "Язык: русский"
-        en: "Lanuage: english"
+        ru: "язык: русский"
+        en: "lanuage: english"
+    3:
+        ru: "настройки"
+        en: "options"
+    4:
+        ru: "скрыть подсказку"
+        en: "hide tutorial"
+    5:
+        ru: "вернуть подсказку"
+        en: "show tutorial"
 
 filechooser:
     0:
-        ru: "Создать файл"
-        en: "New file"
+        ru: "создать файл"
+        en: "new file"
     1:  
-        ru: "Открыть файл"
-        en: "Open file"
+        ru: "открыть файл"
+        en: "open file"
     2:
-        ru: "Создать"
-        en: "New"
+        ru: "создать"
+        en: "new"
     3:
-        ru: "Открыть"
-        en: "Open"
+        ru: "открыть"
+        en: "open"
     4:
-        ru: "Отмена"
-        en: "Cancel"
+        ru: "отмена"
+        en: "cancel"
     5:
-        ru: "Имя"
-        en: "Name"
+        ru: "имя"
+        en: "name"
     6:
-        ru: "Размер"
-        en: "Size"
+        ru: "размер"
+        en: "size"
     7:
         ru: "Введите имя файла. К нему будет автоматически добавлено расширение '.scla'"
         en: "Please enter a name for the new file. The extension '.scla' will be automatically appended to it."
@@ -89,3 +103,11 @@ data:
     0: 
         ru: "текст отсутствует"
         en: "text is missing"
+
+tutorial:
+    0:
+        ru: "управление:\n\nENTER - создать тег\n\nВВЕРХ/ВНИЗ - вверх и вниз\n\nВПРАВО/ВЛЕВО - развернуть или свернуть содержимое\n\nDELETE/BACKSPACE - редактировать тег\n\nCTRL+C/CTRL+X/CTRL+V - копировать, вырезать или вставить тег\n\nTAB/CTRL+TAB - сдвинуть тег вправо/влево\n\nCTRL+SHIT+ВВЕРХ/CTRL+SHIFT+ВНИЗ - сдвинуть тег вверх или вниз"
+        en: "controls:\n\nENTER - new label\n\nВВЕРХ/ВНИЗ - up or down\n\nВПРАВО/ВЛЕВО - expand or collapse content\n\nDELETE/BACKSPACE - edit\n\nCTRL+C/CTRL+X/CTRL+V - copy, paste or insert label\n\nTAB/CTRL+TAB - move the label right or left\n\nCTRL+SHIT+ВВЕРХ/CTRL+SHIFT+ВНИЗ - move the label up or down"
+    1:
+        ru: "закрыть"
+        en: "close"
