@@ -149,11 +149,6 @@ class TagTree(TreeView):
                 result.append(node)
         return result
 
-    # TODO: it might be a good idea to step over nodes that aren't tag nodes -
-    # if we really don't want the user to interact with them.
-    # Either that, or implement opening the relevant .txt file when trying to
-    # edit entries and sources
-
     def display_source(self, source, parent_node):
         file = self.tag_file.get_file_with(source)
         if file is None:
@@ -434,6 +429,11 @@ class TagTree(TreeView):
         node.even_color = CONST[THEME]["tag_background"]
         node.odd_color = CONST[THEME]["tag_background"]
 
+    def change_text_for_all_nodes(self, old_text, new_text):
+        for node in self.iterate_all_nodes():
+            if isinstance(node, EntNode) and node.ids['label'].text == old_text:
+                node.ids['label'].text = new_text
+
 
 class EntNode(GridLayout, TreeViewNode):
 
@@ -530,7 +530,7 @@ class TagNode(EntNode):
         return TagNode(self.entity, self.controller, self.main_controller)
 
     """
-    The following two methods change the appearance of the node
+    Methods that change the appearance of the node
     """
 
     def edit_done(self):
@@ -566,7 +566,7 @@ class TagNode(EntNode):
             self.input.select_all()
 
     """
-    These change the data based on user input
+    Methods that change the data based on user input
     """
 
     def save_text(self):

@@ -57,6 +57,8 @@ class KeyboardListener(Widget):
             root = App.get_running_app().root_window.children[0]
             if isinstance(root, BasePopup):
                 root.escape()
+            else:
+                self.controller.quit()
         elif key == 'up':
             if ctrl and shift:
                 self.tree_controller.push_node(forward=False)
@@ -80,6 +82,7 @@ class KeyboardListener(Widget):
             if isinstance(root, BasePopup):
                 root.enter()
             else:
+                self.controller.enter()
                 self.tree_controller.enter()
         elif key == 'delete':
             if shift:

@@ -30,10 +30,29 @@ class View(BoxLayout):
         self.options = Options()
         self.options.controller = controller
         self.tutorial = self.ids['tutorial'].__self__
+        self.hint = self.ids['hint'].__self__
 
         if not CONF['misc']['show_tutorial']:
-            self.ids['tutorial_parent'].remove_widget(self.tutorial)
+            self.hide_tutorial()
 
+        self.hint_shown = True
+
+    def show_tutorial(self):
+        self.ids['tutorial_parent'].add_widget(self.tutorial)
+        self.options.ids['tutorial'].text = STRINGS['menu'][4][LANG]
+
+    def hide_tutorial(self):
+        self.ids['tutorial_parent'].remove_widget(self.tutorial)
+        self.options.ids['tutorial'].text = STRINGS['menu'][5][LANG]
+
+    def hide_hint(self):
+        self.ids['inside_scroll'].remove_widget(self.ids['hint'])
+        self.hint_shown = False
+
+    def show_hint(self):
+        if not self.hint_shown:
+            self.ids['inside_scroll'].add_widget(self.hint, 1)
+            self.hint_shown = True
 
 # TODO: cancel button
 
@@ -88,7 +107,10 @@ class OpenFile(FilePopup):
     def act(self, filechooser_selection, filename):
         self.dismiss()
         if self.controller is not None:
-            dir_path = os.path.dirname(filechooser_selection)
+            if os.path.isdir(filechooser_selection):
+                dir_path = filechooser_selection
+            else:
+                dir_path = os.path.dirname(filechooser_selection)
             path = os.path.join(dir_path, filename)
             self.controller.open_file(path)
 
@@ -98,7 +120,10 @@ class NewFile(FilePopup):
     def act(self, filechooser_selection, filename):
         self.dismiss()
         if self.controller is not None:
-            dir_path = os.path.dirname(filechooser_selection)
+            if os.path.isdir(filechooser_selection):
+                dir_path = filechooser_selection
+            else:
+                dir_path = os.path.dirname(filechooser_selection)
             path = os.path.join(dir_path, filename)
             self.controller.new_file(path)
 

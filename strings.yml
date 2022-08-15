@@ -3,6 +3,11 @@ misc:
         ru: "scholastica"
         en: "scholastica"
 
+tag_tree:
+    0:
+        ru: "нажмите ENTER, чтобы создать первый тег"
+        en: "press ENTER to create the first tag"
+
 menu:
     0:
         ru: "создать"

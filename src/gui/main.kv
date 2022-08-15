@@ -49,13 +49,23 @@
             scroll_timeout: 1000
             effect_cls: 'ScrollEffect'
 
-            TagTree:
-                id: tree
-                size_hint_y: None
-                hide_root: True
+            BoxLayout:
+                id: inside_scroll
+                orientation: 'vertical'
 
-                controller: root.controller.tree_controller
-                main_controller: root.controller
+                TagTree:
+                    id: tree
+                    size_hint_y: None
+                    hide_root: True
+                    controller: root.controller.tree_controller
+                    main_controller: root.controller
+
+                Label:
+                    id: hint
+                    text: STRINGS['tag_tree'][0][app.lang]
+                    color: CONST[app.theme]['text_transparent']
+
+                BoxLayout:
 
         Tutorial:
             id: tutorial
@@ -103,7 +113,7 @@
             size: dp(60), dp(15)
             font_size: sp(10)
             background_color: CONST[app.theme]['menu']
-            on_release: root.controller.close_tutorial()
+            on_release: root.controller.hide_tutorial()
 
     Label:
         size_hint_y: None

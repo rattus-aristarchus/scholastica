@@ -9,6 +9,8 @@ Created on Sat Jun  4 19:36:01 2022
 from kivy.logger import Logger
 import kivy
 from kivy.app import App
+from kivy.core.window import Window
+from kivy.uix.label import Label
 
 import util
 
@@ -29,6 +31,12 @@ path_2 = "/media/kryis/TOSHIBA EXT/наука/схоластика/капита�
 path_3 = "/media/kryis/TOSHIBA EXT/наука/схоластика/гендер.scla"
 
 
+class Test(App):
+
+    def build(self):
+        return Label(text="wassup")
+
+
 class Main(App):
 
     def __init__(self, file_path=None):
@@ -40,6 +48,8 @@ class Main(App):
         else:
             self.path = file_path
 
+#        Window.borderless = True
+
     def build(self):
         Logger.info("Main: building the app")
 
@@ -48,7 +58,7 @@ class Main(App):
         def set_title(title):
             self.title = title
 
-        self.controller = Controller()
+        self.controller = Controller(self)
         self.controller.set_title = set_title
         self.view = View(self.controller)
         self.controller.set_view(self.view)
@@ -56,3 +66,6 @@ class Main(App):
             self.controller.open_file(self.path)
 
         return self.view
+
+    def on_stop(self):
+        self.controller.msgr.stop()

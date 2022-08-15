@@ -24,7 +24,8 @@ LANG = CONF['misc']['language']
 
 class Controller:
 
-    def __init__(self):
+    def __init__(self, app):
+        self.app = app
         self.tree_controller = TagTreeController(self)
         self.kbd_listener = KeyboardListener(self, self.tree_controller)
         self.msgr = rpc.Messenger()
@@ -32,6 +33,9 @@ class Controller:
 
         self.tag_file = None
         self.tag_nest = None
+
+    def quit(self):
+        self.app.stop()
 
     def set_view(self, view):
         self.view = view
@@ -89,6 +93,12 @@ class Controller:
         self.tree_controller.tag_nest = self.tag_nest
         self.tree.show(self.tag_file)
 
+        # if the file is empty, we have to show a hint; if it isn't, we have to hide it
+        if len(self.tag_file.tag_nest.tags) > 0:
+            self.view.hide_hint()
+        else:
+            self.view.show_hint()
+
         # without the next line, when you create a new file the keyboard listener dies and
         # doesn't revive for any next file; although when you just open a new file it works
         # fine. can't for the life of me understand why
@@ -127,17 +137,19 @@ class Controller:
         self.popup(STRINGS['popup'][11][LANG])
 
     def hide_tutorial(self):
-        self.view.ids['tutorial_parent'].remove_widget(self.view.tutorial)
+        self.hide_tutorial()
         util.set_conf('misc', 'show_tutorial', False)
-        self.view.options.ids['tutorial'].text = STRINGS['menu'][5][LANG]
 
     def show_tutorial(self):
-        self.view.ids['tutorial_parent'].add_widget(self.view.tutorial)
+        self.view.show_tutorial()
         util.set_conf('misc', 'show_tutorial', True)
-        self.view.options.ids['tutorial'].text = STRINGS['menu'][4][LANG]
 
     def toggle_tutorial(self):
         if CONF['misc']['show_tutorial']:
             self.hide_tutorial()
         else:
             self.show_tutorial()
+
+    def enter(self):
+        if self.view.hint_shown:
+            self.view.hide_hint()
