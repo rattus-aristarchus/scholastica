@@ -9,6 +9,7 @@ from kivy.uix.widget import Widget
 from kivy.core.window import Window
 from kivy.app import App
 from kivy.logger import Logger
+from kivy.clock import Clock
 
 from gui.widgets import BasePopup
 
@@ -24,6 +25,17 @@ class KeyboardListener(Widget):
         self.bind_keyboard()
         self.controller = main_controller
         self.tree_controller = tree_controller
+
+        # this is necessary for a very specific scenario - when you alt-tab back to the
+        # app sometimes it doesn't read the alt, just the tab, and interprets it as
+        # a request to change tag level. to avoid this, we ignore any tab within a second
+        # after a change of focus. for that, we need to record the time of change in focus
+        Window.bind(focus=self.on_window_focus)
+        self.last_focus_true = 0
+
+    def on_window_focus(self, instance, value):
+        if value:
+            self.last_focus_true = Clock.get_time()
 
     def set_view(self, view):
         self.view = view
@@ -92,9 +104,12 @@ class KeyboardListener(Widget):
         elif key == 'backspace':
             self.tree_controller.edit_node(from_end=True)
         elif key == 'tab':
-            if ctrl and not alt:
+            # for the explanation, look inside the constructor
+            since_last_focus = Clock.get_time() - self.last_focus_true
+            print(str(since_last_focus))
+            if ctrl and not alt and since_last_focus > 0.5:
                 self.tree_controller.raise_selected_node()
-            elif not alt:
+            elif not alt and since_last_focus > 0.5:
                 self.tree_controller.lower_selected_node()
         elif key == 'c' and ctrl:
             self.tree_controller.copy()

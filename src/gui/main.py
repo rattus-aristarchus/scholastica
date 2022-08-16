@@ -11,6 +11,8 @@ import kivy
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.uix.label import Label
+from kivy.clock import Clock
+import time
 
 import util
 
@@ -31,12 +33,6 @@ path_2 = "/media/kryis/TOSHIBA EXT/наука/схоластика/капита�
 path_3 = "/media/kryis/TOSHIBA EXT/наука/схоластика/гендер.scla"
 
 
-class Test(App):
-
-    def build(self):
-        return Label(text="wassup")
-
-
 class Main(App):
 
     def __init__(self, file_path=None):
@@ -47,8 +43,6 @@ class Main(App):
             self.path = CONF['misc']['last_file']
         else:
             self.path = file_path
-
-#        Window.borderless = True
 
     def build(self):
         Logger.info("Main: building the app")
