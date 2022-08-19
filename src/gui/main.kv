@@ -66,13 +66,6 @@
                 anchor_y: 'top'
                 size_hint_y: 0.5
 
-                canvas.before:
-                    Color:
-                        rgba: [1, 0, 0, 1]
-                    Rectangle:
-                        pos: self.pos
-                        size: self.size
-
                 Label:
                     text: STRINGS['tag_tree'][0][app.lang]
                     color: CONST[app.theme]['text_transparent']

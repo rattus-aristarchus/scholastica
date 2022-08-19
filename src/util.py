@@ -24,6 +24,7 @@ CONST_PATH = os.path.join(MAIN_DIR, "const.yml")
 STRINGS_PATH = os.path.join(MAIN_DIR, "strings.yml")
 
 if not os.path.exists(CONF_PATH):
+    # TODO: maybe this has to check that the file is complete
     shutil.copy(DEFAULT_CONF_PATH, CONF_PATH)
 
 CONF = yaml.safe_load(open(CONF_PATH, "r", encoding="utf-8"))
