@@ -9,10 +9,7 @@ Created on Sat Jun  4 19:36:01 2022
 from kivy.logger import Logger
 import kivy
 from kivy.app import App
-from kivy.core.window import Window
-from kivy.uix.label import Label
-from kivy.clock import Clock
-import time
+from kivy.base import ExceptionHandler, ExceptionManager
 
 import util
 
@@ -56,6 +53,7 @@ class Main(App):
         self.controller.set_title = set_title
         self.view = View(self.controller)
         self.controller.set_view(self.view)
+        ExceptionManager.add_handler(Handler(self.controller))
         if self.path is not None:
             self.controller.open_file(self.path)
 
@@ -63,3 +61,15 @@ class Main(App):
 
     def on_stop(self):
         self.controller.msgr.stop()
+
+
+class Handler(ExceptionHandler):
+
+    def __init__(self, controller):
+        super().__init__()
+        self.controller = controller
+
+    def handle_exception(self, inst):
+        self.controller.popup(STRINGS['popup'][12][LANG] + util.LOGS_DIR)
+        Logger.exception(str(inst))
+        return ExceptionManager.PASS

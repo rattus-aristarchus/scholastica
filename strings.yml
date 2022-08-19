@@ -92,6 +92,9 @@ popup:
     11:
         ru: "Чтобы изменения вступили в действия, перезапустите программу."
         en: "The changes will take effect after you restart the program."
+    12:
+        ru: "Произошла неожиданная ошибка. Пожалуйста, отправьте автору приложения последний файл log из следующей папки: "
+        en: "An unexpected error has occurred. Please send the last log file from the following location to the application's author: "
 warning:
     0:
         ru: "Изменять последовательность можно только для меток."

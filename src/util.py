@@ -11,6 +11,7 @@ import os
 import sys
 import shutil
 from kivy.logger import Logger
+from kivy.clock import Clock
 
 # getcwd returns the current working directory, which can change during program execution,
 # and which can give different results depending on where the program is launched from. for
@@ -22,6 +23,9 @@ CONF_PATH = os.path.join(MAIN_DIR, "conf.yml")
 DEFAULT_CONF_PATH = os.path.join(MAIN_DIR, "default_conf.yml")
 CONST_PATH = os.path.join(MAIN_DIR, "const.yml")
 STRINGS_PATH = os.path.join(MAIN_DIR, "strings.yml")
+LOGS_DIR = os.path.join(MAIN_DIR, "logs")
+LOGS_FILE = "last_log.txt"
+LOGS_PATH = os.path.join(LOGS_DIR, LOGS_FILE)
 
 if not os.path.exists(CONF_PATH):
     # TODO: maybe this has to check that the file is complete
