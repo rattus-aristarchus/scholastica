@@ -6,8 +6,9 @@ Created on Sat Jun  4 19:36:01 2022
 @author: kryis
 """
 
-from kivy.logger import Logger
+
 import kivy
+from kivy.logger import Logger
 from kivy.app import App
 from kivy.base import ExceptionHandler, ExceptionManager
 
@@ -15,7 +16,6 @@ import util
 
 from gui.widgets import View
 from gui.controller.main_controller import Controller
-from gui.controller.tag_tree_controller import TagTreeController
 
 kivy.require('2.1.0')  # replace with your current kivy version !
 
@@ -59,7 +59,12 @@ class Main(App):
 
         return self.view
 
+    def on_start(self):
+        # util.start_profiling()
+        pass
+
     def on_stop(self):
+        # util.end_profiling()
         self.controller.msgr.stop()
 
 

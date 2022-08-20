@@ -90,7 +90,7 @@ def read_sources(chunk, tag_nest):
 
 def read_entry(chunk, tag_nest, sources):
     """
-    Reads the chunk as an entry. If the chunk doesn't contain an entry, returns
+    Reads the chunk of lines as an entry. If the chunk doesn't contain an entry, returns
     None.
     """
     if len(chunk) == 0:
@@ -108,6 +108,8 @@ def read_entry(chunk, tag_nest, sources):
     for line in reversed(chunk):
         if is_enclosed(line) or is_comment(line):
             enclosed_lines.append(chunk.pop(-1))
+        elif is_empty(line):
+            continue
         else:
             break
 
@@ -411,3 +413,12 @@ def is_parameter(line):
         return False
 
     # TODO: maybe add a check confirming that the next symbol after the semicolon is a whitespace?
+
+
+def is_empty(line):
+    line = line.replace("\\n", "")
+    line = line.replace("\\r", "")
+    if line.isspace() or len(line) == 0:
+        return True
+    else:
+        return False

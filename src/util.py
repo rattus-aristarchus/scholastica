@@ -6,6 +6,8 @@ Created on Mon Jun 20 16:06:49 2022
 @author: kryis
 """
 
+import cProfile
+import pstats
 import yaml
 import os
 import sys
@@ -19,13 +21,20 @@ from kivy.clock import Clock
 
 # MAIN_DIR = os.path.dirname(os.getcwd())
 MAIN_DIR = os.path.dirname(sys.path[0])
-CONF_PATH = os.path.join(MAIN_DIR, "conf.yml")
 DEFAULT_CONF_PATH = os.path.join(MAIN_DIR, "default_conf.yml")
 CONST_PATH = os.path.join(MAIN_DIR, "const.yml")
 STRINGS_PATH = os.path.join(MAIN_DIR, "strings.yml")
-LOGS_DIR = os.path.join(MAIN_DIR, "logs")
+
+user_dir = os.path.expanduser("~")
+DOCS_DIR = os.path.join(user_dir, "scholastica")
+CONF_PATH = os.path.join(DOCS_DIR, "conf.yml")
+LOGS_DIR = os.path.join(DOCS_DIR, "logs")
 LOGS_FILE = "last_log.txt"
 LOGS_PATH = os.path.join(LOGS_DIR, LOGS_FILE)
+PROFILE_DUMP = os.path.join(LOGS_DIR, "profile_dump.txt")
+
+if not os.path.exists(LOGS_DIR):
+    os.makedirs(LOGS_DIR)
 
 if not os.path.exists(CONF_PATH):
     # TODO: maybe this has to check that the file is complete
@@ -40,3 +49,15 @@ def set_conf(category, name, value):
     CONF[category][name] = value
     with open(CONF_PATH, "w", encoding="utf-8") as file:
         yaml.dump(CONF, file)
+
+
+profile = cProfile.Profile()
+
+
+def start_profiling():
+    profile.enable()
+
+
+def end_profiling():
+    profile.disable()
+    profile.dump_stats(PROFILE_DUMP)

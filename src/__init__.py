@@ -23,6 +23,3 @@ else:
     app = gui.Main()
 
 app.run()
-
-
-#gui.Test().run()
