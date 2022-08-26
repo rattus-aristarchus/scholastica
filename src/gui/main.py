@@ -60,11 +60,11 @@ class Main(App):
         return self.view
 
     def on_start(self):
-        # util.start_profiling()
+        util.start_profiling()
         pass
 
     def on_stop(self):
-        # util.end_profiling()
+        util.end_profiling()
         self.controller.msgr.stop()
 
 

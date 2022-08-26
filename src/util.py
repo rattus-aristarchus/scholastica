@@ -8,6 +8,7 @@ Created on Mon Jun 20 16:06:49 2022
 
 import cProfile
 import pstats
+import io
 import yaml
 import os
 import sys
@@ -60,4 +61,10 @@ def start_profiling():
 
 def end_profiling():
     profile.disable()
-    profile.dump_stats(PROFILE_DUMP)
+    result = io.StringIO()
+    stats = pstats.Stats(profile, stream=result)
+    stats.sort_stats(pstats.SortKey.CUMULATIVE).print_stats()
+    if os.path.exists(PROFILE_DUMP):
+        os.remove(PROFILE_DUMP)
+    with open(PROFILE_DUMP, "w+") as file:
+        file.write(result.getvalue())
