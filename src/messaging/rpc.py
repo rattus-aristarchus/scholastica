@@ -34,7 +34,9 @@ class Messenger(threading.Thread):
         self.server.register_function(self.update_file, 'update_file')
         self.server.register_function(self.query_tags, 'query_tags')
         self.server.register_function(self.query_sources, 'query_sources')
-        self.proxy = ServerProxy('http://localhost:8000', allow_none=True)
+        self.proxy = ServerProxy('http://localhost:8000',
+                                 allow_none=True,
+                                 headers=[("TCP_INITIAL_RTO_NO_SYN_RETRANSMISSIONS", 1)])
 
     def set_view(self, view):
         self.view = view

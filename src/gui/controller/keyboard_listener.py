@@ -106,7 +106,6 @@ class KeyboardListener(Widget):
         elif key == 'tab':
             # for the explanation, look inside the constructor
             since_last_focus = Clock.get_time() - self.last_focus_true
-            print(str(since_last_focus))
             if ctrl and not alt and since_last_focus > 0.5:
                 self.tree_controller.raise_selected_node()
             elif not alt and since_last_focus > 0.5:
