@@ -89,7 +89,7 @@ class SourceFile:
             after_break = False
 
             for line in file:
-                if line.isspace():
+                if parse.is_empty(line):
                     after_break = True
                     entries.append(line)
                 elif after_break:
@@ -98,28 +98,31 @@ class SourceFile:
                     first_chunk.append(line)
                     if parse.is_source(line):
                         has_sources = True
-            # Since reading a chunk is triggered by an empty line, the last line
-            # always needs to be empty
-            entries.append(parse.EMPTY_LINE)
 
             if not has_sources:
                 entries = first_chunk + [parse.EMPTY_LINE] + entries
 
             # Read the lines as entries
             chunk = []
+
+            def read_and_add_entry(chunk):
+                all_sources = self.sources.copy()
+                all_sources.extend(tag_file.tag_nest.sources)
+                entry = parse.read_entry(chunk,
+                                         tag_file.tag_nest,
+                                         all_sources)
+                if entry is not None:
+                    #   Logger.debug(f"Sourcefile: created entry {entry.text[:100]}")
+                    self.add_entry(entry)
+
             for line in entries:
-                if line.isspace():
-                    all_sources = self.sources.copy()
-                    all_sources.extend(tag_file.tag_nest.sources)
-                    entry = parse.read_entry(chunk,
-                                             tag_file.tag_nest,
-                                             all_sources)
-                    if entry is not None:
-                        #   Logger.debug(f"Sourcefile: created entry {entry.text[:100]}")
-                        self.add_entry(entry)
+                if parse.is_empty(line):
+                    read_and_add_entry(chunk)
                     chunk = []
                 else:
                     chunk.append(line)
+            if not chunk == []:
+                read_and_add_entry(chunk)
 
 
 def edit_tag(old_name, new_name, source_file):

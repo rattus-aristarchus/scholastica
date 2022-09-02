@@ -40,11 +40,16 @@ class TagTreeController:
             self.view.ids['scroll'].scroll_to(widget)
 
     def edit_tag(self, tag, new_name):
+        # first, edit the data
         old_name = tag.text
         tag.text = new_name
         self.main_controller.save_file()
 
         if not old_name == "" and not old_name == new_name:
+            # then, edit the tree
+            self.tree.change_text_for_all_nodes(old_name, new_name)
+
+            # finally, edit the other text files
             func = lambda: self._edit_tag_in_files(old_name, new_name)
             self.main_controller.popup(message=STRINGS["popup"][2][LANG],
                                        callback=func)
@@ -100,6 +105,8 @@ class TagTreeController:
         Switch the currently selected node to edit mode
         """
         selected_node = self.tree.selected_node
+
+        # if the node is a tag, it is edited by this application;
         if (
                 isinstance(selected_node, TagNode)
                 and not selected_node.editing
@@ -111,6 +118,7 @@ class TagTreeController:
             else:
                 selected_node.cursor_to_start()
             selected_node.select_text()
+        # otherwise, a signal is sent to the notepad plugin
         elif isinstance(selected_node, (EntryNode, SourceNode)):
             if selected_node.file is None:
                 Logger.error("TagTreeController: edit_node, node " +
