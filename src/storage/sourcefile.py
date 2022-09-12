@@ -54,11 +54,10 @@ class SourceFile:
 
             has_sources = False
             first_chunk = []
-            after_break = False
 
             for line in file:
-                if line.isspace():
-                    after_break = True
+                Logger.debug("read_sources: " + line[0:100])
+                if parse.is_empty(line):
                     break
                 else:
                     first_chunk.append(line)

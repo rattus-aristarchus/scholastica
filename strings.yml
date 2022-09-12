@@ -27,6 +27,9 @@ menu:
     5:
         ru: "вернуть подсказку"
         en: "show tutorial"
+    6:
+        ru: "сохранить"
+        en: "save"
 
 filechooser:
     0:
@@ -106,6 +109,9 @@ error:
     1:
         ru: ["Файл ", " уже существует."]
         en: ["file ", " already exists."]
+    2:
+        ru: ["Не удалось открыть файл ", ". Выберите файл с расширением ", " или ", "."]
+        en: ["Could not open file ", ". Please choose a file with the extension ", " or ", "."]
         
 data:
     0: 

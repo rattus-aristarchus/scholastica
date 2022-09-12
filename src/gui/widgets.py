@@ -13,6 +13,8 @@ from kivy.uix.button import Button
 from kivy.uix.dropdown import DropDown
 from kivy.uix.popup import Popup
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelHeader
+from kivy.uix.textinput import TextInput
 from kivy.properties import ObjectProperty
 
 from util import CONF, STRINGS
@@ -28,9 +30,10 @@ class View(BoxLayout):
         self.controller = controller
         super().__init__(**kwargs)
         self.options = Options()
-        self.options.controller = controller
+        self.options.controller = self.controller
         self.tutorial = self.ids['tutorial'].__self__
         self.hint = self.ids['hint'].__self__
+        self.sources = self.ids['sources'].__self__
 
         if not CONF['misc']['show_tutorial']:
             self.hide_tutorial()
@@ -55,6 +58,26 @@ class View(BoxLayout):
             self.hint_shown = True
 
 # TODO: cancel button
+
+
+class Sources(TabbedPanel):
+
+    controller = ObjectProperty()
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
+class SourceTab(TabbedPanelHeader):
+
+    def __init__(self, name, **kwargs):
+        super().__init__(**kwargs)
+        self.text = name
+
+
+class SourceText(BoxLayout):
+
+    pass
 
 
 class BasePopup(Popup):    
@@ -142,6 +165,7 @@ class Options(DropDown):
             return STRINGS['menu'][4][LANG]
         else:
             return STRINGS['menu'][5][LANG]
+
 
 class MenuButton(Button):
 

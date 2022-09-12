@@ -11,6 +11,7 @@ import kivy
 from kivy.logger import Logger
 from kivy.app import App
 from kivy.base import ExceptionHandler, ExceptionManager
+from kivy.core.window import Window
 
 import util
 

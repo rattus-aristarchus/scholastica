@@ -19,12 +19,13 @@ from gui.widgets import BasePopup
 
 class KeyboardListener(Widget):
     
-    def __init__(self, main_controller, tree_controller, **kwargs):
+    def __init__(self, main_controller, tree_controller, sources_controller, **kwargs):
         super().__init__(**kwargs)
         self._keyboard = None
         self.bind_keyboard()
         self.controller = main_controller
         self.tree_controller = tree_controller
+        self.sources_controller = sources_controller
 
         # this is necessary for a very specific scenario - when you alt-tab back to the
         # app sometimes it doesn't read the alt, just the tab, and interprets it as
@@ -122,6 +123,10 @@ class KeyboardListener(Widget):
             self.tree_controller.paste()
         elif text == 'м' and ctrl:
             self.tree_controller.paste()
+        elif key == 's' and ctrl:
+            self.sources_controller.save_files()
+        elif text == 'ы' and ctrl:
+            self.sources_controller.save_files()
             
         # Return True to accept the key. Otherwise, it will be used by
         # the system.

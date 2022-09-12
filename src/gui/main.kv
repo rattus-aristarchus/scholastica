@@ -1,6 +1,7 @@
 #:import CONF util.CONF
 #:import STRINGS util.STRINGS
 #:import CONST util.CONST
+#:import SourceText gui.widgets.SourceText
 
 <View>:
     id: view
@@ -12,17 +13,17 @@
         Rectangle:
             pos: self.pos
             size: self.size
-    
+
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: None
         height: dp(25)
-        
+
         MenuButton:
             id: new
             text: STRINGS['menu'][0][app.lang]
             on_release: root.controller.new_file_popup()
-            
+
         MenuButton:
             id: open
             text: STRINGS['menu'][1][app.lang]
@@ -33,53 +34,86 @@
             size_hint_y: None
             height: dp(25)
 
-            MenuButton:
-                text: STRINGS['menu'][3][app.lang]
-                on_release: root.options.open(self)
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint: None, None
+                size: self.minimum_size
+
+                MenuButton:
+                    text: STRINGS['menu'][6][app.lang]
+                    on_release: root.controller.save_source_files()
+
+                MenuButton:
+                    text: STRINGS['menu'][3][app.lang]
+                    on_release: root.options.open(self)
 
     BoxLayout:
-        id: tutorial_parent
         orientation: 'horizontal'
 
         BoxLayout:
-            id: tree_and_hint
-            orientation: 'vertical'
-
-            ScrollView:
-                id: scroll
-                do_scroll_x: False
-                do_scroll_y: True
-                bar_width: dp(10)
-                scroll_timeout: 1000
-                effect_cls: 'ScrollEffect'
-                size_hint_y: 0.5
-
-                TagTree:
-                    id: tree
-                    size_hint_y: None
-                    hide_root: True
-                    controller: root.controller.tree_controller
-                    main_controller: root.controller
-
-            AnchorLayout:
-                id: hint
-                anchor_y: 'top'
-                size_hint_y: 0.5
-
-                Label:
-                    text: STRINGS['tag_tree'][0][app.lang]
-                    color: CONST[app.theme]['text_transparent']
-                    size_hint: None, None
-                    size: self.texture_size[0], dp(20)
-                    text_size: None, self.height
+            id: tutorial_parent
+            orientation: 'horizontal'
 
             BoxLayout:
-                size_hint_y: None
-                height: dp(0)
+                id: tree_and_hint
+                orientation: 'vertical'
 
-        Tutorial:
-            id: tutorial
-            controller: root.controller
+                ScrollView:
+                    id: scroll
+                    do_scroll_x: False
+                    do_scroll_y: True
+                    bar_width: dp(10)
+                    scroll_timeout: 1000
+                    effect_cls: 'ScrollEffect'
+                    size_hint_y: 0.5
+
+                    TagTree:
+                        id: tree
+                        size_hint_y: None
+                        hide_root: True
+                        controller: root.controller.tree_controller
+                        main_controller: root.controller
+
+                AnchorLayout:
+                    id: hint
+                    anchor_y: 'top'
+                    size_hint_y: 0.5
+
+                    Label:
+                        text: STRINGS['tag_tree'][0][app.lang]
+                        color: CONST[app.theme]['text_transparent']
+                        size_hint: None, None
+                        size: self.texture_size[0], dp(20)
+                        text_size: None, self.height
+
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(0)
+
+            Tutorial:
+                id: tutorial
+                controller: root.controller
+
+        Sources:
+            id: sources
+
+<Sources>:
+    tab_height: dp(20)
+    tab_width: 0
+    tab_pos: 'top_mid'
+    do_default_tab: False
+
+<SourceTab>:
+    size_hint: None, None
+    height: dp(20)
+    width: self.texture_size[0]
+    padding_x: dp(10)
+    content: SourceText()
+
+<SourceText>:
+    orientation: 'vertical'
+
+    TextInput:
 
 <MenuButton>:
     size_hint: None, None

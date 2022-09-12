@@ -16,6 +16,7 @@ from util import CONF, STRINGS
 from gui.widgets import BasePopup, OpenFile, NewFile
 from gui.controller.keyboard_listener import KeyboardListener
 from gui.controller.tag_tree_controller import TagTreeController
+from gui.controller.sources_controller import SourcesController
 import storage.tagfile as tagfile
 import messaging.rpc as rpc
 
@@ -27,7 +28,8 @@ class Controller:
     def __init__(self, app):
         self.app = app
         self.tree_controller = TagTreeController(self)
-        self.kbd_listener = KeyboardListener(self, self.tree_controller)
+        self.sources_controller = SourcesController(self)
+        self.kbd_listener = KeyboardListener(self, self.tree_controller, self.sources_controller)
         self.msgr = rpc.Messenger()
         self.msgr.start()
 
@@ -42,6 +44,8 @@ class Controller:
         self.tree_controller.set_view(view)
         self.kbd_listener.set_view(view)
         self.msgr.set_view(view)
+        self.sources_controller.set_view(view)
+
 
     @property
     def tree(self):
@@ -80,6 +84,19 @@ class Controller:
                 self.popup(e.strerror + "; " + e.filename)
 
     def open_file(self, path):
+        sans_extension, extension = os.path.splitext(path)
+        if extension == CONF['misc']['extension']:
+            self.open_scla_file(path)
+        elif extension == CONF['misc']['source_extension']:
+            self.sources_controller.open_file(path)
+        else:
+            msg = STRINGS['error'][2][LANG][0] + path + \
+                  STRINGS['error'][2][LANG][1] + CONF['misc']['extension'] + \
+                  STRINGS['error'][2][LANG][2] + CONF['misc']['source_extension'] + \
+                  STRINGS['error'][2][LANG][3]
+            self.popup(msg)
+
+    def open_scla_file(self, path):
         if self.tag_file is not None:
             self.close_file()
 
@@ -115,8 +132,11 @@ class Controller:
         self.tag_file = None
         self.tag_nest = None
 
-    def save_file(self):
+    def save_scla_file(self):
         tagfile.write_tag_file(self.tag_file)
+
+    def save_source_files(self):
+        self.sources_controller.save_files()
 
     def popup(self, message, callback=None):
         Logger.info(f"Controller: popup created with message {message}")

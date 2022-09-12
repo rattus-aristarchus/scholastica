@@ -43,7 +43,7 @@ class TagTreeController:
         # first, edit the data
         old_name = tag.text
         tag.text = new_name
-        self.main_controller.save_file()
+        self.main_controller.save_scla_file()
 
         if not old_name == "" and not old_name == new_name:
             # then, edit the tree
@@ -90,7 +90,7 @@ class TagTreeController:
                 index = len(parent.children)
 
         new_tag = self.tag_nest.create_tag(parent, index)
-        self.main_controller.save_file()
+        self.main_controller.save_scla_file()
 
         # Change the representation
         if selected_node is None or selected_node.parent_node == self.tree.root:
@@ -182,7 +182,7 @@ class TagTreeController:
             destination = None if selected_node is None else selected_node.entity
             self.tag_nest.move_tag(tag=self.clipboard.entity,
                                    destination=destination)
-            self.main_controller.save_file()
+            self.main_controller.save_scla_file()
 
             # Then, changes to the representation
             self.tree.move_node(node=self.clipboard,
@@ -195,7 +195,7 @@ class TagTreeController:
             # First, change the data structure
             self.tag_nest.add_child_tag(child=self.clipboard.entity,
                                         parent=self.tree.selected_node.entity)
-            self.main_controller.save_file()
+            self.main_controller.save_scla_file()
 
             # Then, the representation
             self.tree.copy_node(node=self.clipboard,
@@ -232,7 +232,7 @@ class TagTreeController:
         self.tag_nest.move_tag(tag=node.entity,
                                destination=prev_node.entity,
                                former_parent=parent_tag)
-        self.main_controller.save_file()
+        self.main_controller.save_scla_file()
 
         # Change the representation
         self.tree.move_node(node, prev_node)
@@ -267,7 +267,7 @@ class TagTreeController:
                                destination=destination,
                                former_parent=parent.entity,
                                index=index)
-        self.main_controller.save_file()
+        self.main_controller.save_scla_file()
 
         # Change the representation
         self.tree.move_node(node, grandparent, index)
@@ -286,14 +286,14 @@ class TagTreeController:
                 Logger.warning("Delete node: tag of root tree node has multiple parents")
             self.tag_nest.remove_child_tag(child=tag_node.entity,
                                            parent=tag_node.parent_node.entity)
-            self.main_controller.save_file()
+            self.main_controller.save_scla_file()
 
             self.tree.remove_node(tag_node)
         else:
             # If the tag has only one parent, we're deleting the tag
             # First, apply the changes to the data structure
             new_roots = self.tag_nest.delete_tag(tag_node.entity)
-            self.main_controller.save_file()
+            self.main_controller.save_scla_file()
 
             # Then, change the representation
             for new_root in new_roots:
@@ -321,7 +321,7 @@ class TagTreeController:
         Logger.info(f"Controller: deleting node {node.entity.text}")
 
         self.tag_nest.delete_tag_recursively(node.entity)
-        self.main_controller.save_file()
+        self.main_controller.save_scla_file()
 
         self.tree.remove_node(node)
 

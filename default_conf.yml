@@ -2,6 +2,7 @@ misc:
   default_location:
   last_file:
   extension: .scla
+  source_extension: .txt
   language: ru
   log_level: warning
   theme: colors_chartres
