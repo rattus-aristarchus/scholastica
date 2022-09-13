@@ -53,6 +53,7 @@
         BoxLayout:
             id: tutorial_parent
             orientation: 'horizontal'
+            size_hint_x: 0.33
 
             BoxLayout:
                 id: tree_and_hint
@@ -96,12 +97,14 @@
 
         Sources:
             id: sources
+            size_hint_x: 0.67
 
 <Sources>:
     tab_height: dp(20)
     tab_width: 0
     tab_pos: 'top_mid'
     do_default_tab: False
+    background_color: CONST[app.theme]['transparent']
 
 <SourceTab>:
     size_hint: None, None
@@ -114,6 +117,13 @@
     orientation: 'vertical'
 
     TextInput:
+        id: input
+        background_color: CONST[app.theme]['input_background']
+        foreground_color: [0, 0, 0, 1]
+        font_size: sp(15)
+        padding: [dp(5), dp(5), dp(5), dp(5)]
+        # auto_indent: True no idea what that does
+        # do_wrap: True - default value
 
 <MenuButton>:
     size_hint: None, None

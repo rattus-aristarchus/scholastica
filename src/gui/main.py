@@ -12,6 +12,7 @@ from kivy.logger import Logger
 from kivy.app import App
 from kivy.base import ExceptionHandler, ExceptionManager
 from kivy.core.window import Window
+from kivy.metrics import dp
 
 import util
 
@@ -24,11 +25,6 @@ STRINGS = util.STRINGS
 CONF = util.CONF
 LANG = CONF["misc"]["language"]
 THEME = CONF["misc"]["theme"]
-
-path = "/media/kryis/TOSHIBA EXT/записи/организатор записей/тестовый файл.scla"
-path_1 = "/media/kryis/TOSHIBA EXT/записи/погреб/описание мира/планета и ее биосфера/планетология.scla"
-path_2 = "/media/kryis/TOSHIBA EXT/наука/схоластика/капитализм.scla"
-path_3 = "/media/kryis/TOSHIBA EXT/наука/схоластика/гендер.scla"
 
 
 class Main(App):
@@ -46,6 +42,7 @@ class Main(App):
         Logger.info("Main: building the app")
 
         self.title = STRINGS['misc'][0][LANG]
+        Window.size = (dp(1200), dp(700))
 
         def set_title(title):
             self.title = title
@@ -62,7 +59,6 @@ class Main(App):
 
     def on_start(self):
         util.start_profiling()
-        pass
 
     def on_stop(self):
         util.end_profiling()

@@ -25,6 +25,9 @@ class SourceFile:
         self.address = address
         self.backup_location = backup_location
 
+        self.text = ""
+
+        # Sources and Entries present in the sourcefile
         self.sources = []
         self.entries = []
         # Tags that are encountered in the sourcefile
@@ -51,6 +54,7 @@ class SourceFile:
 
     def read_sources(self, tag_file):
         with open(self.address, "r") as file:
+            self.sources = []
 
             has_sources = False
             first_chunk = []
@@ -76,7 +80,14 @@ class SourceFile:
         connecting entries and sources to specified tags if the tags are present in
         the tag nest
         """
+        #TODO if the tags aren't present in the tag nest they probably should be
+        # created anyway but kept in the "tags" list
+
         with open(self.address, "r") as file:
+            self.entries = []
+            self.tags = []
+            self.text = ""
+
             # The lines before the first empty line in a file can be sources. Split
             # the file in two halves, before the first empty line and after; if
             # the first lines are sources, read them separately; if not, add them
@@ -88,6 +99,8 @@ class SourceFile:
             after_break = False
 
             for line in file:
+                self.text += line
+
                 if parse.is_empty(line):
                     after_break = True
                     entries.append(line)

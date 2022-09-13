@@ -1,6 +1,7 @@
 misc:
   default_location:
   last_file:
+  last_sources: []
   extension: .scla
   source_extension: .txt
   language: ru

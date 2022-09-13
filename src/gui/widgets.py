@@ -70,14 +70,35 @@ class Sources(TabbedPanel):
 
 class SourceTab(TabbedPanelHeader):
 
-    def __init__(self, name, **kwargs):
+    def __init__(self, source_file, **kwargs):
         super().__init__(**kwargs)
-        self.text = name
+        self.source_file = source_file
+        self.set_saved()
+        self.load_text()
+
+    def set_saved(self):
+        self.text = os.path.basename(self.source_file.address)
+
+    def set_unsaved(self):
+        self.text = os.path.basename(self.source_file.address) + "**"
+
+    def load_text(self):
+        self.content.ids['input'].text = self.source_file.text
 
 
 class SourceText(BoxLayout):
 
-    pass
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.ids['input'].bind(text=self.on_text)
+
+    def on_text(self, text_input, text):
+        pass
+
+"""
+the function through which passes any text added to the widget
+    def insert_text(self, substring, from_undo=False): 
+"""
 
 
 class BasePopup(Popup):    

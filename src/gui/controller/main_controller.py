@@ -84,7 +84,7 @@ class Controller:
                 self.popup(e.strerror + "; " + e.filename)
 
     def open_file(self, path):
-        sans_extension, extension = os.path.splitext(path)
+        extension = os.path.splitext(path)[1]
         if extension == CONF['misc']['extension']:
             self.open_scla_file(path)
         elif extension == CONF['misc']['source_extension']:
