@@ -30,8 +30,6 @@ class Controller:
         self.tree_controller = TagTreeController(self)
         self.sources_controller = SourcesController(self)
         self.kbd_listener = KeyboardListener(self, self.tree_controller, self.sources_controller)
-        self.msgr = rpc.Messenger()
-        self.msgr.start()
 
         self.tag_file = None
         self.tag_nest = None
@@ -43,9 +41,7 @@ class Controller:
         self.view = view
         self.tree_controller.set_view(view)
         self.kbd_listener.set_view(view)
-        self.msgr.set_view(view)
         self.sources_controller.set_view(view)
-
 
     @property
     def tree(self):
@@ -105,7 +101,6 @@ class Controller:
         if not len(messages) == 0:
             Clock.schedule_once(lambda dt: self.popup("\n".join(messages)), 0.5)
         self.tag_nest = self.tag_file.tag_nest
-        self.msgr.tag_file = self.tag_file
         self.tree_controller.tag_file = self.tag_file
         self.tree_controller.tag_nest = self.tag_nest
         self.tree.show(self.tag_file)
@@ -128,7 +123,6 @@ class Controller:
 
     def close_file(self):
         self.tree.clear()
-        self.msgr.tag_file = None
         self.tag_file = None
         self.tag_nest = None
 

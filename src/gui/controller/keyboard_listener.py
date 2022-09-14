@@ -127,6 +127,10 @@ class KeyboardListener(Widget):
             self.sources_controller.save_files()
         elif text == 'ы' and ctrl:
             self.sources_controller.save_files()
+        elif key == 'w' and ctrl:
+            self.sources_controller.close_current_tab()
+        elif text == 'ц' and ctrl:
+            self.sources_controller.close_current_tab()
             
         # Return True to accept the key. Otherwise, it will be used by
         # the system.

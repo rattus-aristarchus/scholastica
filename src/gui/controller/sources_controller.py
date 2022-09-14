@@ -1,6 +1,7 @@
 import os
 from kivy.logger import Logger
 
+import util
 from storage.sourcefile import SourceFile
 import storage.tagfile as tagfile
 from gui.widgets import SourceTab
@@ -13,7 +14,6 @@ class SourcesController:
 
     def __init__(self, main_controller):
         self.main_controller = main_controller
-        # a dictionary with the tabs and corresponding source files
         self.tabs = []
 
     def set_view(self, view):
@@ -23,25 +23,42 @@ class SourcesController:
     def sources(self):
         return self.view.ids['sources']
 
-    def open_file(self, path):
-        #TODO: add the file to CONF[misc][last_sources]
-        #TODO: add the  file to self.tabs
+    def restore_session(self):
+        for path in CONF['misc']['last_sources']:
+            self.open_file(path, new=False)
 
+    def open_file(self, path, new=True):
         # load the file
         file = self._create_source_file(path)
         if file is None:
             return
         self.update_source_file(file)
+        if new:
+            CONF['misc']['last_sources'].append(file.address)
+            util.set_conf('misc', 'last_sources', CONF['misc']['last_sources'])
+            util.set_conf('misc', 'default_location', os.path.dirname(path))
 
         # now, the tab
-        new_tab = SourceTab(file)
+        new_tab = SourceTab(file, self)
         self.sources.add_widget(new_tab)
         self.sources.switch_to(new_tab, do_scroll=True)
+        self.tabs.append(new_tab)
 
-    def close_file(self, path):
-        #TODO remove from CONF[misc][last_sources]
-        #TODO remove from self.tabs
-        pass
+    def close_tab(self, tab):
+        # first, finish with the file
+        if isinstance(tab, SourceTab) and (tab.source_file.address in CONF['misc']['last_sources']):
+            CONF['misc']['last_sources'].remove(tab.source_file.address)
+            util.set_conf('misc', 'last_sources', CONF['misc']['last_sources'])
+
+        # now, the tab
+        self.tabs.remove(tab)
+        self.sources.remove_widget(tab.content)
+        self.sources.remove_widget(tab)
+        if len(self.tabs) > 0:
+            self.sources.switch_to(self.tabs[-1], do_scroll=True)
+
+    def close_current_tab(self):
+        self.close_tab(self.sources.current_tab)
 
     def save_files(self):
         #go through files that are mark unsaved, call update file, then mark saved
@@ -103,10 +120,10 @@ class SourcesController:
         Logger.info("Messenger: file already exists. Removing old file.")
 
         self.view.ids['tree'].remove_all_from(old_file)
-        self.tag_file.remove_file(old_file)
+        self.main_controller.tag_file.remove_file(old_file)
         self._add_source_file(new_file)
 
     def _add_source_file(self, source_file):
         self.view.ids['tree'].add_all_from(source_file)
-        self.tag_file.add_file(source_file)
+        self.main_controller.tag_file.add_file(source_file)
         tagfile.write_tag_file(self.main_controller.tag_file)

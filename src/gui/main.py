@@ -12,6 +12,7 @@ from kivy.logger import Logger
 from kivy.app import App
 from kivy.base import ExceptionHandler, ExceptionManager
 from kivy.core.window import Window
+from kivy.clock import Clock
 from kivy.metrics import dp
 
 import util
@@ -54,6 +55,7 @@ class Main(App):
         ExceptionManager.add_handler(Handler(self.controller))
         if self.path is not None:
             self.controller.open_file(self.path)
+            Clock.schedule_once(lambda dt: self.controller.sources_controller.restore_session(), 0.5)
 
         return self.view
 
@@ -62,7 +64,6 @@ class Main(App):
 
     def on_stop(self):
         util.end_profiling()
-        self.controller.msgr.stop()
 
 
 class Handler(ExceptionHandler):

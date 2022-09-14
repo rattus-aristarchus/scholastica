@@ -1,7 +1,7 @@
 #:import CONF util.CONF
 #:import STRINGS util.STRINGS
 #:import CONST util.CONST
-#:import SourceText gui.widgets.SourceText
+#:import SourceTabContent gui.widgets.SourceTabContent
 
 <View>:
     id: view
@@ -111,19 +111,21 @@
     height: dp(20)
     width: self.texture_size[0]
     padding_x: dp(10)
-    content: SourceText()
+    content: SourceTabContent()
 
-<SourceText>:
+<SourceTabContent>:
     orientation: 'vertical'
 
-    TextInput:
+    SourceText:
         id: input
-        background_color: CONST[app.theme]['input_background']
-        foreground_color: [0, 0, 0, 1]
-        font_size: sp(15)
-        padding: [dp(5), dp(5), dp(5), dp(5)]
-        # auto_indent: True no idea what that does
-        # do_wrap: True - default value
+
+<SourceText>
+    background_color: CONST[app.theme]['input_background']
+    foreground_color: [0, 0, 0, 1]
+    font_size: sp(15)
+    padding: [dp(5), dp(5), dp(5), dp(5)]
+    # auto_indent: True no idea what that does
+    # do_wrap: True - default value
 
 <MenuButton>:
     size_hint: None, None

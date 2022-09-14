@@ -70,23 +70,31 @@ class Sources(TabbedPanel):
 
 class SourceTab(TabbedPanelHeader):
 
-    def __init__(self, source_file, **kwargs):
+    def __init__(self, source_file, controller, **kwargs):
         super().__init__(**kwargs)
+        self._saved = True
         self.source_file = source_file
+        self.content.ids['input'].controller = controller
+
         self.set_saved()
         self.load_text()
 
     def set_saved(self):
+        self._saved = True
         self.text = os.path.basename(self.source_file.address)
 
     def set_unsaved(self):
+        self._saved = False
         self.text = os.path.basename(self.source_file.address) + "**"
+
+    def is_saved(self):
+        return self._saved
 
     def load_text(self):
         self.content.ids['input'].text = self.source_file.text
 
 
-class SourceText(BoxLayout):
+class SourceTabContent(BoxLayout):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -94,6 +102,25 @@ class SourceText(BoxLayout):
 
     def on_text(self, text_input, text):
         pass
+
+
+class SourceText(TextInput):
+
+    controller = ObjectProperty()
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def keyboard_on_key_down(self, window, keycode, text, modifiers):
+        super().keyboard_on_key_down(window, keycode, text, modifiers)
+
+        key = keycode[1]
+        ctrl = 'ctrl' in modifiers
+
+        if key == 'w' and ctrl:
+            self.controller.close_current_tab()
+        elif text == 'ц' and ctrl:
+            self.controller.close_current_tab()
 
 """
 the function through which passes any text added to the widget
