@@ -19,7 +19,7 @@ BAK = ".bak"
 def make_backup_folder_for(path):
     Logger.info("Storage: creating backup folder for " + path)
     file_dir = os.path.dirname(path)
-    backup_dir = os.path.join(file_dir, "backup")
+    backup_dir = os.path.join(file_dir, ".backup")
     if not (os.path.exists(backup_dir)):
         os.makedirs(backup_dir)
     return backup_dir

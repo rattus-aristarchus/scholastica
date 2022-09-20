@@ -119,7 +119,7 @@ class Messenger(threading.Thread):
 
     def _read_sourcefile(self, new_path):
         try:
-            new_file = SourceFile(new_path, self.tag_file.backup_location)
+            new_file = SourceFile(new_path)
             new_file.read_sources(self.tag_file)
             new_file.read(self.tag_file)
             self.view.ids['tree'].add_all_from(new_file)

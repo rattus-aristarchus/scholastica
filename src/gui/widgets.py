@@ -8,6 +8,7 @@ Created on Mon Jun 27 13:44:51 2022
 
 import os
 
+from kivy.clock import Clock
 from kivy.logger import Logger
 from kivy.uix.button import Button
 from kivy.uix.dropdown import DropDown
@@ -71,6 +72,7 @@ class Sources(TabbedPanel):
 class SourceTab(TabbedPanelHeader):
 
     def __init__(self, source_file, controller, **kwargs):
+        self.controller = controller
         super().__init__(**kwargs)
         self._saved = True
         self.source_file = source_file
@@ -79,13 +81,19 @@ class SourceTab(TabbedPanelHeader):
         self.set_saved()
         self.load_text()
 
+        self.content.ids['input'].bind(text=self.on_text_changed)
+
     def set_saved(self):
         self._saved = True
-        self.text = os.path.basename(self.source_file.address)
+        self.text = self._short_name()
 
     def set_unsaved(self):
         self._saved = False
-        self.text = os.path.basename(self.source_file.address) + "**"
+        self.text = self._short_name() + "**"
+
+    def _short_name(self):
+        name = os.path.splitext(os.path.basename(self.source_file.address))[0]
+        return name[:15]
 
     def is_saved(self):
         return self._saved
@@ -93,15 +101,16 @@ class SourceTab(TabbedPanelHeader):
     def load_text(self):
         self.content.ids['input'].text = self.source_file.text
 
+    def get_text(self):
+        return self.content.ids['input'].text
+
+    def on_text_changed(self, text_input, text):
+        self.controller.text_changed(self)
+
 
 class SourceTabContent(BoxLayout):
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.ids['input'].bind(text=self.on_text)
-
-    def on_text(self, text_input, text):
-        pass
+    pass
 
 
 class SourceText(TextInput):
@@ -121,9 +130,14 @@ class SourceText(TextInput):
             self.controller.close_current_tab()
         elif text == 'ц' and ctrl:
             self.controller.close_current_tab()
+        elif key == 's' and ctrl:
+            self.controller.save_files()
+        elif text == 'ы' and ctrl:
+            self.controller.save_files()
+
 
 """
-the function through which passes any text added to the widget
+the function through which any text added to the widget passes
     def insert_text(self, substring, from_undo=False): 
 """
 
@@ -147,11 +161,11 @@ class BasePopup(Popup):
 
 
 class FilePopup(Popup):
-    
+
     def __init__(self, controller, **kwargs):
         super().__init__(**kwargs)
         self.controller = controller
-        
+
         # I have found no simple way to change the text of labels inside the
         # file picker into different
         # languages; the following monstrosity takes care of that
@@ -170,7 +184,8 @@ class FilePopup(Popup):
         self.dismiss()
 
     def set_path(self, path):
-        self.ids["filechooser"].path = path
+        if os.path.exists(path):
+            self.ids["filechooser"].path = path
 
 
 class OpenFile(FilePopup):

@@ -10,6 +10,7 @@ from kivy.logger import Logger
 
 import storage.storage as storage
 import storage.parse as parse
+from data.tag_nest import TagNest
 from util import CONF
 from util import STRINGS
 
@@ -18,12 +19,15 @@ LANG = CONF["misc"]["language"]
 
 class SourceFile:
 
-    def __init__(self, address, backup_location):
+    def __init__(self, address):
         """
         This can throw an exception
         """
+        # This is added so that if the address doesn't exist an exception is thrown
+        open(address, "r")
+
         self.address = address
-        self.backup_location = backup_location
+        self.backup_location = storage.make_backup_folder_for(address)
 
         self.text = ""
 
@@ -32,9 +36,6 @@ class SourceFile:
         self.entries = []
         # Tags that are encountered in the sourcefile
         self.tags = []
-
-        # This is added so that if the address doesn't exist an exception is thrown
-        open(self.address, "r")
 
     def add_source(self, source):
         if source not in self.sources:
@@ -83,6 +84,11 @@ class SourceFile:
         #TODO if the tags aren't present in the tag nest they probably should be
         # created anyway but kept in the "tags" list
 
+        if tag_file is None:
+            tag_nest = TagNest()
+        else:
+            tag_nest = tag_file.tag_nest
+
         with open(self.address, "r") as file:
             self.entries = []
             self.tags = []
@@ -119,9 +125,9 @@ class SourceFile:
 
             def read_and_add_entry(chunk):
                 all_sources = self.sources.copy()
-                all_sources.extend(tag_file.tag_nest.sources)
+                all_sources.extend(tag_nest.sources)
                 entry = parse.read_entry(chunk,
-                                         tag_file.tag_nest,
+                                         tag_nest,
                                          all_sources)
                 if entry is not None:
                     #   Logger.debug(f"Sourcefile: created entry {entry.text[:100]}")
@@ -136,11 +142,13 @@ class SourceFile:
             if not chunk == []:
                 read_and_add_entry(chunk)
 
+    def write(self, new_text):
+        storage.back_up(self.address, self.backup_location)
+        storage.write_safe(self.address, new_text)
+
 
 def edit_tag(old_name, new_name, source_file):
-    storage.back_up(source_file.address, source_file.backup_location)
-
-    with open(source_file.address, "r") as file:
+    with open(source_file.address, 'r') as file:
         new_file = ""
         for line in file:
             if parse.is_enclosed(line) and old_name in line:
@@ -148,7 +156,7 @@ def edit_tag(old_name, new_name, source_file):
                 #                 + f" {new_name}")
                 line = line.replace(old_name, new_name)
             new_file += line
-        storage.write_safe(source_file.address, new_file)
+        source_file.write(new_file)
 
 
 def _chunk_has_tag(tag, chunk):

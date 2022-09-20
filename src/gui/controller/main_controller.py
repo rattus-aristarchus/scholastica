@@ -100,6 +100,9 @@ class Controller:
         self.tag_file, messages = tagfile.read_tag_file(path)
         if not len(messages) == 0:
             Clock.schedule_once(lambda dt: self.popup("\n".join(messages)), 0.5)
+        if self.tag_file is None:
+            return
+
         self.tag_nest = self.tag_file.tag_nest
         self.tree_controller.tag_file = self.tag_file
         self.tree_controller.tag_nest = self.tag_nest

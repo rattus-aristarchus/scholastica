@@ -104,8 +104,8 @@ warning:
         en: "Can only change order of tags."
 error:
     0:
-        ru: ["Не удалось найти файл ", ". Скорее всего, он был переименован. Откройте переименованный файл в текстовом редакторе, и его содержимое должно загрузиться."]
-        en: ["Could not find file ", ". Most likely, it has been renamed. Open the renamed file in a text editor, it's content should re-load automatically."]
+        ru: ["Не удалось найти файл ", ". Возможно, он был переименован."]
+        en: ["Could not find file ", ". It might have been renamed."]
     1:
         ru: ["Файл ", " уже существует."]
         en: ["file ", " already exists."]

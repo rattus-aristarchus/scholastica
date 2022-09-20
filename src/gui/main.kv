@@ -101,7 +101,7 @@
 
 <Sources>:
     tab_height: dp(20)
-    tab_width: 0
+    tab_width: dp(150)
     tab_pos: 'top_mid'
     do_default_tab: False
     background_color: CONST[app.theme]['transparent']
@@ -116,14 +116,22 @@
 <SourceTabContent>:
     orientation: 'vertical'
 
-    SourceText:
-        id: input
+    ScrollView:
+        id: scroll
+        SourceText:
+            id: input
+            size_hint: 1, None
+            height: max( (len(self._lines)+1) * self.line_height, scroll.height)
+
 
 <SourceText>
     background_color: CONST[app.theme]['input_background']
     foreground_color: [0, 0, 0, 1]
     font_size: sp(15)
     padding: [dp(5), dp(5), dp(5), dp(5)]
+    cursor_width: sp(2)
+    cursor_color: CONST[app.theme]['cursor_color']
+
     # auto_indent: True no idea what that does
     # do_wrap: True - default value
 

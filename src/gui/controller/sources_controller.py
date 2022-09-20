@@ -62,16 +62,15 @@ class SourcesController:
 
     def save_files(self):
         #go through files that are mark unsaved, call update file, then mark saved
-        pass
-
-        source_file.read_sources(tag_file)
-        source_file.read(tag_file)
+        for tab in self.tabs:
+            tab.source_file.write(tab.get_text())
+            self.mark_saved(tab)
 
     def _create_source_file(self, path):
         new_file = None
         try:
             tag_file = self.main_controller.tag_file
-            new_file = SourceFile(path, tag_file.backup_location)
+            new_file = SourceFile(path)
             new_file.read_sources(tag_file)
             new_file.read(tag_file)
         except FileNotFoundError as e:
@@ -82,11 +81,17 @@ class SourcesController:
             self.main_controller.popup(message)
         return new_file
 
-    def mark_unsaved(self):
-        pass
+    def text_changed(self, tab):
+        if isinstance(tab, SourceTab) and tab.is_saved():
+            self.mark_unsaved(tab)
 
-    def mark_saved(self):
-        pass
+    def mark_unsaved(self, tab):
+        if isinstance(tab, SourceTab):
+            tab.set_unsaved()
+
+    def mark_saved(self, tab):
+        if isinstance(tab, SourceTab):
+            tab.set_saved()
 
     def update_source_file(self, source_file):
         Logger.info(f"SourcesController: updating source file {source_file.address}")

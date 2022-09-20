@@ -85,14 +85,15 @@ def read_tag_file(address):
     Read a tag file and create a linked structure of tags with sources and entries
     hanging off of them.
     """
-    result = TagFile(address)
     messages = []
+    result = None
 
     try:
         with open(address, "r") as file:
             indent = 0
             tag_stack = collections.OrderedDict()
             parent = None
+            result = TagFile(address)
 
             # The tagfile contains first a tree of tags, and then a list of source
             # files which use the tags
@@ -147,7 +148,7 @@ def read_tag_file(address):
                     continue
                 else:
                     try:
-                        file = SourceFile(line[:-1], result.backup_location)
+                        file = SourceFile(line[:-1])
                         result.source_files.append(file)
                         Logger.debug("TagFile: read_tag_file, created source file " +
                                      file.address)
