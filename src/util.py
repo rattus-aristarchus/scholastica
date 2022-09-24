@@ -51,6 +51,15 @@ def set_conf(category, name, value):
     with open(CONF_PATH, "w", encoding="utf-8") as file:
         yaml.dump(CONF, file)
 
+def add_to(category, name, value):
+    if isinstance(CONF[category][name], list) and value in CONF[category][name]:
+        CONF[category][name].remove(value)
+        set_conf(category, name, CONF[category][name])
+
+def remove_from(category, name, value):
+    if isinstance(CONF[category][name], list) and value in CONF[category][name]:
+        CONF[category][name].remove(value)
+        set_conf(category, name, CONF[category][name])
 
 profile = cProfile.Profile()
 

@@ -79,6 +79,7 @@ class SourcesController:
                       e.filename + \
                       STRINGS["error"][0][LANG][1]
             self.main_controller.popup(message)
+
         return new_file
 
     def text_changed(self, tab):
