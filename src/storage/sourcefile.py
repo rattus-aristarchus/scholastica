@@ -23,13 +23,15 @@ class SourceFile:
         """
         This can throw an exception
         """
-        # This is added so that if the address doesn't exist an exception is thrown
-        open(address, "r")
 
         self.address = address
         self.backup_location = storage.make_backup_folder_for(address)
 
         self.text = ""
+
+        # This is added so that if the address doesn't exist an exception is thrown
+        with open(address, "r") as file:
+            self.text = file.read()
 
         # Sources and Entries present in the sourcefile
         self.sources = []

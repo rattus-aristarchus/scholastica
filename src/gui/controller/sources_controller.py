@@ -34,8 +34,7 @@ class SourcesController:
             return
         self.update_source_file(file)
         if new:
-            CONF['misc']['last_sources'].append(file.address)
-            util.set_conf('misc', 'last_sources', CONF['misc']['last_sources'])
+            util.add_to('misc', 'last_sources', file.address)
             util.set_conf('misc', 'default_location', os.path.dirname(path))
 
         # now, the tab
@@ -71,8 +70,8 @@ class SourcesController:
         try:
             tag_file = self.main_controller.tag_file
             new_file = SourceFile(path)
-            new_file.read_sources(tag_file)
-            new_file.read(tag_file)
+            if tag_file is not None:
+                self._read_source_file(new_file, tag_file)
         except FileNotFoundError as e:
             Logger.error(e.strerror + ": " + e.filename)
             message = STRINGS["error"][0][LANG][0] + \
@@ -81,6 +80,18 @@ class SourcesController:
             self.main_controller.popup(message)
 
         return new_file
+
+    def _read_source_file(self, file, tag_file):
+        file.read_sources(tag_file)
+        file.read(tag_file)
+
+    def read_all_files(self, tag_file):
+        """
+        If source files were opened without a tag file, this function is called when a tag
+        file is finally opened.
+        """
+        for tab in self.tabs:
+            self._read_source_file(tab.source_file, tag_file)
 
     def text_changed(self, tab):
         if isinstance(tab, SourceTab) and tab.is_saved():

@@ -53,9 +53,9 @@ class Main(App):
         self.view = View(self.controller)
         self.controller.set_view(self.view)
         ExceptionManager.add_handler(Handler(self.controller))
+        Clock.schedule_once(lambda dt: self.controller.sources_controller.restore_session(), 0.5)
         if self.path is not None:
             self.controller.open_file(self.path)
-            Clock.schedule_once(lambda dt: self.controller.sources_controller.restore_session(), 0.5)
 
         return self.view
 

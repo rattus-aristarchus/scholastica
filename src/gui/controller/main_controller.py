@@ -118,7 +118,10 @@ class Controller:
         # doesn't revive for any next file; although when you just open a new file it works
         # fine. can't for the life of me understand why
         self.kbd_listener.bind_keyboard()
+
         self.set_title(os.path.basename(path))
+
+        self.sources_controller.read_all_files(self.tag_file)
 
         # change the default location for opening files
         util.set_conf('misc', 'default_location', os.path.dirname(path))
