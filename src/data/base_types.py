@@ -52,16 +52,24 @@ class Entry:
 class Source:
     def __init__(self, text):
         self.text = text
+<<<<<<< Updated upstream
         self.tags = []
         self.descriptions = []
         self.editions = []
         self.source = None
         self.authors = []
+=======
+        self.tags = []  
+>>>>>>> Stashed changes
 
     def get_first_word(self):
         word = ""
         for char in self.text:
+<<<<<<< Updated upstream
             if char in " ,.;:-=":
+=======
+            if char in " ,.;:-":
+>>>>>>> Stashed changes
                 break
             else:
                 word += char

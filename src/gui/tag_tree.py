@@ -29,6 +29,7 @@ class TagTree(TreeView):
     tree.
     """
 
+<<<<<<< Updated upstream
     controller = ObjectProperty()
     main_controller = ObjectProperty()
 
@@ -38,12 +39,23 @@ class TagTree(TreeView):
 
         self.tag_file = None
         self.tag_nest = None
+=======
+    def __init__(self, **kwargs):
+        super().__init__(root_options=dict(text='Гнездо'), **kwargs)
+        self.bind(minimum_height = self.setter("height"))        
+        self.controller = None
+        self.main_controller = None
+>>>>>>> Stashed changes
 
     def clear(self):
         """
         Remove all content.
         """
         for node in [i for i in self.iterate_all_nodes()]:
+<<<<<<< Updated upstream
+=======
+            # Logger.debug("Clear: removing node " + node.entity.text)
+>>>>>>> Stashed changes
             self.remove_node(node)
 
     def show(self, tag_file):
@@ -464,10 +476,13 @@ class SourceNode(EntNode):
         super().__init__(source, **kwargs)
         self.file = file
 
+<<<<<<< Updated upstream
     def load_text(self):
         self.ids['label'].text = "[i]" + self.entity.text + "[/i]"
         self.set_text_height()
 
+=======
+>>>>>>> Stashed changes
 
 class EntryNode(EntNode):
 
@@ -475,7 +490,11 @@ class EntryNode(EntNode):
         self.full_text = False
         super().__init__(entry, **kwargs)
         self.file = file
+<<<<<<< Updated upstream
 
+=======
+        
+>>>>>>> Stashed changes
         if entry.source is not None:
             reference = "(" + entry.source.get_first_word()
             if len(entry.page) > 0:
@@ -506,7 +525,11 @@ class EntryNode(EntNode):
 
     def no_last_n(self):
         text = self.entity.text
+<<<<<<< Updated upstream
         #   Logger.debug("EntryNode: last two symbols of text are " + text[-2] + " and " + text[-1])
+=======
+        # Logger.debug("EntryNode: last two symbols of text are " + text[-2] + " and " + text[-1])
+>>>>>>> Stashed changes
         if len(text) > 0 and text[-1:] == "\n":
             Logger.debug("EntryNode: removing last \\n")
             return text[:-1]
@@ -565,11 +588,17 @@ class TagNode(EntNode):
         if self.editing:
             self.input.select_all()
 
+<<<<<<< Updated upstream
     """
     Methods that change the data based on user input
     """
 
+=======
+>>>>>>> Stashed changes
     def save_text(self):
+        """
+        These change the data based on user input
+        """
         text = self.ids['input'].text
         if text == "" or text.isspace():
             self.controller.delete_node(self)
