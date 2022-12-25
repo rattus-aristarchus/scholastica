@@ -366,13 +366,14 @@ def is_source(line):
     if line == EMPTY_LINE or len(line) < 5:
         return False
 
-    # Check if it's a web address
-    if line[:3] == "www" or line[:4] == "http":
-        return True
-
     words = line.split(" ")
     if len(words) == 0:
         return False
+
+    # Check if it's a web address
+    last_word = words[-1]
+    if last_word[:3] == "www" or last_word[:4] == "http":
+        return True
 
     # If the first word has a dot in it and doesn't end with a dot - it's a
     # web address; if it's longer than 5 characters - it's not an abbreviation

@@ -8,13 +8,11 @@ Created on Sat Jun 18 15:21:35 2022
 
 
 import sys
-sys.path.insert(0, "/media/kryis/TOSHIBA EXT/code/Python/scholastica/src")
+sys.path.insert(0, "/home/kryis/code/python/scholastica/")
+import src.storage.tagfile as tagfile
+import src.storage.sourcefile as sourcefile
 
-import storage.tagfile as tagfile
-import storage.sourcefile as sourcefile
-import rpc
 
-    
 class TestMain:
     
     def __init__(self, tag_file):
@@ -53,12 +51,14 @@ class TestMain:
             tagfile.write_tag_file(self.tag_file)
             
         return ""
+
+
+# def test_rpc():
+#    address = "/media/kryis/TOSHIBA EXT/записи/организатор записей/тестовый файл.txt"
+#    file = tagfile.read_tag_file(address)
+#    test_main = TestMain(file)
+#    messenger = rpc.Messenger(test_main.file_saved)
+#    messenger.run()
+ 
     
-def test_rpc():
-    address = "/media/kryis/TOSHIBA EXT/записи/организатор записей/тестовый файл.txt"
-    file = tagfile.read_tag_file(address)
-    test_main = TestMain(file)
-    messenger = rpc.Messenger(test_main.file_saved)
-    messenger.run()
-    
-test_rpc()
+#test_rpc()
