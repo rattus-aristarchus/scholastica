@@ -40,6 +40,7 @@ def test_source():
              "Stevenson D. S. Under a Crimson Sun: Prospects for Life in a Red Dwarf System. Springer, 2013.",
              "Waltham T., Bell F., Culshaw M. Sinkholes and Subsistence. Karst and Cavernous Rocks in Engineering and COnstruction",
              "https://www.testim.io/blog/qa-metrics-an-introduction/"]
+    #Aguiar MC, de Pondé MP (March 2019). "Parenting a child with autism". Jornal Brasileiro de Psiquiatria. 68 (1): p.42–47. - should be source
     not_lines = ["все дальнейшие рассуждения, если без ссылок - с вики про возможность жизни на др планетах"]
     for line in lines:
         assert parse.is_source(line)

@@ -7,12 +7,14 @@ Created on Mon May 23 19:08:19 2022
 """
 
 import sys
-from kivy.logger import Logger, LOG_LEVELS
+
 from kivy.config import Config
-import util
-from util import CONF
+from kivy.logger import Logger, LOG_LEVELS
+
+from util import CONF, LOGS_DIR
+
 Logger.setLevel(LOG_LEVELS[CONF['misc']['log_level']])
-Config.set('kivy', 'log_dir', util.LOGS_DIR)
+Config.set('kivy', 'log_dir',  LOGS_DIR)
 import gui.main as gui
 
 Logger.info("Starting application with arguments " + str(sys.argv))
