@@ -125,7 +125,7 @@ class Messenger(threading.Thread):
             new_file.read(self.tag_file)
             self.view.ids['tree'].add_all_from(new_file)
             self.tag_file.add_file(new_file)
-            tagfile.write_tag_file(self.tag_file)
+            tagfile.write(self.tag_file)
         except FileNotFoundError as e:
             Logger.error(e.strerror + ": " + e.filename)
             message = STRINGS["error"][0][LANG][0] + \

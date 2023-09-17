@@ -84,7 +84,7 @@ class Controller:
             self.close_file()
 
         # First, open the file
-        self.tag_file, messages = tagfile.read_tag_file(path)
+        self.tag_file, messages = tagfile.read(path)
         if not len(messages) == 0:
             Clock.schedule_once(lambda dt: self.popup("\n".join(messages)), 0.5)
         self.tag_nest = self.tag_file.tag_nest
@@ -116,7 +116,7 @@ class Controller:
         self.tag_nest = None
 
     def save_file(self):
-        tagfile.write_tag_file(self.tag_file)
+        tagfile.write(self.tag_file)
 
     def popup(self, message, callback=None):
         Logger.info(f"Controller: popup created with message {message}")

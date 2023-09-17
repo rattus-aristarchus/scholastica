@@ -39,7 +39,7 @@ class TestMain:
             if len(source_file.tags) > 0:
                 print("b")
                 self.tag_file.source_files.append(source_file)
-            tagfile.write_tag_file(self.tag_file)
+            tagfile.write(self.tag_file)
         else:
             #If it doesn't, we read the file and see if it has any tags at all
             print("-c")
@@ -48,7 +48,7 @@ class TestMain:
             if len(source_file.tags) > 0:
                 print("d")    
                 self.tag_file.source_files.append(source_file)
-            tagfile.write_tag_file(self.tag_file)
+            tagfile.write(self.tag_file)
             
         return ""
 

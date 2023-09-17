@@ -6,11 +6,7 @@ Created on Fri May 27 18:34:31 2022
 @author: kryis
 """
 
-import sys
 import pytest
-sys.path.insert(0, "/home/kryis/code/python/scholastica/src")
-import storage.tagfile as tgf
-import storage.sourcefile as srf
 import storage.parse as parse
 from data.base_types import Tag
 from data.tag_nest import TagNest
@@ -58,9 +54,3 @@ def test_page():
     assert not parse.is_page(s2)
     assert parse.is_page(s3)
     print("check_page - done")
-
-
-#print('begin')
-#check_tag_parser()
-#check_source()
-#check_page()

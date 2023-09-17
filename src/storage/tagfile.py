@@ -7,6 +7,8 @@ Created on Sat May 28 22:51:01 2022
 """
 
 import collections
+import os
+
 from kivy.logger import Logger
 
 from util import CONF, STRINGS
@@ -18,6 +20,41 @@ from storage.sourcefile import SourceFile
 
 EMPTY_LINE = "\n"
 LANG = CONF["misc"]["language"]
+REL_PATH_PREFIX = "rel: "
+ABS_PATH_PREFIX = "abs: "
+
+class SourcePaths:
+
+    def __init__(self, root):
+        self.root = root
+        self.relpaths = {}
+        self.abspaths = {}
+
+    def add(self, file):
+        common_path = os.path.commonprefix([self.root, file.address])
+        if common_path == "":
+            self.set_abs(file, file.address)
+        else:
+            relpath = os.path.relpath(file.address, self.root)
+            self.set_rel(file, relpath)
+
+    def remove(self, file):
+        if file in self.relpaths:
+            del self.relpaths[file]
+        if file in self.abspaths:
+            del self.abspaths[file]
+
+    def get_rel(self, file):
+        return self.relpaths[file]
+
+    def get_abs(self, file):
+        return self.abspaths[file]
+
+    def set_rel(self, file, path):
+        self.relpaths[file] = path
+
+    def set_abs(self, file, path):
+        self.abspaths[file] = path
 
 
 class TagFile:
@@ -26,6 +63,7 @@ class TagFile:
         self.address = address
         self.backup_location = storage.make_backup_folder_for(address)
         self.source_files = []
+        self.source_paths = SourcePaths(os.path.dirname(address))
 
         self.tag_nest = TagNest()
         # self.content_by_source_file = {}
@@ -43,6 +81,7 @@ class TagFile:
             return False
         else:
             self.source_files.append(source_file)
+            self.source_paths.add(source_file)
             # contents = source_file.entries + source_file.sources
             # for content in contents:
             #    self.content_by_source_file[content] = source_file
@@ -58,6 +97,7 @@ class TagFile:
         source_file.entries.clear()
         if source_file in self.source_files:
             self.source_files.remove(source_file)
+            self.source_paths.remove(source_file)
         else:
             Logger.warning(
                 f"TagFile: trying to remove source file {source_file.address} that is not present in the list")
@@ -76,11 +116,7 @@ class TagFile:
         return None
 
 
-# TODO: make this a proper class. the procedural approach looks hideous when you have
-# to call the functions - tagfile.read_tag_file(tag_file)
-
-
-def read_tag_file(address):
+def read(address):
     """
     Read a tag file and create a linked structure of tags with sources and entries
     hanging off of them.
@@ -95,7 +131,7 @@ def read_tag_file(address):
             parent = None
 
             # The tagfile contains first a tree of tags, and then a list of source
-            # files which use the tags
+            # files which use the tags. Let's separate the two
             tags = []
             source_paths = []
             after_break = False
@@ -140,15 +176,24 @@ def read_tag_file(address):
             # First, we create the files
             for line in source_paths:
                 if (
-                        len(line) == 0
+                        len(line) < 5
                         or line.isspace()
-                        or result.has_file(line[:-1])
+                        or result.has_file(line[6:-1])
                 ):
                     continue
                 else:
                     try:
-                        file = SourceFile(line[:-1], result.backup_location)
+                        # the first chars in a line are going to be "rel: " or "abs: "
+                        if line[0:5] == REL_PATH_PREFIX:
+                            path = os.path.join(result.source_paths.root, line[5:-1])
+                        elif line[0:5] == ABS_PATH_PREFIX:
+                            path = line[5:-1]
+                        else:
+                            messages.append("source begins with something other than abs or rel. source: " + line)
+                            continue
+                        file = SourceFile(path, result.backup_location)
                         result.source_files.append(file)
+                        result.source_paths.add(file)
                         Logger.debug("TagFile: read_tag_file, created source file " +
                                      file.address)
                     except FileNotFoundError as e:
@@ -178,7 +223,7 @@ def read_tag_file(address):
     return result, messages
 
 
-def write_tag_file(tag_file):
+def write(tag_file):
     """
     Write a linked structure of tags with their contents as a file.
     """
@@ -200,18 +245,31 @@ def write_tag_file(tag_file):
     output += EMPTY_LINE
     output += CONF["text"]["separator"] + "\n"
     for source_file in tag_file.source_files:
-        output += source_file.address + "\n"
+        path = _get_path(source_file, tag_file)
+        if path:
+            output += path + "\n"
+        else:
+            print("for some reason there is no path for sourcefile " + source_file.address)
 
     # Write the result
     storage.write_safe(tag_file.address, output)
 
-
-"""
-Determine the number of whitespaces at the beginning of the line
-"""
+def _get_path(source_file, tag_file):
+    rel = tag_file.source_paths.get_rel(source_file)
+    abs = tag_file.source_paths.get_rel(source_file)
+    if not rel is None:
+        output = REL_PATH_PREFIX + rel
+    elif not abs is None:
+        output = ABS_PATH_PREFIX + abs
+    else:
+        output = None
+    return output
 
 
 def _get_indent(line):
+    """
+    Determine the number of whitespaces at the beginning of the line
+    """
     spaces = 0
     for c in line:
         if c.isspace():
@@ -227,12 +285,10 @@ def _cut_stack(cur_indent, stack):
             stack.pop(indent)
 
 
-"""
-Returns the string representation of a tag, its content and its children
-"""
-
-
 def _tag_to_string_deep(tag, indent, written_tags, tag_file):
+    """
+    Returns the string representation of a tag, its content and its children
+    """
     # First, the tag itself
     result = _tag_to_string(tag, indent)
 
@@ -248,12 +304,10 @@ def _tag_to_string_deep(tag, indent, written_tags, tag_file):
     return result
 
 
-"""
-Returns the string representation of a tag
-"""
-
-
 def _tag_to_string(tag, indent):
+    """
+    Returns the string representation of a tag
+    """
     result = ""
     for i in range(indent):
         result += " "
