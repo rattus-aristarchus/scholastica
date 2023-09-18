@@ -22,12 +22,13 @@ from kivy.clock import Clock
 
 # MAIN_DIR = os.path.dirname(os.getcwd())
 MAIN_DIR = os.path.dirname(sys.path[0])
-DEFAULT_CONF_PATH = os.path.join(MAIN_DIR, "default_conf.yml")
-CONST_PATH = os.path.join(MAIN_DIR, "const.yml")
-STRINGS_PATH = os.path.join(MAIN_DIR, "strings.yml")
+RES_DIR = os.path.join(MAIN_DIR, "resources")
+DEFAULT_CONF_PATH = os.path.join(RES_DIR, "default_conf.yml")
+CONST_PATH = os.path.join(RES_DIR, "const.yml")
+STRINGS_PATH = os.path.join(RES_DIR, "strings.yml")
 
 user_dir = os.path.expanduser("~")
-DOCS_DIR = os.path.join(user_dir, "scholastica")
+DOCS_DIR = os.path.join(user_dir, ".scholastica")
 CONF_PATH = os.path.join(DOCS_DIR, "conf.yml")
 LOGS_DIR = os.path.join(DOCS_DIR, "logs")
 LOGS_FILE = "last_log.txt"
