@@ -18,6 +18,8 @@ from data.base_types import Entry
 from util import CONF
 from util import CONST
 
+LOAD_DEPTH = 7
+
 LANG = CONF["misc"]["language"]
 THEME = CONF["misc"]["theme"]
 
@@ -80,9 +82,12 @@ class TagTree(TreeView):
             self.add_node(tag_node)
         else:
             self.add_node(tag_node, parent_node)
+        if len(parents) >= LOAD_DEPTH:
+            tag_node.load_point = True
 
-        # Repeat the function for all of its children
-        if len(tag.children) > 0:
+        # Repeat the function for all of its children; do not load the tree beyond a certain depth, unless this
+        # has been specifically requested
+        if len(tag.children) > 0 and len(parents) < LOAD_DEPTH:
             parents.append(tag)
             for child in tag.children:
                 self._show_deep(child, tag_node, parents)
@@ -525,6 +530,10 @@ class TagNode(EntNode):
         self.label = self.ids['label'].__self__
         self.remove_widget(self.input)
         self.editing = False
+
+        # The tree is only loaded up to a certain depth;
+        # upon reaching the load point, the next n nodes are loaded
+        self.load_point = False
 
     def copy(self):
         return TagNode(self.entity, self.controller, self.main_controller)

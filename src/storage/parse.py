@@ -36,13 +36,22 @@ def clean_and_remove_brackets(line):
     return result
 
 
+def clean_split(to_split, split_by):
+    words = to_split.split(split_by)
+    for i in range(len(words)):
+        words[i] = words[i].strip()
+
+    words = [word for word in words if not word == ""]
+    return words
+
+
 def add_parameters(object, parameters, tag_nest, sources=[]):
     """
     Turns parameters represented by a dictionary of strings into actual fields for the object
     """
     for parameter, value in parameters.items():
         if parameter in CONST['parameters']['source']:
-            words = value.split(" ")
+            words = clean_split(value, " ")
             for i in range(len(words)):
                 words[i] = words[i].strip()
             if isinstance(object, Source):
@@ -51,9 +60,7 @@ def add_parameters(object, parameters, tag_nest, sources=[]):
             else:
                 object.source = get_reference_from_short_name(words, sources)
         elif parameter in CONST['parameters']['subject']:
-            words = value.split(" ")
-            for i in range(len(words)):
-                words[i] = words[i].strip()
+            words = clean_split(value, " ")
             source = get_reference_from_short_name(words, sources)
             tag_nest.add_description(description=object, source=source)
 
@@ -224,9 +231,9 @@ def get_reference(line, sources):
     Returns a source the line references and a page number as a tuple
     """
     line = clean_and_remove_brackets(line)
-    words = line.split(SPLIT)
-    for i in range(len(words)):
-        words[i] = words[i].strip()
+    words = clean_split(line, SPLIT)
+    if len(words) == 0:
+        return Source(""), ""
 
     # Check if the last word is a page number
     page = ""
@@ -272,9 +279,8 @@ def get_tags(line, tag_nest):
     Returns all the tags from the tag nest that are contained in a line
     """
     line = clean_and_remove_brackets(line)
-    names = line.split(SPLIT)
-    for i in range(len(names)):
-        names[i] = names[i].strip()
+    names = clean_split(line, SPLIT)
+
     tags = []
     for tag in tag_nest.tags:
         if tag.text in names:
@@ -366,7 +372,7 @@ def is_source(line):
     if line == EMPTY_LINE or len(line) < 5:
         return False
 
-    words = line.split(" ")
+    words = clean_split(line, " ")
     if len(words) == 0:
         return False
 

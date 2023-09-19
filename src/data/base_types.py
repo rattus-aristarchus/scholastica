@@ -22,6 +22,7 @@ class Tag:
         self.children = []
         # The sources and entries which have the tag
         self.content = []
+        self.cyclic = False
 
     # I am defining the eq and hash methods so that the "in" keyword will be
     # able to tell if the tag is present in a list of tags

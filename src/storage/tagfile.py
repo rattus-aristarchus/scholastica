@@ -22,6 +22,7 @@ EMPTY_LINE = "\n"
 LANG = CONF["misc"]["language"]
 REL_PATH_PREFIX = "rel: "
 ABS_PATH_PREFIX = "abs: "
+CYCLIC = " <="
 
 class SourcePaths:
 
@@ -126,82 +127,17 @@ def read(address):
 
     try:
         with open(address, "r") as file:
-            indent = 0
-            tag_stack = collections.OrderedDict()
-            parent = None
-
             # The tagfile contains first a tree of tags, and then a list of source
             # files which use the tags. Let's separate the two
-            tags = []
-            source_paths = []
-            after_break = False
-            for line in file:
-                if line == CONF["text"]["separator"] + "\n":
-                    after_break = True
-                elif not after_break:
-                    tags.append(line)
-                else:
-                    source_paths.append(line)
+            tags, source_paths = _split_tags_and_sources(file)
 
             # First, build the tag structure
-            for line in tags:
-                # Based on the indent, figure out which tag the next line belongs to
-                indent = _get_indent(line)
-                _cut_stack(indent, tag_stack)
-                if len(tag_stack) > 0:
-                    parent = list(tag_stack.values())[-1]
-                else:
-                    parent = None
-
-                # Now, the string herself
-                # The last symbol of the string is always a newline symbol
-                string = line[indent:-1]
-                # If somehow the line is empty, it is ignored
-                if len(string) == 0 or string.isspace():
-                    continue
-
-                # The string can either be a tag that already exists, or a new
-                # one.
-                tag = result.tag_nest.get(string)
-                if tag is None:
-                    tag = Tag(string)
-                    result.tag_nest.tags.append(tag)
-                if parent is not None:
-                    result.tag_nest.add_child_tag(tag, parent)
-                if indent == 0:
-                    result.tag_nest.roots.append(tag)
-                tag_stack[indent] = tag
+            result.tag_nest = _build_tag_nest(tags)
 
             # Now, with a full structure of tags, all the sourcefiles can be read.
             # First, we create the files
-            for line in source_paths:
-                if (
-                        len(line) < 5
-                        or line.isspace()
-                        or result.has_file(line[6:-1])
-                ):
-                    continue
-                else:
-                    try:
-                        # the first chars in a line are going to be "rel: " or "abs: "
-                        if line[0:5] == REL_PATH_PREFIX:
-                            path = os.path.join(result.source_paths.root, line[5:-1])
-                        elif line[0:5] == ABS_PATH_PREFIX:
-                            path = line[5:-1]
-                        else:
-                            messages.append("source begins with something other than abs or rel. source: " + line)
-                            continue
-                        file = SourceFile(path, result.backup_location)
-                        result.source_files.append(file)
-                        result.source_paths.add(file)
-                        Logger.debug("TagFile: read_tag_file, created source file " +
-                                     file.address)
-                    except FileNotFoundError as e:
-                        Logger.error(e.strerror + ": " + e.filename)
-                        message = STRINGS["error"][0][LANG][0] + \
-                                    e.filename + \
-                                    STRINGS["error"][0][LANG][1]
-                        messages.append(message)
+            result, sf_messages = _create_source_files(result, source_paths)
+            messages.extend(sf_messages)
 
             # Then, we read only the sources
             for source_file in result.source_files:
@@ -221,6 +157,96 @@ def read(address):
         Logger.error(e.strerror + ": " + e.filename)
 
     return result, messages
+
+
+def _split_tags_and_sources(file):
+    tags = []
+    source_paths = []
+    after_break = False
+    for line in file:
+        if line == CONF["text"]["separator"] + "\n":
+            after_break = True
+        elif not after_break:
+            tags.append(line)
+        else:
+            source_paths.append(line)
+    return tags, source_paths
+
+
+def _build_tag_nest(tags):
+    tag_stack = collections.OrderedDict()
+    indent = 0
+    parent = None
+    tag_nest = TagNest()
+
+    for line in tags:
+        # Based on the indent, figure out which tag the next line belongs to
+        indent = _get_indent(line)
+        _cut_stack(indent, tag_stack)
+        if len(tag_stack) > 0:
+            parent = list(tag_stack.values())[-1]
+        else:
+            parent = None
+
+        # Now, the string herself
+        # The last symbol of the string is always a newline symbol
+        string = line[indent:-1]
+        # If somehow the line is empty, it is ignored
+        if len(string) == 0 or string.isspace():
+            continue
+
+        # The string can either be a tag that already exists, or a new
+        # one.
+        tag = tag_nest.get(string)
+
+        if tag is None:
+            tag = Tag(string)
+            tag_nest.tags.append(tag)
+        elif tag_nest.is_cyclic(tag, parent):
+            continue
+
+        if parent is not None:
+            tag_nest.add_child_tag(tag, parent)
+        if indent == 0:
+            tag_nest.roots.append(tag)
+        tag_stack[indent] = tag
+
+    return tag_nest
+
+
+def _create_source_files(tag_file, source_paths):
+    messages = []
+
+    for line in source_paths:
+        if (
+                len(line) < 5
+                or line.isspace()
+                or tag_file.has_file(line[6:-1])
+        ):
+            continue
+        else:
+            try:
+                # the first chars in a line are going to be "rel: " or "abs: "
+                if line[0:5] == REL_PATH_PREFIX:
+                    path = os.path.join(tag_file.source_paths.root, line[5:-1])
+                elif line[0:5] == ABS_PATH_PREFIX:
+                    path = line[5:-1]
+                else:
+                    messages.append("source begins with something other than abs or rel. source: " + line)
+                    continue
+                file = SourceFile(path, tag_file.backup_location)
+                tag_file.source_files.append(file)
+                tag_file.source_paths.add(file)
+                Logger.debug("TagFile: read_tag_file, created source file " +
+                             file.address)
+            except FileNotFoundError as e:
+                Logger.error(e.strerror + ": " + e.filename)
+                message = STRINGS["error"][0][LANG][0] + \
+                          e.filename + \
+                          STRINGS["error"][0][LANG][1]
+                messages.append(message)
+
+    return tag_file, messages
 
 
 def write(tag_file):
@@ -253,6 +279,7 @@ def write(tag_file):
 
     # Write the result
     storage.write_safe(tag_file.address, output)
+
 
 def _get_path(source_file, tag_file):
     rel = tag_file.source_paths.get_rel(source_file)

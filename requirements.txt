@@ -3,3 +3,4 @@ kivy
 PyYAML
 nuitka
 pyqt5
+Xclipboard

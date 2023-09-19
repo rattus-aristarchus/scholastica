@@ -1,7 +1,12 @@
 import os
 import pytest
 
-from conftest import TAGFILE_PATH, RESOURCES_DIR, STUFF_PATH, BACKUP_DIR, NEW_TAGFILE_PATH
+from conftest import (TAGFILE_PATH,
+                      RESOURCES_DIR,
+                      STUFF_PATH,
+                      BACKUP_DIR,
+                      NEW_TAGFILE_PATH,
+                      CYCLIC_TAGFILE_PATH)
 from storage.tagfile import SourcePaths, TagFile
 from storage.sourcefile import SourceFile
 from data.base_types import Tag
@@ -33,6 +38,7 @@ def tag_file(source_file):
         os.remove(NEW_TAGFILE_PATH)
 
 
+
 def test_sourcepaths(source_paths, source_file):
     source_paths.add(source_file)
     assert source_paths.relpaths[source_file] == "notes/pytest/stuff.txt"
@@ -59,3 +65,10 @@ def test_write(tag_file):
     for message in messages:
         print(message)
     assert list(read.source_paths.relpaths.values())[0] == "notes/pytest/stuff.txt"
+
+
+def test_cyclic():
+    file, messages = tagfile.read(CYCLIC_TAGFILE_PATH)
+    cyclic_tag = Tag("testrail")
+    cyclic_parent = file.tag_nest.get("qa tools")
+    assert file.tag_nest.is_cyclic(cyclic_tag, cyclic_parent)

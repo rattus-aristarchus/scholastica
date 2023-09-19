@@ -54,9 +54,6 @@ class TagNest:
             else:
                 self.roots.insert(index, child)
         else:
-            if child in self.roots:
-                self.roots.remove(child)
-
             if child not in parent.children:
                 if index == -1:
                     parent.children.append(child)
@@ -64,6 +61,8 @@ class TagNest:
                     parent.children.insert(index, child)
             if parent not in child.parents:
                 child.parents.append(parent)
+            if self.is_cyclic(child, parent):
+                child.cyclic = True
 
     def remove_child_tag(self, child, parent):
         """
@@ -161,3 +160,29 @@ class TagNest:
         if edition not in source.editions:
             source.editions.append(edition)
         edition.source = source
+
+    def is_cyclic(self, tag, parent):
+        """
+        Check if adding the tag to the parent creates a cyclic tree structure
+        """
+        if tag == parent:
+            return True
+
+        if not parent is None and self._parents_have_tag(tag, parent):
+            return True
+
+        return False
+
+    def _parents_have_tag(self, tag, to_check):
+        """
+        Check if parents of any generation of @to_check contain @tag
+        """
+
+        if tag in to_check.parents:
+            return True
+
+        for parent in to_check.parents:
+            if self._parents_have_tag(tag, parent):
+                return True
+
+        return False
