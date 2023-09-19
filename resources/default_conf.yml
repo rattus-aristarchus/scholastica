@@ -6,6 +6,7 @@ misc:
   log_level: warning
   theme: colors_chartres
   show_tutorial: True
+  load_depth: 5
 text:
   empty_line: '\n'
   line_close: )
