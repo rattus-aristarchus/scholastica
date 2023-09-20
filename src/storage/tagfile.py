@@ -179,6 +179,10 @@ def _build_tag_nest(tags):
     parent = None
     tag_nest = TagNest()
 
+    # In the tagfile, the innards of a tag are read only once, when it is
+    # encountered for the first time
+    reencounter = None
+
     for line in tags:
         # Based on the indent, figure out which tag the next line belongs to
         indent = _get_indent(line)
@@ -187,6 +191,9 @@ def _build_tag_nest(tags):
             parent = list(tag_stack.values())[-1]
         else:
             parent = None
+
+        if reencounter is not None and parent == reencounter:
+            continue
 
         # Now, the string herself
         # The last symbol of the string is always a newline symbol
@@ -202,8 +209,10 @@ def _build_tag_nest(tags):
         if tag is None:
             tag = Tag(string)
             tag_nest.tags.append(tag)
-        elif tag_nest.is_cyclic(tag, parent):
-            continue
+        #elif tag_nest.is_cyclic(tag, parent):
+         #   continue
+        else:
+            reencounter = tag
 
         if parent is not None:
             tag_nest.add_child_tag(tag, parent)

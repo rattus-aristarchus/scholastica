@@ -61,8 +61,8 @@ class TagNest:
                     parent.children.insert(index, child)
             if parent not in child.parents:
                 child.parents.append(parent)
-            if self.is_cyclic(child, parent):
-                child.cyclic = True
+         #   if self.is_cyclic(child, parent):
+         #       child.cyclic = True
 
     def remove_child_tag(self, child, parent):
         """
