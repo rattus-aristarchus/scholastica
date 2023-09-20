@@ -8,14 +8,14 @@ Created on Sun Jun  5 16:19:01 2022
 
 from kivy.clock import Clock
 from kivy.logger import Logger
-from kivy.uix.treeview import TreeView
+from kivy.uix.treeview import TreeView, TreeViewNode, TreeViewLabel
 from kivy.properties import ObjectProperty
 
 from data.base_types import Source
 from data.base_types import Entry
 from util import CONF
 from util import CONST
-from gui.tree_nodes import EntNode, SourceNode, EntryNode, TagNode
+from gui.tree_nodes import EntNode, SourceNode, EntryNode, TagNode, JumpNode
 
 LOAD_DEPTH = CONF["misc"]["load_depth"]
 
@@ -91,6 +91,11 @@ class TagTree(TreeView):
             for child in tag.children:
                 self._show_deep(child, tag_node, parents)
             parents.remove(tag)
+
+        # Display other parents of this tag
+        for parent in tag.parents:
+            if not parent == parent_node.entity:
+                self.display_jump_node(parent, tag_node)
 
         # Display all sources with the tag
         for content in tag.content:
@@ -172,6 +177,12 @@ class TagTree(TreeView):
                          " is not found in any file")
         entry_node = EntryNode(entry, file)
         self.add_node(entry_node, parent_node)
+
+    def display_jump_node(self, jump_to, parent_node):
+        jump_to_node = JumpNode(jump_to, self.controller, self.main_controller)
+        self.add_tag_node(jump_to_node, parent_node)
+        dummy_node = TreeViewLabel()
+        self.add_node(dummy_node, jump_to_node)
 
     def add_tag_node(self, tag_node, destination):
         """
@@ -354,7 +365,18 @@ class TagTree(TreeView):
         Expand current node and select its first child
         """
         select = self.selected_node
-        if (
+
+        # If it's a jump node, we need to change the focus to the node it points toward
+        if isinstance(select, JumpNode):
+            nodes = self._find_nodes(select.entity)
+            if len(nodes) == 0:
+                Logger.error(f"JumpNode with parent {select.parent_node.entity} links"
+                             f" to a node {select.entity.text} that is missing from the tree")
+            for node in nodes:
+                if not isinstance(node, JumpNode):
+                    self._select_and_scroll(node)
+                    break
+        elif (
                 not select is None
                 and not select.is_leaf
                 and not select.is_open

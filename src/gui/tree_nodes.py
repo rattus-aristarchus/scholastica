@@ -152,3 +152,13 @@ class TagNode(EntNode):
 
     def edit_text(self):
         self.ids['input'].text = self.entity.text
+
+
+class JumpNode(TagNode):
+
+    def __init__(self, tag, controller, main_controller, **kwargs):
+        super().__init__(tag, controller, main_controller, **kwargs)
+
+    def load_text(self):
+        self.ids['label'].text = self.entity.text + "   <="
+        self.set_text_height()
