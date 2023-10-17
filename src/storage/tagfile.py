@@ -24,6 +24,7 @@ REL_PATH_PREFIX = "rel: "
 ABS_PATH_PREFIX = "abs: "
 CYCLIC = " <="
 
+
 class SourcePaths:
 
     def __init__(self, root):
