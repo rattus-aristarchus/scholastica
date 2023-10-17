@@ -5,7 +5,7 @@ import storage.tagfile as tagfile
 import storage.storage as storage
 from storage.sourcefile import SourceFile
 from util import DOCS_DIR
-import gen_string
+import converter.gen_string as gen_string
 
 
 def convert_tagfile(tagfile, output_path):

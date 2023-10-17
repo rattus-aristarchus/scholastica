@@ -10,9 +10,9 @@ import sys
 from kivy.logger import Logger, LOG_LEVELS
 from kivy.config import Config
 
-from util import CONF
+from util import CONF, LOGS_DIR
 Logger.setLevel(LOG_LEVELS[CONF['misc']['log_level']])
-Config.set('kivy', 'log_dir', util.LOGS_DIR)
+Config.set('kivy', 'log_dir', LOGS_DIR)
 import gui.main as gui
 import converter.converter as converter
 
@@ -23,7 +23,7 @@ convert = True
 
 if convert:
     app = converter
-if len(sys.argv) > 1:
+elif len(sys.argv) > 1:
     app = gui.Main(sys.argv[1])
 else:
     app = gui.Main()

@@ -1,4 +1,6 @@
 
+import os
+
 def tagfile_md(tag_file):
     """
     Write a linked structure of tags with their contents as a file.
@@ -47,8 +49,7 @@ def _tag_to_string(tag, level):
     result = ""
     for i in range(level):
         result += "#"
-    text = tag.text.replace(" ", "-")
-    result += " " + text + "\n"
+    result += " " + tag.text + "\n"
     return result
 
 
@@ -80,12 +81,11 @@ def sourcefile_md(sourcefile, tagfiles):
         # if the entry's got tags, they're listed after it on separate lines
         for tag in entry.tags:
             file = _find_tagfile_for_tag(tag, tagfiles)
-            link = tag.text.replace(" ", "-")
             if file is not None:
                 filename = _get_tagfilename(file)
-                result += f"\n[[{filename}#{link}]]"
+                result += f"\n[[{filename}#{tag.text}]]"
             else:
-                result += f"\n{link}"
+                result += f"\n{tag.text}"
     return result
 
 
