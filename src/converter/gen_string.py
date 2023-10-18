@@ -1,6 +1,7 @@
 
 import os
 
+
 def tagfile_md(tag_file):
     """
     Write a linked structure of tags with their contents as a file.
@@ -54,38 +55,63 @@ def _tag_to_string(tag, level):
 
 
 # TODO: добавить распознавание заголовков
+# TODO: добавить метки для источников (Panitch L., Gindin S. The Making of Global Capitalism - выходит и без источника и без меток)
 def sourcefile_md(sourcefile, tagfiles):
     """
     Return the contents of a file formatted in .md
     """
+    if "Panitch" in sourcefile.address:
+        stuff = ""
+
     # header
     result = "---\ncssclass: sourcefile\n---"
 
     # the source
-    if sourcefile.sources:
-        result += "\n"
     for source in sourcefile.sources:
-        result += f"\n## {source.text}"
+        result += _source_str(source, tagfiles)
 
     # every entry, separated by an empty line
     if sourcefile.entries:
         result += "\n"
     for entry in sourcefile.entries:
-        if entry.text[-1] == "\n":
-            text = entry.text[:-1]
-        else:
-            text = entry.text
+        result += _entry_str(entry, tagfiles)
 
-        result += "\n\n" + text
+    return result
 
-        # if the entry's got tags, they're listed after it on separate lines
-        for tag in entry.tags:
-            file = _find_tagfile_for_tag(tag, tagfiles)
-            if file is not None:
-                filename = _get_tagfilename(file)
-                result += f"\n[[{filename}#{tag.text}]]"
-            else:
-                result += f"\n{tag.text}"
+
+def _source_str(source, tagfiles):
+    result = ""
+
+    text = source.text.strip(" \n")
+    result += f"\n## {text}"
+
+    # if the source has got tags, they're listed after it on separate lines
+    for tag in source.tags:
+        result += _tag_str(tag, tagfiles)
+    return result
+
+
+def _tag_str(tag, tagfiles):
+    result = ""
+    file = _find_tagfile_for_tag(tag, tagfiles)
+    if file is not None:
+        filename = _get_tagfilename(file)
+        result += f"\n[[{filename}#{tag.text}]]"
+    else:
+        result += f"\n{tag.text}"
+    return result
+
+
+def _entry_str(entry, tagfiles):
+    result = ""
+
+    text = entry.text.strip(" \n")
+    result += "\n\n" + text
+
+    # if the entry has got tags, they're listed after it on separate lines
+    for tag in entry.tags:
+        result += _tag_str(tag, tagfiles)
+
     return result
 
 

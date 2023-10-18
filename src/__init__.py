@@ -22,7 +22,7 @@ convert = True
 
 
 if convert:
-    app = converter
+    app = converter.Converter(0)
 elif len(sys.argv) > 1:
     app = gui.Main(sys.argv[1])
 else:

@@ -21,8 +21,6 @@ def convert_tagfile(tagfile, output_path):
 def convert_sourcefile(sourcefile, output_path, tagfile):
     Logger.info(f"Converting file {sourcefile.address}")
 
-    sourcefile.read_sources(tagfile)
-    sourcefile.read(tagfile)
     output = gen_string.sourcefile_md(sourcefile, [tagfile])
     storage.write_safe(output_path, output)
 
@@ -54,7 +52,10 @@ def read(tagfile_path, source_dirs):
                     other_stuff.append(source_path)
                     continue
 
+                Logger.info(f"Creating sourcefile {source_path}")
                 s_file = SourceFile(source_path, t_file.backup_location)
+                s_file.read_sources(t_file)
+                s_file.read(t_file)
                 sourcefiles.append(s_file)
 
     return t_file, sourcefiles, other_stuff
