@@ -142,14 +142,14 @@ def read(address):
 
             # Then, we read only the sources
             for source_file in result.source_files:
-                source_file.read_sources(result)
+                source_file.read_sources(result, False)
                 for source in source_file.sources:
                     # result.content_by_source_file[source] = source_file
                     result.tag_nest.sources.append(source)
 
             # Finally, we read everything else in the file
             for source_file in result.source_files:
-                source_file.read(result)
+                source_file.read(result, False)
                 for entry in source_file.entries:
                     # result.content_by_source_file[entry] = source_file
                     result.tag_nest.entries.append(entry)

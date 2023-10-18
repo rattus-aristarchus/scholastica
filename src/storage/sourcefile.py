@@ -49,7 +49,7 @@ class SourceFile:
             if tag not in self.tags:
                 self.tags.append(entry.tags)
 
-    def read_sources(self, tag_file):
+    def read_sources(self, tag_file, make_tags):
         with open(self.address, "r") as file:
 
             has_sources = False
@@ -66,17 +66,21 @@ class SourceFile:
                         has_sources = True
 
             if has_sources:
-                sources = parse.read_sources(first_chunk, tag_file.tag_nest)
+                sources = parse.read_sources(first_chunk, tag_file.tag_nest, make_tags)
                 for source in sources:
                     Logger.debug(f"Sourcefile: created source {source.text[:100]}")
                     self.add_source(source)
 
-    def read(self, tag_file):
+    def read(self, tag_file, make_tags):
         """
         Read the file at the address and create a sourcefile object, while also
         connecting entries and sources to specified tags if the tags are present in
         the tag nest
         """
+
+        if "политэкономия современности" in self.address:
+            s = ""
+
         with open(self.address, "r") as file:
             # The lines before the first empty line in a file can be sources. Split
             # the file in two halves, before the first empty line and after; if
@@ -110,7 +114,8 @@ class SourceFile:
                 all_sources.extend(tag_file.tag_nest.sources)
                 entry = parse.read_entry(chunk,
                                          tag_file.tag_nest,
-                                         all_sources)
+                                         all_sources,
+                                         make_tags)
                 if entry is not None:
                     #   Logger.debug(f"Sourcefile: created entry {entry.text[:100]}")
                     self.add_entry(entry)

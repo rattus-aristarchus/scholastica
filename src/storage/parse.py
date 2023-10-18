@@ -71,7 +71,7 @@ Methods for reading chunks
 """
 
 
-def read_sources(chunk, tag_nest):
+def read_sources(chunk, tag_nest, make_tags):
     """
     Returns all the sources contained in a chunk, with their tags.
     """
@@ -82,7 +82,7 @@ def read_sources(chunk, tag_nest):
         if is_enclosed(line) and len(result) > 0:
             parameters = get_parameters(line)
             add_parameters(result[-1], parameters, tag_nest)
-            tags = get_tags(line, tag_nest)
+            tags = get_tags(line, tag_nest, make_tags)
             for tag in tags:
                 tag_nest.add_tag_to_source(tag, result[-1])
         elif is_comment(line) and len(result) > 0:
@@ -95,7 +95,7 @@ def read_sources(chunk, tag_nest):
     return result
 
 
-def read_entry(chunk, tag_nest, sources):
+def read_entry(chunk, tag_nest, sources, make_tags):
     """
     Reads the chunk of lines as an entry. If the chunk doesn't contain an entry, returns
     None.
@@ -109,6 +109,7 @@ def read_entry(chunk, tag_nest, sources):
     enclosed_lines = []
     tags = []
     source = None
+    page = None
     comments = []
     parameters = {}
 
@@ -125,14 +126,18 @@ def read_entry(chunk, tag_nest, sources):
         if is_comment(line):
             comment = get_comment(line)
             comments.append(comment)
+        elif is_reference(line, sources):
+            source, page = get_reference(line, sources)
         else:
             try_parameters = get_parameters(line)
-            try_tags = get_tags(line, tag_nest)
-            if len(try_tags) == 0 and len(try_parameters) == 0:
-                source = get_reference(line, sources)
-            else:
-                parameters.update(try_parameters)
+            try_tags = get_tags(line, tag_nest, make_tags)
+
+            parameters.update(try_parameters)
+            if try_tags:
                 tags += try_tags
+            if try_tags is None and make_tags:
+                tags += try_tags
+
 
     body = ""
     for line in chunk:
@@ -146,8 +151,8 @@ def read_entry(chunk, tag_nest, sources):
 
     result = Entry(body)
     if source is not None:
-        result.source = source[0]
-        result.page = source[1]
+        result.source = source
+        result.page = page
     for tag in tags:
         tag_nest.add_tag_to_entry(tag, result)
     result.comments = comments
@@ -213,16 +218,6 @@ def get_source(line):
 
         return True
 
-
-#    words = line.split(" ")
-
- #   maybe_surname = True
-
-  #  for word in words:
-   #     if maybe_surname:
-
- #       elif:
-
     return source
 
 
@@ -233,10 +228,10 @@ def get_reference(line, sources):
     line = clean_and_remove_brackets(line)
     words = clean_split(line, SPLIT)
     if len(words) == 0:
-        return Source(""), ""
+        return None, None
 
     # Check if the last word is a page number
-    page = ""
+    page = None
     if is_page(words[-1]):
         page = words.pop()
 
@@ -248,6 +243,17 @@ def get_reference_from_short_name(words, sources):
     # If the reference in parentheses is to some source that already exists in
     # the system, then it will contain only words that exist in the name of
     # that source
+    source = get_existing_reference(words, sources)
+    if source:
+        return source
+
+    # If we've not been able to find the source among existing ones, we create
+    # a new one
+    source = Source(SPLIT.join(words))
+    return source
+
+
+def get_existing_reference(words, sources):
     for source in sources:
         contains = True
         for word in words:
@@ -258,11 +264,7 @@ def get_reference_from_short_name(words, sources):
                 break
         if contains:
             return source
-
-    # If we've not been able to find the source among existing ones, we create
-    # a new one
-    source = Source(SPLIT.join(words))
-    return source
+    return None
 
 
 def get_comment(line):
@@ -274,7 +276,7 @@ def get_comment(line):
     return line
 
 
-def get_tags(line, tag_nest):
+def get_tags(line, tag_nest, make_tags):
     """
     Returns all the tags from the tag nest that are contained in a line
     """
@@ -285,6 +287,13 @@ def get_tags(line, tag_nest):
     for tag in tag_nest.tags:
         if tag.text in names:
             tags.append(tag)
+            names.remove(tag.text)
+
+    if make_tags:
+        for name in names:
+            tag = tag_nest.create_tag(None, name)
+            tags.append(tag)
+
     return tags
 
 
@@ -431,6 +440,32 @@ def is_empty(line):
     line = line.replace("\\n", "")
     line = line.replace("\\r", "")
     if line.isspace() or len(line) == 0:
+        return True
+    else:
+        return False
+
+
+def is_reference(line, sources):
+    """
+    Tells whether the line is a reference to an existing source
+    """
+    if not is_enclosed(line):
+        return False
+
+    line = clean_and_remove_brackets(line)
+    words = clean_split(line, SPLIT)
+    if len(words) == 0:
+        return False
+
+    # Check if the last word is a page number
+    if is_page(words[-1]):
+        return True
+
+    source = get_existing_reference(words, sources)
+    if source:
+        return True
+
+    if words[0][0].isupper():
         return True
     else:
         return False

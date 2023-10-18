@@ -73,8 +73,8 @@ class TagNest:
         if child in parent.children:
             parent.children.remove(child)
 
-    def create_tag(self, parent, index=-1):
-        new_tag = Tag()
+    def create_tag(self, parent, name="", index=-1):
+        new_tag = Tag(name)
         self.tags.append(new_tag)
 
         # If no node is selected, the new node becomes a root

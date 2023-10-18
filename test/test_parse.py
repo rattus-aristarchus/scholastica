@@ -25,7 +25,7 @@ def test_tag_parser(tag_nest):
     first_tag = Tag("first_tag")
     nest = tag_nest
     nest.tags = [first_tag]
-    assert parse.get_tags(tag_line_0, nest)[0] == first_tag
+    assert parse.get_tags(tag_line_0, nest, False)[0] == first_tag
     assert parse.is_enclosed(tag_line_1)
     assert not parse.is_enclosed(not_tag_line_0)
     print("check_tag_parser - done")

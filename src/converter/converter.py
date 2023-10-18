@@ -54,8 +54,8 @@ def read(tagfile_path, source_dirs):
 
                 Logger.info(f"Creating sourcefile {source_path}")
                 s_file = SourceFile(source_path, t_file.backup_location)
-                s_file.read_sources(t_file)
-                s_file.read(t_file)
+                s_file.read_sources(t_file, True)
+                s_file.read(t_file, True)
                 sourcefiles.append(s_file)
 
     return t_file, sourcefiles, other_stuff
