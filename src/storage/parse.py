@@ -394,6 +394,11 @@ def is_source(line):
     if len(words) > 1 and len(words[1]) > 2 and words[1][2] == ".":
         return True
 
+    # If the first word has a comma, and the second one has a dot, the thing
+    # is probably a surname and a name
+    if len(words) > 2 and "," in words[0] and "." in words[1]:
+        return True
+
     # If the line ends with four digits, and the character before them is not
     # a digit, this is most likely a year, and the whole thing is a source
     if line[-4:].isdigit() and not line[-5].isdigit():
